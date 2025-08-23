@@ -1,0 +1,408 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #6366F1;
+  --color-primary-light: #818CF8;
+  --color-primary-dark: #4F46E5;
+  --color-dark: #111928;
+  --color-dark-2: #1f2a37;
+  --color-dark-3: #374151;
+  --color-dark-4: #4b5563;
+  --color-dark-5: #6b7280;
+  --color-dark-6: #9ca3af;
+  --color-dark-7: #d1d5db;
+  --color-dark-8: #e5e7eb;
+  --color-blue-main: #3B82F6;
+  --color-blue-dark: #1D4ED8;
+  --color-blue-light: #60A5FA;
+  --color-secondary: #14B8A6;
+  --color-secondary-dark: #0D9488;
+  --color-secondary-light: #2DD4BF;
+  --color-success: #10B981;
+  --color-success-dark: #059669;
+  --color-success-light: #34D399;
+  --color-body-color: #64748B;
+  --color-body-secondary: #94A3B8;
+  
+  /* Shadow definitions */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-large: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+  --shadow-glow-secondary: 0 0 20px rgba(20, 184, 166, 0.3);
+}
+
+:root {
+  /* Screen Breakpoints */
+  --breakpoint-sm: 540px;
+  --breakpoint-md: 720px;
+  --breakpoint-lg: 960px;
+  --breakpoint-xl: 1140px;
+  --breakpoint-2xl: 1320px;
+
+  /* Container Padding */
+  --container-padding: 16px;
+
+  /* Modern Color Palette - Phase 1.1 */
+  --color-black: #212b36;
+  --color-dark-700: #090e34b3;
+  --color-dark: #111928;
+  --color-dark-2: #1f2a37;
+  --color-dark-3: #374151;
+  --color-dark-4: #4b5563;
+  --color-dark-5: #6b7280;
+  --color-dark-6: #9ca3af;
+  --color-dark-7: #d1d5db;
+  --color-dark-8: #e5e7eb;
+  
+  /* Enhanced Primary Gradient System */
+  --color-primary: #6366F1;
+  --color-primary-light: #818CF8;
+  --color-primary-dark: #4F46E5;
+  --color-blue-main: #3B82F6;
+  --color-blue-dark: #1D4ED8;
+  --color-blue-light: #60A5FA;
+  
+  /* Secondary Teal Accents */
+  --color-secondary: #14B8A6;
+  --color-secondary-dark: #0D9488;
+  --color-secondary-light: #2DD4BF;
+  
+  /* Success & Emerald */
+  --color-success: #10B981;
+  --color-success-dark: #059669;
+  --color-success-light: #34D399;
+  
+  /* Enhanced Text Colors */
+  --color-body-color: #64748B;
+  --color-body-secondary: #94A3B8;
+  --color-warning: #F59E0B;
+  --color-stroke: #E2E8F0;
+  --color-gray-1: #F8FAFC;
+  --color-gray-2: #F1F5F9;
+  --color-gray-7: #CBD5E1;
+  
+  /* Gradient Definitions */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-blue-main) 100%);
+  --gradient-secondary: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-success) 100%);
+  --gradient-mesh: radial-gradient(at 40% 20%, var(--color-primary-light) 0px, transparent 50%), 
+                   radial-gradient(at 80% 0%, var(--color-blue-light) 0px, transparent 50%), 
+                   radial-gradient(at 0% 50%, var(--color-secondary-light) 0px, transparent 50%);
+
+  /* Enhanced Box Shadows & Glassmorphism */
+  --shadow-input: 0px 7px 20px rgba(0, 0, 0, 0.03);
+  --shadow-form: 0px 1px 55px -11px rgba(0, 0, 0, 0.01);
+  --shadow-pricing: 0px 0px 40px 0px rgba(0, 0, 0, 0.08);
+  --shadow-switch-1: 0px 0px 5px rgba(0, 0, 0, 0.15);
+  --shadow-testimonial: 0px 10px 20px 0px rgba(92, 115, 160, 0.07);
+  --shadow-testimonial-btn: 0px 8px 15px 0px rgba(72, 72, 138, 0.08);
+  --shadow-1: 0px 1px 3px 0px rgba(166, 175, 195, 0.4);
+  --shadow-2: 0px 5px 12px 0px rgba(0, 0, 0, 0.1);
+  
+  /* Modern Enhanced Shadows */
+  --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+  --shadow-glow-secondary: 0 0 20px rgba(20, 184, 166, 0.15);
+  
+  /* Glassmorphism Effects */
+  --glass-backdrop: rgba(255, 255, 255, 0.25);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-backdrop-dark: rgba(17, 25, 40, 0.75);
+  --glass-border-gray-900: rgba(255, 255, 255, 0.125);
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  
+  /* Enhanced Typography - Phase 1.2 */
+  body {
+    font-family: "Inter", sans-serif;
+    font-size: clamp(16px, 1rem + 0.2vw, 18px);
+    line-height: 1.6;
+    color: var(--color-body-color);
+  }
+  
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  
+  h2 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  
+  h3 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  
+  h4 {
+    font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  
+  /* Smooth scrolling for better UX */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+.sticky {
+  @apply fixed transition z-[9999] bg-white/80 dark:bg-dark/80;
+  backdrop-filter: blur(5px);
+  box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
+}
+
+.sticky .navbar-logo {
+  @apply py-2;
+}
+
+.sticky #navbarToggler span {
+  @apply bg-dark dark:bg-white;
+}
+
+.sticky #navbarCollapse li > a {
+  @apply text-dark dark:text-white hover:text-primary dark:hover:text-primary hover:opacity-100;
+}
+#navbarCollapse li .ud-menu-scroll.active {
+  @apply opacity-70;
+}
+.sticky #navbarCollapse li .ud-menu-scroll.active {
+  @apply opacity-100 text-primary;
+}
+.sticky .loginBtn {
+  @apply text-dark dark:text-white hover:text-primary dark:hover:text-primary hover:opacity-100;
+}
+
+.sticky .signUpBtn {
+  @apply text-white bg-primary hover:bg-blue-dark hover:text-white;
+}
+
+.sticky #themeSwitcher ~ span {
+  @apply text-dark dark:text-white;
+}
+
+.navbarTogglerActive > span:nth-child(1) {
+  @apply top-[7px] rotate-45 transform;
+}
+.navbarTogglerActive > span:nth-child(2) {
+  @apply opacity-0;
+}
+.navbarTogglerActive > span:nth-child(3) {
+  @apply top-[-8px] rotate-[135deg];
+}
+
+/* Additional Play template styles */
+.ud-header {
+  @apply bg-white shadow-medium dark:bg-dark;
+}
+
+.bg-primary {
+  background-color: var(--color-primary) !important;
+}
+
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.hover\:bg-primary\/90:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, transparent) !important;
+}
+
+.border-primary {
+  border-color: var(--color-primary) !important;
+}
+
+.text-body-color {
+  color: var(--color-body-color);
+}
+
+.text-body-secondary {
+  color: var(--color-body-secondary);
+}
+
+.border-stroke {
+  border-color: var(--color-stroke);
+}
+
+.dark\:border-gray-900-3:is(.dark *) {
+  border-color: var(--color-dark-3);
+}
+
+.dark\:text-dark-6:is(.dark *) {
+  color: var(--color-dark-6);
+}
+
+.dark\:bg-dark-2:is(.dark *) {
+  background-color: var(--color-dark-2);
+}
+
+.placeholder\:text-dark-6::placeholder {
+  color: var(--color-dark-6);
+}
+
+.focus\:border-primary:focus {
+  border-color: var(--color-primary);
+}
+
+.dark\:focus\:border-primary:is(.dark *):focus {
+  border-color: var(--color-primary);
+}
+
+/* Modern Utility Classes - Phase 1.3 */
+
+/* Gradient Backgrounds */
+.bg-gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.bg-gradient-secondary {
+  background: var(--gradient-secondary);
+}
+
+.bg-gradient-mesh {
+  background: var(--gradient-mesh);
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+  background: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-card.dark {
+  background: var(--glass-backdrop-dark);
+  border-color: var(--glass-border-gray-900);
+}
+
+/* Enhanced Shadows */
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+.shadow-medium {
+  box-shadow: var(--shadow-medium);
+}
+
+.shadow-large {
+  box-shadow: var(--shadow-large);
+}
+
+.shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+.shadow-glow-secondary {
+  box-shadow: var(--shadow-glow-secondary);
+}
+
+/* Enhanced Interactive Elements */
+.btn-enhanced {
+  @apply transition-all duration-300 ease-in-out;
+  @apply transform hover:scale-105 hover:shadow-medium;
+  @apply active:scale-95;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.btn-enhanced:hover {
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-enhanced.primary {
+  background: var(--gradient-primary);
+  @apply text-white border-0;
+}
+
+.btn-enhanced.primary:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-enhanced.secondary {
+  background: var(--gradient-secondary);
+  @apply text-white border-0;
+}
+
+.btn-enhanced.secondary:hover {
+  box-shadow: var(--shadow-glow-secondary);
+}
+
+/* Card Enhancements */
+.card-enhanced {
+  @apply transition-all duration-300 ease-in-out;
+  @apply hover:shadow-large hover:-translate-y-1;
+  @apply bg-white/90 backdrop-blur-sm;
+  border: 1px solid var(--color-stroke);
+}
+
+.card-enhanced.dark {
+  @apply bg-dark-2/90;
+  border-color: var(--color-dark-3);
+}
+
+/* Mobile-first Touch Targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  @apply flex items-center justify-center;
+}
+
+/* Ripple Effect for Buttons */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple:before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.ripple:active:before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Loading Skeleton - Defined in Tailwind config */
+
+/* Smooth Page Transitions */
+.page-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+.fade-in {
+  @apply animate-[fadeIn_0.5s_ease-in];
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
