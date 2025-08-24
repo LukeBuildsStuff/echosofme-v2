@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getEleanorApiUrl } from '../utils/apiConfig';
 import Layout from '../components/Layout/Layout';
+import { useEcho } from '../contexts/EchoContext';
 
 interface Echo {
   id: string;
@@ -19,6 +21,8 @@ interface Message {
 }
 
 const Chat: React.FC = () => {
+  const location = useLocation();
+  const { isEchoReady, stats } = useEcho();
   const [selectedEcho, setSelectedEcho] = useState<Echo | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -54,6 +58,11 @@ const Chat: React.FC = () => {
   }, [messages]);
 
   const selectEcho = (echo: Echo) => {
+    // Don't allow selection if it's user's own Echo and it's not ready
+    if (echo.isOwn && !isEchoReady()) {
+      return;
+    }
+    
     setSelectedEcho(echo);
     
     // Set initial message based on selected Echo
@@ -174,12 +183,18 @@ const Chat: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {availableEchos.map((echo) => (
-                <div
-                  key={echo.id}
-                  onClick={() => selectEcho(echo)}
-                  className="bg-white rounded-lg p-6 shadow-sm border hover:shadow-md hover:border-primary/20 cursor-pointer transition-all"
-                >
+              {availableEchos.map((echo) => {
+                const isDisabled = echo.isOwn && !isEchoReady();
+                return (
+                  <div
+                    key={echo.id}
+                    onClick={() => !isDisabled && selectEcho(echo)}
+                    className={`bg-white rounded-lg p-6 shadow-sm border transition-all ${
+                      isDisabled 
+                        ? 'opacity-60 cursor-not-allowed' 
+                        : 'hover:shadow-md hover:border-primary/20 cursor-pointer'
+                    }`}
+                  >
                   <div className="flex items-center mb-4">
                     <div className="text-4xl mr-4">{echo.avatar}</div>
                     <div>
@@ -189,14 +204,36 @@ const Chat: React.FC = () => {
                   </div>
                   <p className="text-gray-600 mb-4">{echo.description}</p>
                   {echo.isOwn && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-xs text-blue-600">
-                        <span className="font-medium">Note:</span> Your Echo is still learning from your reflections. The more you share, the better it becomes at understanding you.
-                      </p>
+                    <div className={`rounded-lg p-3 ${
+                      isEchoReady() 
+                        ? 'bg-green-50 border border-green-200' 
+                        : 'bg-blue-50 border border-blue-200'
+                    }`}>
+                      {isEchoReady() ? (
+                        <p className="text-green-800 text-sm">
+                          <span className="font-medium">Ready:</span> Your Echo is fully trained and ready for conversations!
+                        </p>
+                      ) : (
+                        <div>
+                          <p className="text-blue-800 text-sm mb-2">
+                            <span className="font-medium">Training Progress:</span> {Math.round(stats.echoReadiness)}% complete
+                          </p>
+                          <div className="w-full bg-blue-200 rounded-full h-2 mb-2">
+                            <div 
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                              style={{ width: `${stats.echoReadiness}%` }}
+                            ></div>
+                          </div>
+                          <p className="text-blue-700 text-xs">
+                            Continue adding reflections to train your Echo. Need {2500 - stats.totalReflections} more reflections.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>

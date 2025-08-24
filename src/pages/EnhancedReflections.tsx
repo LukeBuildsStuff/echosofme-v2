@@ -3,9 +3,22 @@ import Layout from '../components/Layout/Layout';
 import TrainingProgress from '../components/TrainingProgress';
 import useQuestionLoader, { type Question } from '../components/QuestionLoader';
 import { useEcho } from '../contexts/EchoContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const EnhancedReflections: React.FC = () => {
-  const { categories, getDailyQuestion, getQuestionsByCategory } = useQuestionLoader();
+  const { user } = useAuth();
+  const { 
+    categories, 
+    getDailyQuestion, 
+    getMorningQuestion,
+    getAfternoonQuestion,
+    getQuestionsByCategory,
+    getCurrentReflectionPeriod,
+    hasCompletedMorningReflection,
+    hasCompletedAfternoonReflection,
+    getNextReflectionTime,
+    getRemainingCount
+  } = useQuestionLoader();
   const { addReflection, stats } = useEcho();
   
   const [selectedCategory, setSelectedCategory] = useState<string>('daily');
@@ -14,13 +27,43 @@ const EnhancedReflections: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [viewMode, setViewMode] = useState<'daily' | 'category' | 'all'>('daily');
+  const [currentPeriod, setCurrentPeriod] = useState<'morning' | 'afternoon' | 'none'>('none');
+  const [reflectionState, setReflectionState] = useState<'available' | 'completed' | 'waiting'>('available');
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
+    const period = getCurrentReflectionPeriod();
+    setCurrentPeriod(period);
+    
     if (viewMode === 'daily') {
-      const dailyQ = getDailyQuestion();
-      setCurrentQuestion(dailyQ);
+      // Check reflection availability and load appropriate question
+      if (period === 'morning' && !hasCompletedMorningReflection()) {
+        setCurrentQuestion(getMorningQuestion());
+        setReflectionState('available');
+      } else if (period === 'afternoon' && !hasCompletedAfternoonReflection()) {
+        setCurrentQuestion(getAfternoonQuestion());
+        setReflectionState('available');
+      } else if (
+        (period === 'morning' && hasCompletedMorningReflection()) ||
+        (period === 'afternoon' && hasCompletedAfternoonReflection() && hasCompletedMorningReflection()) ||
+        period === 'none'
+      ) {
+        setCurrentQuestion(null);
+        setReflectionState(
+          (hasCompletedMorningReflection() && hasCompletedAfternoonReflection()) ||
+          (period === 'morning' && hasCompletedMorningReflection() && !hasCompletedAfternoonReflection() && getCurrentReflectionPeriod() !== 'afternoon')
+          ? 'completed' : 'waiting'
+        );
+      } else {
+        setCurrentQuestion(null);
+        setReflectionState('waiting');
+      }
     }
-  }, [viewMode, getDailyQuestion]);
+  }, [viewMode, getCurrentReflectionPeriod, hasCompletedMorningReflection, hasCompletedAfternoonReflection, getMorningQuestion, getAfternoonQuestion]);
 
   const calculateQualityScore = (text: string): number => {
     const wordCount = text.trim().split(/\s+/).length;
@@ -66,6 +109,30 @@ const EnhancedReflections: React.FC = () => {
         qualityScore,
         tags: [] // Could add tag extraction later
       });
+
+      // Mark daily reflection as completed if it's a daily reflection
+      if (viewMode === 'daily') {
+        const today = new Date().toDateString();
+        const reflectionData = {
+          date: today,
+          questionId: currentQuestion.id,
+          completedAt: new Date().toISOString()
+        };
+
+        if (user?.email) {
+          if (currentPeriod === 'morning') {
+            const userSpecificKey = `echos_last_morning_reflection_${user.email}`;
+            localStorage.setItem(userSpecificKey, JSON.stringify(reflectionData));
+          } else if (currentPeriod === 'afternoon') {
+            const userSpecificKey = `echos_last_afternoon_reflection_${user.email}`;
+            localStorage.setItem(userSpecificKey, JSON.stringify(reflectionData));
+          }
+        }
+        
+        // Update reflection state
+        setReflectionState('completed');
+        setCurrentQuestion(null);
+      }
 
       // Show success message
       setShowSuccess(true);
@@ -173,7 +240,7 @@ const EnhancedReflections: React.FC = () => {
                         : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
-                    📅 Today's Question
+                    📅 Today's Question {currentPeriod !== 'none' && `(${currentPeriod === 'morning' ? '🌅 Morning' : '🌆 Afternoon'})`}
                   </button>
                   <button
                     onClick={() => setViewMode('category')}
@@ -208,9 +275,68 @@ const EnhancedReflections: React.FC = () => {
                         >
                           <div className="text-2xl mb-1">{category.icon}</div>
                           <div className="text-sm font-medium text-gray-900">{category.name}</div>
-                          <div className="text-xs text-gray-500">{category.count} questions</div>
+                          <div className="text-xs text-gray-500">{getRemainingCount(key)} remaining</div>
                         </button>
                       ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Daily Reflection Status Messages */}
+              {viewMode === 'daily' && reflectionState === 'completed' && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6 shadow-sm">
+                  <div className="text-center">
+                    <div className="text-4xl mb-3">✅</div>
+                    <h3 className="text-lg font-semibold text-green-800 mb-2">
+                      {hasCompletedMorningReflection() && hasCompletedAfternoonReflection()
+                        ? "Today's Reflections Complete!"
+                        : currentPeriod === 'morning'
+                        ? "Morning Reflection Complete!"
+                        : "Afternoon Reflection Complete!"
+                      }
+                    </h3>
+                    <p className="text-green-700 mb-4">
+                      {hasCompletedMorningReflection() && hasCompletedAfternoonReflection()
+                        ? "Great job! You've completed both your morning and afternoon reflections today."
+                        : currentPeriod === 'morning'
+                        ? "Excellent! Come back at 3 PM for your afternoon reflection."
+                        : "Wonderful! See you tomorrow morning for your next reflection."
+                      }
+                    </p>
+                    {getNextReflectionTime() && (
+                      <div className="text-sm text-green-600">
+                        Next reflection available: {getNextReflectionTime()?.time} ({getNextReflectionTime()?.period})
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {viewMode === 'daily' && reflectionState === 'waiting' && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 shadow-sm">
+                  <div className="text-center">
+                    <div className="text-4xl mb-3">⏰</div>
+                    <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                      Reflection Time Coming Soon
+                    </h3>
+                    <p className="text-blue-700 mb-4">
+                      {currentPeriod === 'none' && new Date().getHours() < 6
+                        ? "Your morning reflection will be available at 6:00 AM."
+                        : currentPeriod === 'none' && new Date().getHours() >= 21
+                        ? "Your next reflection will be available tomorrow at 6:00 AM."
+                        : hasCompletedMorningReflection() && !hasCompletedAfternoonReflection()
+                        ? "Your afternoon reflection will be available at 3:00 PM."
+                        : "Daily reflections are available from 6 AM - 3 PM (morning) and 3 PM - 9 PM (afternoon)."
+                      }
+                    </p>
+                    {getNextReflectionTime() && (
+                      <div className="text-sm text-blue-600">
+                        Next reflection: {getNextReflectionTime()?.time} ({getNextReflectionTime()?.period})
+                      </div>
+                    )}
+                    <div className="mt-4 text-sm text-blue-600">
+                      💡 You can still do unlimited reflections using the "By Category" tab above!
+                    </div>
                   </div>
                 </div>
               )}

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { useAuth } from './AuthContext';
 
 export interface SettingsData {
   theme: 'light' | 'dark' | 'auto';
@@ -6,6 +7,7 @@ export interface SettingsData {
   reminderTime: string;
   streakNotifications: boolean;
   emailUpdates: boolean;
+  eleanorInitiates: boolean;
 }
 
 interface SettingsContextType {
@@ -20,6 +22,7 @@ const defaultSettings: SettingsData = {
   reminderTime: '20:00',
   streakNotifications: true,
   emailUpdates: true,
+  eleanorInitiates: true,
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -37,20 +40,63 @@ interface SettingsProviderProps {
 }
 
 export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) => {
+  const { user } = useAuth();
   const [settings, setSettings] = useState<SettingsData>(defaultSettings);
 
-  // Load settings from localStorage on mount
+  // Load settings from localStorage when user changes
   useEffect(() => {
-    const savedSettings = localStorage.getItem('echos_settings');
+    let targetUserEmail = user?.email;
+    
+    if (!targetUserEmail) {
+      // No user logged in, try to get last logged-in user's settings
+      const lastUser = localStorage.getItem('echos_last_settings_user');
+      if (lastUser) {
+        targetUserEmail = lastUser;
+      }
+    } else {
+      // User is logged in, remember them as the last user for settings
+      localStorage.setItem('echos_last_settings_user', targetUserEmail);
+    }
+
+    if (!targetUserEmail) {
+      // No current user and no last user, use defaults
+      setSettings(defaultSettings);
+      return;
+    }
+
+    const userSpecificKey = `echos_settings_${targetUserEmail}`;
+    const savedSettings = localStorage.getItem(userSpecificKey);
+    
     if (savedSettings) {
       try {
         const parsedSettings = JSON.parse(savedSettings);
         setSettings({ ...defaultSettings, ...parsedSettings });
       } catch (error) {
         console.error('Error parsing saved settings:', error);
+        setSettings(defaultSettings);
+      }
+    } else {
+      // Check for old generic settings and migrate them
+      const oldSettings = localStorage.getItem('echos_settings');
+      if (oldSettings) {
+        try {
+          const parsedOldSettings = JSON.parse(oldSettings);
+          const migratedSettings = { ...defaultSettings, ...parsedOldSettings };
+          setSettings(migratedSettings);
+          // Save migrated settings with user-specific key
+          localStorage.setItem(userSpecificKey, JSON.stringify(migratedSettings));
+          // Remove old generic settings
+          localStorage.removeItem('echos_settings');
+        } catch (error) {
+          console.error('Error migrating old settings:', error);
+          setSettings(defaultSettings);
+        }
+      } else {
+        // No saved settings, use defaults
+        setSettings(defaultSettings);
       }
     }
-  }, []);
+  }, [user?.email]);
 
   // Apply theme to document
   useEffect(() => {
@@ -88,12 +134,23 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     
-    // Save to localStorage
-    localStorage.setItem('echos_settings', JSON.stringify(newSettings));
+    // Save to localStorage with user-specific key
+    if (user?.email) {
+      const userSpecificKey = `echos_settings_${user.email}`;
+      localStorage.setItem(userSpecificKey, JSON.stringify(newSettings));
+    }
   };
 
   const resetSettings = () => {
     setSettings(defaultSettings);
+    
+    // Remove user-specific settings
+    if (user?.email) {
+      const userSpecificKey = `echos_settings_${user.email}`;
+      localStorage.removeItem(userSpecificKey);
+    }
+    
+    // Also remove old generic settings if they exist
     localStorage.removeItem('echos_settings');
   };
 

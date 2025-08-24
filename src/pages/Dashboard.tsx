@@ -9,9 +9,13 @@ import useQuestionLoader from '../components/QuestionLoader'
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { stats } = useEcho()
-  const { getDailyQuestion } = useQuestionLoader()
-  const dailyQuestion = getDailyQuestion()
+  const { stats, getStatsChanges } = useEcho()
+  const statsChanges = getStatsChanges()
+  const { getMorningQuestion, getAfternoonQuestion, getCurrentReflectionPeriod } = useQuestionLoader()
+  
+  // Use the same time-aware logic as EnhancedReflections
+  const period = getCurrentReflectionPeriod()
+  const dailyQuestion = period === 'afternoon' ? getAfternoonQuestion() : getMorningQuestion()
 
   return (
     <Layout hideFooter={true}>
@@ -45,13 +49,22 @@ export default function Dashboard() {
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
                 <p className="text-2xl font-semibold text-gray-900">{stats.totalReflections}</p>
-                <p className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                  <svg className="h-3 w-3 flex-shrink-0 self-center text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                  <span className="sr-only"> Increased by </span>
-                  12%
-                </p>
+                {statsChanges.totalReflectionsChange !== 0 && (
+                  <p className={`ml-2 flex items-baseline text-sm font-semibold ${
+                    statsChanges.totalReflectionsChange > 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    <svg className={`h-3 w-3 flex-shrink-0 self-center ${
+                      statsChanges.totalReflectionsChange > 0 ? 'text-green-500' : 'text-red-500'
+                    }`} fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d={statsChanges.totalReflectionsChange > 0 
+                        ? "M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                        : "M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z"
+                      } clipRule="evenodd" />
+                    </svg>
+                    <span className="sr-only">{statsChanges.totalReflectionsChange > 0 ? 'Increased' : 'Decreased'} by </span>
+                    {Math.abs(statsChanges.totalReflectionsChange)}%
+                  </p>
+                )}
               </dd>
             </div>
 
@@ -66,12 +79,22 @@ export default function Dashboard() {
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
                 <p className="text-2xl font-semibold text-gray-900">{stats.categoriesCovered.length}</p>
-                <p className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                  <svg className="h-3 w-3 flex-shrink-0 self-center text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                  8%
-                </p>
+                {statsChanges.categoriesCoveredChange !== 0 && (
+                  <p className={`ml-2 flex items-baseline text-sm font-semibold ${
+                    statsChanges.categoriesCoveredChange > 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    <svg className={`h-3 w-3 flex-shrink-0 self-center ${
+                      statsChanges.categoriesCoveredChange > 0 ? 'text-green-500' : 'text-red-500'
+                    }`} fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d={statsChanges.categoriesCoveredChange > 0 
+                        ? "M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                        : "M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z"
+                      } clipRule="evenodd" />
+                    </svg>
+                    <span className="sr-only">{statsChanges.categoriesCoveredChange > 0 ? 'Increased' : 'Decreased'} by </span>
+                    {Math.abs(statsChanges.categoriesCoveredChange)}%
+                  </p>
+                )}
               </dd>
             </div>
 
@@ -86,12 +109,22 @@ export default function Dashboard() {
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
                 <p className="text-2xl font-semibold text-gray-900">{Math.round(stats.averageQualityScore * 100)}%</p>
-                <p className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                  <svg className="h-3 w-3 flex-shrink-0 self-center text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                  23%
-                </p>
+                {statsChanges.averageQualityScoreChange !== 0 && (
+                  <p className={`ml-2 flex items-baseline text-sm font-semibold ${
+                    statsChanges.averageQualityScoreChange > 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    <svg className={`h-3 w-3 flex-shrink-0 self-center ${
+                      statsChanges.averageQualityScoreChange > 0 ? 'text-green-500' : 'text-red-500'
+                    }`} fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d={statsChanges.averageQualityScoreChange > 0 
+                        ? "M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                        : "M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z"
+                      } clipRule="evenodd" />
+                    </svg>
+                    <span className="sr-only">{statsChanges.averageQualityScoreChange > 0 ? 'Increased' : 'Decreased'} by </span>
+                    {Math.abs(statsChanges.averageQualityScoreChange)}%
+                  </p>
+                )}
               </dd>
             </div>
 
@@ -106,12 +139,22 @@ export default function Dashboard() {
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
                 <p className="text-2xl font-semibold text-gray-900">{stats.currentStreak}</p>
-                <p className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                  <svg className="h-3 w-3 flex-shrink-0 self-center text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                  5%
-                </p>
+                {statsChanges.currentStreakChange !== 0 && (
+                  <p className={`ml-2 flex items-baseline text-sm font-semibold ${
+                    statsChanges.currentStreakChange > 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    <svg className={`h-3 w-3 flex-shrink-0 self-center ${
+                      statsChanges.currentStreakChange > 0 ? 'text-green-500' : 'text-red-500'
+                    }`} fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d={statsChanges.currentStreakChange > 0 
+                        ? "M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                        : "M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z"
+                      } clipRule="evenodd" />
+                    </svg>
+                    <span className="sr-only">{statsChanges.currentStreakChange > 0 ? 'Increased' : 'Decreased'} by </span>
+                    {Math.abs(statsChanges.currentStreakChange)}%
+                  </p>
+                )}
               </dd>
             </div>
           </dl>
@@ -137,7 +180,7 @@ export default function Dashboard() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="truncate text-sm font-medium text-gray-500">Chat with your Echo</dt>
+                    <dt className="truncate text-sm font-medium text-gray-500">Chat with Shared Echos</dt>
                     <dd>
                       <div className="text-lg font-medium text-gray-900">Your Digital Companion</div>
                     </dd>
@@ -149,12 +192,12 @@ export default function Dashboard() {
                   <p className="text-sm text-gray-600 italic">
                     "I'm here to listen and understand. Share your thoughts, and let's explore them together."
                   </p>
-                  <p className="mt-2 text-xs text-gray-500">- Your Echo</p>
+                  <p className="mt-2 text-xs text-gray-500">- Shared Echos</p>
                 </div>
                 <div className="mt-6">
                   <Button 
                     onClick={() => navigate('/chat')}
-                    className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 min-h-[44px]"
+                    className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white min-h-[44px]"
                   >
                     Start Conversation
                   </Button>
@@ -246,7 +289,7 @@ export default function Dashboard() {
               </svg>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full" disabled>
+              <Button variant="outline" className="w-full" onClick={() => navigate('/settings')}>
                 Manage Settings
               </Button>
             </CardContent>

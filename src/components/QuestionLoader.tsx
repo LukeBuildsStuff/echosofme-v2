@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import questionsData from '../data/questions.json';
+import { useAuth } from '../contexts/AuthContext';
 
 export interface Question {
   id: number;
@@ -16,75 +17,70 @@ export interface QuestionCategory {
 }
 
 const CATEGORIES: Record<string, QuestionCategory> = {
-  hobbies: {
-    name: 'Hobbies & Interests',
-    count: 0,
-    color: 'bg-purple-500',
-    icon: '🎨'
-  },
-  education: {
-    name: 'Education & Learning',
-    count: 0,
-    color: 'bg-blue-500',
-    icon: '📚'
-  },
-  career: {
-    name: 'Career & Work',
-    count: 0,
-    color: 'bg-green-500',
-    icon: '💼'
-  },
-  personal: {
-    name: 'Personal Growth',
+  personal_identity: {
+    name: 'Personal Identity & Character',
     count: 0,
     color: 'bg-indigo-500',
-    icon: '🌱'
+    icon: '🌟'
   },
-  family_parenting: {
-    name: 'Family & Parenting',
-    count: 0,
-    color: 'bg-rose-500',
-    icon: '👨‍👩‍👧‍👦'
-  },
-  friendships_social: {
-    name: 'Friendships & Social',
-    count: 0,
-    color: 'bg-amber-500',
-    icon: '👥'
-  },
-  romantic_love: {
-    name: 'Love & Romance',
-    count: 0,
-    color: 'bg-pink-500',
-    icon: '💕'
-  },
-  daily_life: {
-    name: 'Daily Life',
-    count: 0,
-    color: 'bg-cyan-500',
-    icon: '🏠'
-  },
-  personal_history: {
-    name: 'Personal History',
+  memories_experiences: {
+    name: 'Memories & Life Experiences',
     count: 0,
     color: 'bg-orange-500',
     icon: '📖'
   },
-  philosophy_values: {
+  daily_life: {
+    name: 'Daily Life & Routines',
+    count: 0,
+    color: 'bg-cyan-500',
+    icon: '🏠'
+  },
+  relationships_all: {
+    name: 'Relationships & Social',
+    count: 0,
+    color: 'bg-rose-500',
+    icon: '❤️'
+  },
+  values_philosophy: {
     name: 'Values & Philosophy',
     count: 0,
     color: 'bg-violet-500',
     icon: '🤔'
   },
-  life_milestones: {
-    name: 'Life Milestones',
+  career_purpose: {
+    name: 'Career & Purpose',
+    count: 0,
+    color: 'bg-green-500',
+    icon: '💼'
+  },
+  interests_passions: {
+    name: 'Interests & Passions',
+    count: 0,
+    color: 'bg-purple-500',
+    icon: '🎨'
+  },
+  education_learning: {
+    name: 'Education & Learning',
+    count: 0,
+    color: 'bg-blue-500',
+    icon: '📚'
+  },
+  dreams_aspirations: {
+    name: 'Dreams & Aspirations',
     count: 0,
     color: 'bg-emerald-500',
-    icon: '🏆'
+    icon: '✨'
+  },
+  fun_hypotheticals: {
+    name: 'Fun & Hypotheticals',
+    count: 0,
+    color: 'bg-amber-500',
+    icon: '🎯'
   }
 };
 
 const useQuestionLoader = () => {
+  const { user } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [categories, setCategories] = useState<Record<string, QuestionCategory>>(CATEGORIES);
   const [selectedQuestionsByCategory, setSelectedQuestionsByCategory] = useState<Record<string, Set<number>>>({});
@@ -94,13 +90,20 @@ const useQuestionLoader = () => {
     const loadedQuestions = questionsData as Question[];
     setQuestions(loadedQuestions);
     
-    // Update category counts
+    // Reset and update category counts
     const updatedCategories = { ...CATEGORIES };
+    // Reset all counts to 0 first
+    Object.keys(updatedCategories).forEach(cat => {
+      updatedCategories[cat].count = 0;
+    });
+    
+    // Count questions in each category
     loadedQuestions.forEach(q => {
       if (updatedCategories[q.category]) {
         updatedCategories[q.category].count++;
       }
     });
+    
     setCategories(updatedCategories);
     
     // Initialize selected questions tracking
@@ -115,6 +118,48 @@ const useQuestionLoader = () => {
     return questions.filter(q => q.category === category);
   };
 
+  // Helper functions for daily reflection scheduling
+  const getCurrentReflectionPeriod = (): 'morning' | 'afternoon' | 'none' => {
+    const now = new Date();
+    const hour = now.getHours();
+    
+    if (hour >= 6 && hour < 15) return 'morning'; // 6 AM - 3 PM
+    if (hour >= 15 && hour < 21) return 'afternoon'; // 3 PM - 9 PM
+    return 'none';
+  };
+
+  const hasCompletedMorningReflection = (): boolean => {
+    if (!user?.email) return false;
+    
+    const today = new Date().toDateString();
+    const userSpecificKey = `echos_last_morning_reflection_${user.email}`;
+    const lastMorning = localStorage.getItem(userSpecificKey);
+    if (!lastMorning) return false;
+    
+    try {
+      const data = JSON.parse(lastMorning);
+      return data.date === today;
+    } catch {
+      return false;
+    }
+  };
+
+  const hasCompletedAfternoonReflection = (): boolean => {
+    if (!user?.email) return false;
+    
+    const today = new Date().toDateString();
+    const userSpecificKey = `echos_last_afternoon_reflection_${user.email}`;
+    const lastAfternoon = localStorage.getItem(userSpecificKey);
+    if (!lastAfternoon) return false;
+    
+    try {
+      const data = JSON.parse(lastAfternoon);
+      return data.date === today;
+    } catch {
+      return false;
+    }
+  };
+
   const getDailyQuestion = (): Question | null => {
     // Simple algorithm: use date to determine which question to show
     const today = new Date();
@@ -122,6 +167,45 @@ const useQuestionLoader = () => {
     const questionIndex = dayOfYear % questions.length;
     
     return questions[questionIndex] || null;
+  };
+
+  const getMorningQuestion = (): Question | null => {
+    // Use date + "morning" seed for consistent morning questions
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    const morningIndex = (dayOfYear * 2) % questions.length; // Different from afternoon
+    
+    return questions[morningIndex] || null;
+  };
+
+  const getAfternoonQuestion = (): Question | null => {
+    // Use date + "afternoon" seed for different afternoon questions
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    const afternoonIndex = (dayOfYear * 2 + 1) % questions.length; // Different from morning
+    
+    return questions[afternoonIndex] || null;
+  };
+
+  const getNextReflectionTime = (): { time: string; period: string } | null => {
+    const now = new Date();
+    const hour = now.getHours();
+    
+    if (hour < 6) {
+      return { time: '6:00 AM', period: 'morning' };
+    } else if (hour < 15) {
+      if (!hasCompletedMorningReflection()) return null; // Morning is available now
+      return { time: '3:00 PM', period: 'afternoon' };
+    } else if (hour < 21) {
+      if (!hasCompletedAfternoonReflection()) return null; // Afternoon is available now
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return { time: '6:00 AM', period: 'morning' };
+    } else {
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return { time: '6:00 AM', period: 'morning' };
+    }
   };
 
   const getRandomQuestionFromCategory = (category: string): Question | null => {
@@ -162,16 +246,29 @@ const useQuestionLoader = () => {
     return total;
   };
 
+  const getRemainingCount = (category: string): number => {
+    const totalQuestions = categories[category]?.count || 0;
+    const answeredQuestions = selectedQuestionsByCategory[category]?.size || 0;
+    return totalQuestions - answeredQuestions;
+  };
+
   return {
     questions,
     categories,
     getDailyQuestion,
+    getMorningQuestion,
+    getAfternoonQuestion,
     getQuestionsByCategory,
+    getCurrentReflectionPeriod,
+    hasCompletedMorningReflection,
+    hasCompletedAfternoonReflection,
+    getNextReflectionTime,
     getRandomQuestionFromCategory,
     markQuestionAsAnswered,
     getCategoryProgress,
     getTotalProgress,
     getAnsweredCount,
+    getRemainingCount,
     totalQuestions: questions.length
   };
 };

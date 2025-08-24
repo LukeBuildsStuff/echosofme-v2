@@ -103,7 +103,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                       <li className="relative group">
                         <Link
                           to="/dashboard"
-                          className={`flex py-2 mx-8 text-base font-medium text-dark group-hover:text-primary dark:text-white lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:text-dark lg:group-hover:text-primary xl:ml-10`}
+                          className={`flex py-2 mx-8 text-base font-medium text-dark group-hover:text-primary dark:text-white lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:group-hover:text-primary xl:ml-10`}
                         >
                           Dashboard
                         </Link>
@@ -111,7 +111,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                       <li className="relative group">
                         <Link
                           to="/chat"
-                          className={`flex py-2 mx-8 text-base font-medium text-dark group-hover:text-primary dark:text-white lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:text-dark lg:group-hover:text-primary xl:ml-10`}
+                          className={`flex py-2 mx-8 text-base font-medium text-dark group-hover:text-primary dark:text-white lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:group-hover:text-primary xl:ml-10`}
                         >
                           Echo Chat
                         </Link>
@@ -119,7 +119,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                       <li className="relative group">
                         <Link
                           to="/reflections"
-                          className={`flex py-2 mx-8 text-base font-medium text-dark group-hover:text-primary dark:text-white lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:text-dark lg:group-hover:text-primary xl:ml-10`}
+                          className={`flex py-2 mx-8 text-base font-medium text-dark group-hover:text-primary dark:text-white lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:group-hover:text-primary xl:ml-10`}
                         >
                           Reflections
                         </Link>
@@ -127,7 +127,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                       <li className="relative group">
                         <Link
                           to="/legacy"
-                          className={`flex py-2 mx-8 text-base font-medium text-dark group-hover:text-primary dark:text-white lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:text-dark lg:group-hover:text-primary xl:ml-10`}
+                          className={`flex py-2 mx-8 text-base font-medium text-dark group-hover:text-primary dark:text-white lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:group-hover:text-primary xl:ml-10`}
                         >
                           Legacy
                         </Link>

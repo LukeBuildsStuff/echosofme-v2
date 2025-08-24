@@ -1,9 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { EchoProvider } from './contexts/EchoContext'
 import { SettingsProvider } from './contexts/SettingsContext'
 import { ToastProvider } from './contexts/ToastContext'
+import { EleanorNotificationProvider, useEleanorNotification } from './contexts/EleanorNotificationContext'
 import ErrorBoundary from './components/ErrorBoundary'
+import EleanorNotification from './components/EleanorNotification'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -19,10 +21,34 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />
 }
 
+function AppRoutesWithNotifications() {
+  const { currentNotification, dismissNotification } = useEleanorNotification();
+  const navigate = useNavigate();
+
+  const handleNotificationClick = () => {
+    const message = currentNotification?.message;
+    dismissNotification();
+    // Pass Eleanor's message to the chat
+    navigate('/chat', { state: { eleanorMessage: message } });
+  };
+
+  return (
+    <>
+      {currentNotification && (
+        <EleanorNotification
+          message={currentNotification.message}
+          onDismiss={dismissNotification}
+          onClick={handleNotificationClick}
+        />
+      )}
+      <AppRoutes />
+    </>
+  );
+}
+
 function AppRoutes() {
   return (
-    <Router>
-      <Routes>
+    <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -71,7 +97,6 @@ function AppRoutes() {
         
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </Router>
   )
 }
 
@@ -79,13 +104,17 @@ function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <SettingsProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <SettingsProvider>
             <EchoProvider>
-              <AppRoutes />
+              <EleanorNotificationProvider>
+                <Router>
+                  <AppRoutesWithNotifications />
+                </Router>
+              </EleanorNotificationProvider>
             </EchoProvider>
-          </AuthProvider>
-        </SettingsProvider>
+          </SettingsProvider>
+        </AuthProvider>
       </ToastProvider>
     </ErrorBoundary>
   )

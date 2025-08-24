@@ -1,6 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: #6366F1;
   --color-primary-light: #818CF8;
@@ -211,9 +213,7 @@
 }
 
 /* Additional Play template styles */
-.ud-header {
-  @apply bg-white shadow-medium dark:bg-dark;
-}
+/* Removed .ud-header background styles to prevent conflicts with inline Tailwind classes */
 
 .bg-primary {
   background-color: var(--color-primary) !important;
@@ -254,6 +254,7 @@
 .dark\:bg-dark-2:is(.dark *) {
   background-color: var(--color-dark-2);
 }
+
 
 .placeholder\:text-dark-6::placeholder {
   color: var(--color-dark-6);
@@ -405,4 +406,19 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInTop {
+  from { 
+    opacity: 0; 
+    transform: translateY(-100%) translateX(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) translateX(0); 
+  }
+}
+
+.animate-slide-in-top {
+  animation: slideInTop 0.4s ease-out;
 }

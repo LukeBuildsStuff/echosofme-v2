@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { getEleanorApiUrl } from '../utils/apiConfig';
+import { useAuth } from './AuthContext';
 
 export interface Reflection {
   id: string;
@@ -23,6 +24,18 @@ export interface EchoStats {
   echoReadiness: number; // 0-100 percentage
 }
 
+export interface HistoricalStats {
+  stats: EchoStats;
+  timestamp: string;
+}
+
+export interface StatsChanges {
+  totalReflectionsChange: number;
+  categoriesCoveredChange: number;
+  averageQualityScoreChange: number;
+  currentStreakChange: number;
+}
+
 export interface EchoPersonality {
   name: string;
   description: string;
@@ -42,6 +55,7 @@ interface EchoContextType {
   // Statistics
   stats: EchoStats;
   updateStats: () => void;
+  getStatsChanges: () => StatsChanges;
   
   // Personality
   personality: EchoPersonality;
@@ -86,6 +100,7 @@ interface EchoProviderProps {
 }
 
 export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
+  const { user } = useAuth();
   const [reflections, setReflections] = useState<Reflection[]>([]);
   const [stats, setStats] = useState<EchoStats>({
     totalReflections: 0,
@@ -96,6 +111,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     longestStreak: 0,
     echoReadiness: 0
   });
+  const [previousStats, setPreviousStats] = useState<EchoStats | null>(null);
   const [personality, setPersonality] = useState<EchoPersonality>({
     name: 'Your Echo',
     description: 'Still learning your unique voice...',
@@ -105,8 +121,12 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
   });
 
   useEffect(() => {
-    loadReflections();
-  }, []);
+    if (user?.email) {
+      // Clear existing reflections when user changes
+      setReflections([]);
+      loadReflections();
+    }
+  }, [user?.email]);
 
   useEffect(() => {
     if (reflections.length > 0) {
@@ -115,12 +135,23 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     }
   }, [reflections]);
 
+  useEffect(() => {
+    if (user?.email) {
+      loadPreviousStats();
+    }
+  }, [user?.email]);
+
   const loadReflections = async (retryCount = 0) => {
     const maxRetries = 3;
     const retryDelay = 1000; // 1 second
     
     try {
-      const userEmail = 'lukemoeller@yahoo.com'; // TODO: Get from authentication context
+      if (!user?.email) {
+        console.log('⚠️ No user email available, skipping reflection loading');
+        return;
+      }
+      
+      const userEmail = user.email;
       const apiUrl = getEleanorApiUrl();
       console.log('📊 Loading reflections from:', `${apiUrl}/reflections/${userEmail}`, retryCount > 0 ? `(retry ${retryCount})` : '');
       
@@ -128,7 +159,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
-      const response = await fetch(`${apiUrl}/reflections/${userEmail}`, {
+      const response = await fetch(`${apiUrl}/reflections/${userEmail}?limit=5000`, {
         signal: controller.signal,
         headers: {
           'Accept': 'application/json',
@@ -178,7 +209,8 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
       // Only fall back to localStorage after all retries failed
       console.log('📱 All retries failed, falling back to localStorage...');
       try {
-        const saved = localStorage.getItem('echos_reflections');
+        const userSpecificKey = `echos_reflections_${user.email}`;
+        const saved = localStorage.getItem(userSpecificKey);
         if (saved) {
           const loadedReflections = JSON.parse(saved);
           console.log('✅ Loaded from localStorage:', loadedReflections.length, 'items');
@@ -220,8 +252,11 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
   const addReflection = async (reflectionData: Omit<Reflection, 'id' | 'createdAt'>) => {
     try {
-      const userEmail = 'lukemoeller@yahoo.com'; // TODO: Get from authentication context
+      if (!user?.email) {
+        throw new Error('User email not available');
+      }
       
+      const userEmail = user.email;
       const apiUrl = getEleanorApiUrl();
       const response = await fetch(`${apiUrl}/reflections`, {
         method: 'POST',
@@ -271,7 +306,8 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
       const updatedReflections = [...reflections, newReflection];
       try {
-        localStorage.setItem('echos_reflections', JSON.stringify(updatedReflections));
+        const userSpecificKey = `echos_reflections_${user.email}`;
+        localStorage.setItem(userSpecificKey, JSON.stringify(updatedReflections));
         setReflections(updatedReflections);
       } catch (localError) {
         console.error('Error saving to localStorage:', localError);
@@ -281,7 +317,11 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
   const updateReflection = async (id: string, updatedReflection: Partial<Reflection>) => {
     try {
-      const userEmail = 'lukemoeller@yahoo.com'; // TODO: Get from authentication context
+      if (!user?.email) {
+        throw new Error('User email not available');
+      }
+      
+      const userEmail = user.email;
       
       // Find the reflection to update
       const existingReflection = reflections.find(r => r.id === id);
@@ -330,8 +370,11 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
   const deleteReflection = async (id: string) => {
     try {
-      const userEmail = 'lukemoeller@yahoo.com'; // TODO: Get from authentication context
+      if (!user?.email) {
+        throw new Error('User email not available');
+      }
       
+      const userEmail = user.email;
       const apiUrl = getEleanorApiUrl();
       const response = await fetch(`${apiUrl}/reflections/${id}?user_email=${encodeURIComponent(userEmail)}`, {
         method: 'DELETE',
@@ -351,6 +394,55 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
   const getReflectionsByCategory = (category: string): Reflection[] => {
     return reflections.filter(r => r.category === category);
+  };
+
+  const loadPreviousStats = () => {
+    if (!user?.email) return;
+    
+    const userSpecificKey = `echos_stats_history_${user.email}`;
+    const saved = localStorage.getItem(userSpecificKey);
+    
+    if (saved) {
+      try {
+        const history: HistoricalStats[] = JSON.parse(saved);
+        if (history.length > 0) {
+          setPreviousStats(history[history.length - 1].stats);
+        }
+      } catch (error) {
+        console.error('Error loading previous stats:', error);
+      }
+    }
+  };
+
+  const saveStatsHistory = (newStats: EchoStats) => {
+    if (!user?.email) return;
+    
+    const userSpecificKey = `echos_stats_history_${user.email}`;
+    const saved = localStorage.getItem(userSpecificKey);
+    
+    let history: HistoricalStats[] = [];
+    if (saved) {
+      try {
+        history = JSON.parse(saved);
+      } catch (error) {
+        console.error('Error parsing stats history:', error);
+      }
+    }
+    
+    // Save current stats as historical data
+    const now = new Date().toISOString();
+    const newHistoryEntry: HistoricalStats = {
+      stats: newStats,
+      timestamp: now
+    };
+    
+    // Keep only last 30 entries to prevent localStorage bloat
+    history.push(newHistoryEntry);
+    if (history.length > 30) {
+      history = history.slice(-30);
+    }
+    
+    localStorage.setItem(userSpecificKey, JSON.stringify(history));
   };
 
   const updateStats = () => {
@@ -373,8 +465,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     // Calculate streaks
     const { currentStreak, longestStreak } = calculateStreaks();
 
-    setStats(prevStats => ({
-      ...prevStats,
+    const newStats = {
       totalReflections,
       categoriesCovered,
       averageWordCount,
@@ -382,7 +473,15 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
       currentStreak,
       longestStreak,
       echoReadiness
-    }));
+    };
+
+    // Save previous stats before updating
+    if (stats.totalReflections > 0) {
+      setPreviousStats(stats);
+      saveStatsHistory(stats);
+    }
+
+    setStats(newStats);
   };
 
   const calculateStreaks = (): { currentStreak: number; longestStreak: number } => {
@@ -509,6 +608,40 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     return stats.currentStreak;
   };
 
+  const getStatsChanges = (): StatsChanges => {
+    if (!previousStats) {
+      return {
+        totalReflectionsChange: 0,
+        categoriesCoveredChange: 0,
+        averageQualityScoreChange: 0,
+        currentStreakChange: 0
+      };
+    }
+
+    const totalReflectionsChange = previousStats.totalReflections > 0 
+      ? ((stats.totalReflections - previousStats.totalReflections) / previousStats.totalReflections) * 100
+      : 0;
+      
+    const categoriesCoveredChange = previousStats.categoriesCovered.length > 0
+      ? ((stats.categoriesCovered.length - previousStats.categoriesCovered.length) / previousStats.categoriesCovered.length) * 100
+      : 0;
+      
+    const averageQualityScoreChange = previousStats.averageQualityScore > 0
+      ? ((stats.averageQualityScore - previousStats.averageQualityScore) / previousStats.averageQualityScore) * 100
+      : 0;
+      
+    const currentStreakChange = previousStats.currentStreak > 0
+      ? ((stats.currentStreak - previousStats.currentStreak) / previousStats.currentStreak) * 100
+      : stats.currentStreak > 0 ? 100 : 0; // If streak went from 0 to something, that's 100% increase
+
+    return {
+      totalReflectionsChange: Math.round(totalReflectionsChange),
+      categoriesCoveredChange: Math.round(categoriesCoveredChange),
+      averageQualityScoreChange: Math.round(averageQualityScoreChange),
+      currentStreakChange: Math.round(currentStreakChange)
+    };
+  };
+
   const value = {
     reflections,
     addReflection,
@@ -517,6 +650,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     getReflectionsByCategory,
     stats,
     updateStats,
+    getStatsChanges,
     personality,
     updatePersonality,
     isEchoReady,
