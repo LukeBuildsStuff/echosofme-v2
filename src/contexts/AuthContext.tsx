@@ -20,6 +20,7 @@ interface AuthContextType {
   login: (userData: User) => void;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
+  clearAllUserData: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,34 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         if (auth === 'true' && userProfile) {
           const userData = JSON.parse(userProfile);
-          
-          // Also check for user-specific profile for better persistence
-          const userSpecificKey = `echos_user_profile_${userData.email}`;
-          const savedProfile = localStorage.getItem(userSpecificKey);
-          
-          if (savedProfile) {
-            try {
-              const parsedSavedProfile = JSON.parse(savedProfile);
-              // Deep merge with user-specific saved data
-              const mergedData = {
-                ...userData,
-                ...parsedSavedProfile,
-                profile: {
-                  ...userData.profile,
-                  ...parsedSavedProfile.profile,
-                },
-                email: userData.email, // Keep original email
-                id: userData.id, // Keep original id
-              };
-              setUser(mergedData);
-            } catch (error) {
-              console.error('Error loading saved user-specific profile:', error);
-              setUser(userData);
-            }
-          } else {
-            setUser(userData);
-          }
-          
+          setUser(userData);
           setIsAuthenticated(true);
         }
       } catch (error) {
@@ -95,36 +69,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = (userData: User) => {
     try {
-      // Check for existing user profile for this email
-      const userSpecificKey = `echos_user_profile_${userData.email}`;
-      const existingProfile = localStorage.getItem(userSpecificKey);
+      console.log('🔍 AUTH - Login called with displayName:', userData.displayName);
       
-      let finalUserData = userData;
-      if (existingProfile) {
-        try {
-          const savedProfile = JSON.parse(existingProfile);
-          // Deep merge saved profile with login data, prioritizing saved profile for customizations
-          finalUserData = {
-            ...userData,
-            ...savedProfile,
-            profile: {
-              ...userData.profile,
-              ...savedProfile.profile,
-            },
-            email: userData.email, // Always use login email
-            id: userData.id, // Use current session ID
-          };
-        } catch (error) {
-          console.error('Error loading saved profile:', error);
-        }
-      }
-      
+      // Login.tsx now provides the correct user data, so we can use it directly
       localStorage.setItem('echos_authenticated', 'true');
-      localStorage.setItem('echos_user_profile', JSON.stringify(finalUserData)); // Current user (for checkAuth)
-      localStorage.setItem(userSpecificKey, JSON.stringify(finalUserData)); // User-specific backup
-      localStorage.setItem('echos_current_user', finalUserData.id);
+      localStorage.setItem('echos_user_profile', JSON.stringify(userData)); // Current user (for checkAuth)
       
-      setUser(finalUserData);
+      // Save to user-specific key for persistence across sessions
+      // Normalize email to ensure consistent key usage
+      const normalizedEmail = userData.email.toLowerCase().trim();
+      const userSpecificKey = `echos_user_profile_${normalizedEmail}`;
+      
+      // Trust Login.tsx - it already loaded the correct saved profile
+      localStorage.setItem(userSpecificKey, JSON.stringify(userData));
+      console.log('🔍 AUTH - Saved to key:', userSpecificKey, 'displayName:', userData.displayName);
+      
+      localStorage.setItem('echos_current_user', userData.id);
+      
+      setUser(userData);
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Error during login:', error);
@@ -134,25 +96,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     try {
-      // Clear all authentication and user data
+      // Clear ONLY session data on logout (preserve user preferences/profile)
       localStorage.removeItem('echos_authenticated');
-      localStorage.removeItem('echos_user_profile');
-      localStorage.removeItem('echos_user_settings');
+      localStorage.removeItem('echos_user_profile'); // Current session profile
       localStorage.removeItem('echos_current_user');
       
-      // Optionally clear user-specific data
-      const clearUserData = window.confirm('Do you want to clear all your saved data (reflections, chat history, etc.)?');
-      if (clearUserData && user?.email) {
-        localStorage.removeItem('echos_reflections');
-        localStorage.removeItem('echos_chat_sessions');
-        localStorage.removeItem('echos_chat_messages');
-        localStorage.removeItem('echos_memories');
-        localStorage.removeItem('echos_insights');
-        
-        // Also remove user-specific profile
-        const userSpecificKey = `echos_user_profile_${user.email}`;
-        localStorage.removeItem(userSpecificKey);
-      }
+      // User-specific data remains for next login: echos_user_profile_${email}
+      console.log('🔍 LOGOUT - Session cleared, user data preserved for next login');
       
       setUser(null);
       setIsAuthenticated(false);
@@ -161,17 +111,73 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const clearAllUserData = () => {
+    if (!user?.email) return;
+    
+    const confirmClear = window.confirm(
+      'Are you sure you want to permanently delete ALL your data? This includes:\n' +
+      '• Your profile and settings\n' +
+      '• All reflections and memories\n' +
+      '• Chat history\n' +
+      '• All other saved data\n\n' +
+      'This action cannot be undone!'
+    );
+    
+    if (confirmClear) {
+      try {
+        // Clear ALL user data
+        localStorage.removeItem('echos_user_profile');
+        localStorage.removeItem('echos_user_settings');
+        localStorage.removeItem('echos_reflections');
+        localStorage.removeItem('echos_chat_sessions');
+        localStorage.removeItem('echos_chat_messages');
+        localStorage.removeItem('echos_memories');
+        localStorage.removeItem('echos_insights');
+        
+        // Remove user-specific profile
+        const normalizedEmail = user.email.toLowerCase().trim();
+        const userSpecificKey = `echos_user_profile_${normalizedEmail}`;
+        localStorage.removeItem(userSpecificKey);
+        
+        console.log('🔍 CLEAR DATA - All user data deleted');
+        
+        // Also log them out since their profile is gone
+        logout();
+        
+        return true; // Success
+      } catch (error) {
+        console.error('Error clearing user data:', error);
+        return false;
+      }
+    }
+    
+    return false; // User cancelled
+  };
+
   const updateUser = (userData: Partial<User>) => {
     if (!user) return;
     
     try {
-      const updatedUser = { ...user, ...userData };
+      // Deep merge for profile to prevent losing nested fields
+      const updatedUser = {
+        ...user,
+        ...userData,
+        profile: userData.profile ? {
+          ...user.profile,      // Keep existing profile fields
+          ...userData.profile   // Merge new profile fields
+        } : user.profile       // Keep existing if no profile update
+      };
+      
+      console.log('🔍 UPDATE - Saving user with displayName:', updatedUser.displayName);
       
       // Save to both global key (for checkAuth) and user-specific key (for persistence)
       localStorage.setItem('echos_user_profile', JSON.stringify(updatedUser));
       if (updatedUser.email) {
-        const userSpecificKey = `echos_user_profile_${updatedUser.email}`;
+        // Normalize email for consistent key usage
+        const normalizedEmail = updatedUser.email.toLowerCase().trim();
+        const userSpecificKey = `echos_user_profile_${normalizedEmail}`;
         localStorage.setItem(userSpecificKey, JSON.stringify(updatedUser));
+        console.log('🔍 UPDATE - Saved to key:', userSpecificKey);
       }
       
       setUser(updatedUser);
@@ -186,6 +192,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     updateUser,
+    clearAllUserData,
   };
 
   // Show loading state while checking authentication

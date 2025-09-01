@@ -24,20 +24,93 @@ const Login: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create user object
-    const user = {
-      id: Date.now().toString(),
-      email: formData.email,
-      displayName: formData.isSignUp ? formData.displayName : formData.email.split('@')[0],
-      profile: {
-        displayName: formData.isSignUp ? formData.displayName : formData.email.split('@')[0],
-        relationship: 'Friendly',
-        meetingStatus: 'First time meeting',
-        purpose: 'Personal growth and reflection',
-        knowledgeLevel: 'Learning together',
-        introduction: '',
+    let user;
+    
+    if (formData.isSignUp) {
+      // New user signup - use form data
+      // Normalize email for consistency
+      const normalizedEmail = formData.email.toLowerCase().trim();
+      user = {
+        id: Date.now().toString(),
+        email: normalizedEmail,
+        displayName: formData.displayName,
+        profile: {
+          displayName: formData.displayName,
+          relationship: 'Friendly',
+          meetingStatus: 'First time meeting',
+          purpose: 'Personal growth and reflection',
+          knowledgeLevel: 'Learning together',
+          introduction: '',
+        }
+      };
+    } else {
+      // Existing user login - check for saved profile first
+      // Normalize email to lowercase to ensure consistent localStorage keys
+      const normalizedEmail = formData.email.toLowerCase().trim();
+      const userSpecificKey = `echos_user_profile_${normalizedEmail}`;
+      let existingProfile = localStorage.getItem(userSpecificKey);
+      
+      console.log('🔍 LOGIN - Email normalized to:', normalizedEmail);
+      console.log('🔍 LOGIN - Found existing profile:', existingProfile ? 'YES' : 'NO');
+      
+      // If no profile found with normalized key, check for profiles with different casing
+      if (!existingProfile && formData.email !== normalizedEmail) {
+        const originalEmailKey = `echos_user_profile_${formData.email}`;
+        const oldProfile = localStorage.getItem(originalEmailKey);
+        if (oldProfile) {
+          console.log('🔍 LOGIN - Migrating profile from old casing');
+          // Migrate to normalized key and remove old key
+          localStorage.setItem(userSpecificKey, oldProfile);
+          localStorage.removeItem(originalEmailKey);
+          existingProfile = oldProfile;
+        }
       }
-    };
+      
+      if (existingProfile) {
+        try {
+          // Use saved profile data for returning user
+          const savedUser = JSON.parse(existingProfile);
+          user = {
+            ...savedUser,
+            id: Date.now().toString(), // Generate new session ID
+            email: normalizedEmail, // Ensure email matches normalized version
+          };
+          console.log('🔍 LOGIN - Loaded saved profile with displayName:', user.displayName);
+        } catch (error) {
+          console.error('Error loading saved user profile:', error);
+          // Fallback to defaults if saved profile is corrupted
+          user = {
+            id: Date.now().toString(),
+            email: normalizedEmail,
+            displayName: normalizedEmail.split('@')[0],
+            profile: {
+              displayName: normalizedEmail.split('@')[0],
+              relationship: 'Friendly',
+              meetingStatus: 'First time meeting',
+              purpose: 'Personal growth and reflection',
+              knowledgeLevel: 'Learning together',
+              introduction: '',
+            }
+          };
+        }
+      } else {
+        // New user (no saved profile) - use email prefix as default
+        console.log('🔍 LOGIN - No saved profile found, creating new user');
+        user = {
+          id: Date.now().toString(),
+          email: normalizedEmail,
+          displayName: normalizedEmail.split('@')[0],
+          profile: {
+            displayName: normalizedEmail.split('@')[0],
+            relationship: 'Friendly',
+            meetingStatus: 'First time meeting',
+            purpose: 'Personal growth and reflection',
+            knowledgeLevel: 'Learning together',
+            introduction: '',
+          }
+        };
+      }
+    }
 
     // Use AuthContext login method
     try {

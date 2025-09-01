@@ -55,6 +55,8 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
       }
     } else {
       // User is logged in, remember them as the last user for settings
+      // Normalize email for consistency
+      targetUserEmail = targetUserEmail.toLowerCase().trim();
       localStorage.setItem('echos_last_settings_user', targetUserEmail);
     }
 
@@ -136,7 +138,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     
     // Save to localStorage with user-specific key
     if (user?.email) {
-      const userSpecificKey = `echos_settings_${user.email}`;
+      // Normalize email for consistent key usage
+      const normalizedEmail = user.email.toLowerCase().trim();
+      const userSpecificKey = `echos_settings_${normalizedEmail}`;
       localStorage.setItem(userSpecificKey, JSON.stringify(newSettings));
     }
   };
@@ -146,7 +150,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     
     // Remove user-specific settings
     if (user?.email) {
-      const userSpecificKey = `echos_settings_${user.email}`;
+      // Normalize email for consistent key usage
+      const normalizedEmail = user.email.toLowerCase().trim();
+      const userSpecificKey = `echos_settings_${normalizedEmail}`;
       localStorage.removeItem(userSpecificKey);
     }
     

@@ -22,9 +22,14 @@ export default defineConfig({
     ],
     proxy: {
       '/api': {
-        target: 'http://localhost:8504',
+        target: 'http://localhost:8505',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/eleanor': {
+        target: 'http://localhost:8504',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/eleanor/, '')
       }
     }
   }

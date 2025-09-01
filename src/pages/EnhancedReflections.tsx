@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout/Layout';
 import TrainingProgress from '../components/TrainingProgress';
+import ConversationTrainer from '../components/ConversationTrainer';
 import useQuestionLoader, { type Question } from '../components/QuestionLoader';
 import { useEcho } from '../contexts/EchoContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -17,7 +18,8 @@ const EnhancedReflections: React.FC = () => {
     hasCompletedMorningReflection,
     hasCompletedAfternoonReflection,
     getNextReflectionTime,
-    getRemainingCount
+    getRemainingCount,
+    markQuestionAsAnswered
   } = useQuestionLoader();
   const { addReflection, stats } = useEcho();
   
@@ -26,7 +28,7 @@ const EnhancedReflections: React.FC = () => {
   const [response, setResponse] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [viewMode, setViewMode] = useState<'daily' | 'category' | 'all'>('daily');
+  const [viewMode, setViewMode] = useState<'daily' | 'category' | 'conversation'>('daily');
   const [currentPeriod, setCurrentPeriod] = useState<'morning' | 'afternoon' | 'none'>('none');
   const [reflectionState, setReflectionState] = useState<'available' | 'completed' | 'waiting'>('available');
 
@@ -109,6 +111,9 @@ const EnhancedReflections: React.FC = () => {
         qualityScore,
         tags: [] // Could add tag extraction later
       });
+
+      // Mark question as answered for category tracking
+      markQuestionAsAnswered(currentQuestion.id, currentQuestion.category);
 
       // Mark daily reflection as completed if it's a daily reflection
       if (viewMode === 'daily') {
@@ -252,6 +257,16 @@ const EnhancedReflections: React.FC = () => {
                   >
                     🗂️ By Category
                   </button>
+                  <button
+                    onClick={() => setViewMode('conversation')}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      viewMode === 'conversation'
+                        ? 'bg-primary text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    💬 Conversation Training
+                  </button>
                 </div>
               </div>
 
@@ -275,7 +290,9 @@ const EnhancedReflections: React.FC = () => {
                         >
                           <div className="text-2xl mb-1">{category.icon}</div>
                           <div className="text-sm font-medium text-gray-900">{category.name}</div>
-                          <div className="text-xs text-gray-500">{getRemainingCount(key)} remaining</div>
+                          <div className="text-xs text-gray-500">
+                            {key === 'journal' ? 'Add entry' : `${getRemainingCount(key)} remaining`}
+                          </div>
                         </button>
                       ))}
                   </div>
@@ -412,7 +429,12 @@ const EnhancedReflections: React.FC = () => {
                 </div>
               )}
 
-              {!currentQuestion && (
+              {/* Conversation Training Mode */}
+              {viewMode === 'conversation' && (
+                <ConversationTrainer />
+              )}
+
+              {!currentQuestion && viewMode !== 'conversation' && (
                 <div className="bg-white rounded-lg p-6 shadow-sm text-center">
                   <div className="text-4xl mb-4">🤔</div>
                   <p className="text-gray-600">Select a category to start reflecting, or try today's question!</p>

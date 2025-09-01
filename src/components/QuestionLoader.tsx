@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import questionsData from '../data/questions.json';
 import { useAuth } from '../contexts/AuthContext';
+import { getEleanorApiUrl } from '../utils/apiConfig';
 
 export interface Question {
   id: number;
@@ -17,17 +18,41 @@ export interface QuestionCategory {
 }
 
 const CATEGORIES: Record<string, QuestionCategory> = {
-  personal_identity: {
-    name: 'Personal Identity & Character',
+  hobbies: {
+    name: 'Hobbies & Interests',
+    count: 0,
+    color: 'bg-purple-500',
+    icon: '🎨'
+  },
+  education: {
+    name: 'Education & Learning',
+    count: 0,
+    color: 'bg-blue-500',
+    icon: '📚'
+  },
+  personal: {
+    name: 'Personal Identity',
     count: 0,
     color: 'bg-indigo-500',
     icon: '🌟'
   },
-  memories_experiences: {
-    name: 'Memories & Life Experiences',
+  career: {
+    name: 'Career & Work',
+    count: 0,
+    color: 'bg-green-500',
+    icon: '💼'
+  },
+  personal_history: {
+    name: 'Life History & Memories',
     count: 0,
     color: 'bg-orange-500',
     icon: '📖'
+  },
+  relationships: {
+    name: 'Relationships',
+    count: 0,
+    color: 'bg-rose-500',
+    icon: '❤️'
   },
   daily_life: {
     name: 'Daily Life & Routines',
@@ -35,47 +60,65 @@ const CATEGORIES: Record<string, QuestionCategory> = {
     color: 'bg-cyan-500',
     icon: '🏠'
   },
-  relationships_all: {
-    name: 'Relationships & Social',
-    count: 0,
-    color: 'bg-rose-500',
-    icon: '❤️'
-  },
-  values_philosophy: {
+  philosophy_values: {
     name: 'Values & Philosophy',
     count: 0,
     color: 'bg-violet-500',
     icon: '🤔'
   },
-  career_purpose: {
-    name: 'Career & Purpose',
-    count: 0,
-    color: 'bg-green-500',
-    icon: '💼'
-  },
-  interests_passions: {
-    name: 'Interests & Passions',
-    count: 0,
-    color: 'bg-purple-500',
-    icon: '🎨'
-  },
-  education_learning: {
-    name: 'Education & Learning',
-    count: 0,
-    color: 'bg-blue-500',
-    icon: '📚'
-  },
-  dreams_aspirations: {
-    name: 'Dreams & Aspirations',
-    count: 0,
-    color: 'bg-emerald-500',
-    icon: '✨'
-  },
-  fun_hypotheticals: {
+  hypotheticals: {
     name: 'Fun & Hypotheticals',
     count: 0,
     color: 'bg-amber-500',
     icon: '🎯'
+  },
+  romantic_love: {
+    name: 'Romance & Love',
+    count: 0,
+    color: 'bg-pink-500',
+    icon: '💕'
+  },
+  marriage_partnerships: {
+    name: 'Marriage & Partnerships',
+    count: 0,
+    color: 'bg-red-500',
+    icon: '💑'
+  },
+  friendships_social: {
+    name: 'Friendships & Social',
+    count: 0,
+    color: 'bg-teal-500',
+    icon: '👥'
+  },
+  family_parenting: {
+    name: 'Family & Parenting',
+    count: 0,
+    color: 'bg-lime-500',
+    icon: '👨‍👩‍👧‍👦'
+  },
+  professional: {
+    name: 'Professional Development',
+    count: 0,
+    color: 'bg-gray-500',
+    icon: '🎯'
+  },
+  dating_experiences: {
+    name: 'Dating Experiences',
+    count: 0,
+    color: 'bg-rose-400',
+    icon: '💝'
+  },
+  creative_expression: {
+    name: 'Creative Expression',
+    count: 0,
+    color: 'bg-fuchsia-500',
+    icon: '🎭'
+  },
+  journal: {
+    name: 'Journal',
+    count: 1,
+    color: 'bg-yellow-500',
+    icon: '📝'
   }
 };
 
@@ -106,13 +149,80 @@ const useQuestionLoader = () => {
     
     setCategories(updatedCategories);
     
-    // Initialize selected questions tracking
+    // Initialize selected questions tracking with persistence
     const initialSelected: Record<string, Set<number>> = {};
     Object.keys(updatedCategories).forEach(cat => {
       initialSelected[cat] = new Set();
     });
+
+    // Load answered questions from localStorage if user is available
+    if (user?.email) {
+      const userSpecificKey = `echos_answered_questions_${user.email.toLowerCase()}`;
+      try {
+        const savedAnswers = localStorage.getItem(userSpecificKey);
+        if (savedAnswers) {
+          const parsed = JSON.parse(savedAnswers);
+          // Convert arrays back to Sets
+          Object.keys(parsed).forEach(cat => {
+            if (initialSelected[cat] && Array.isArray(parsed[cat])) {
+              initialSelected[cat] = new Set(parsed[cat]);
+            }
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to load answered questions from localStorage:', error);
+      }
+    }
+    
     setSelectedQuestionsByCategory(initialSelected);
-  }, []);
+    
+    // Trigger sync if user is logged in
+    if (user?.email) {
+      // Sync after a short delay to let the component render first
+      setTimeout(() => {
+        syncAnsweredQuestions();
+      }, 1000);
+    }
+  }, [user?.email]);
+
+  // Sync answered questions from database to localStorage
+  const syncAnsweredQuestions = async () => {
+    if (!user?.email) return;
+    
+    try {
+      console.log('🔄 Syncing answered questions from database...');
+      const apiUrl = getEleanorApiUrl();
+      const response = await fetch(`${apiUrl}/user/${encodeURIComponent(user.email)}/answered-questions`);
+      
+      if (response.ok) {
+        const answeredByCategory = await response.json();
+        
+        // Convert arrays to Sets and update state
+        const updated: Record<string, Set<number>> = {};
+        Object.keys(CATEGORIES).forEach(cat => {
+          updated[cat] = new Set(answeredByCategory[cat] || []);
+        });
+        
+        // Update localStorage
+        const userSpecificKey = `echos_answered_questions_${user.email.toLowerCase()}`;
+        const toSave: Record<string, number[]> = {};
+        Object.keys(updated).forEach(cat => {
+          toSave[cat] = Array.from(updated[cat]);
+        });
+        localStorage.setItem(userSpecificKey, JSON.stringify(toSave));
+        
+        // Update state to trigger re-render
+        setSelectedQuestionsByCategory(updated);
+        
+        const totalSynced = Object.values(updated).reduce((sum, set) => sum + set.size, 0);
+        console.log(`✅ Synced ${totalSynced} answered questions across ${Object.keys(answeredByCategory).length} categories`);
+      } else {
+        console.warn('Failed to fetch answered questions:', response.status);
+      }
+    } catch (error) {
+      console.error('Error syncing answered questions:', error);
+    }
+  };
 
   const getQuestionsByCategory = (category: string): Question[] => {
     return questions.filter(q => q.category === category);
@@ -209,6 +319,16 @@ const useQuestionLoader = () => {
   };
 
   const getRandomQuestionFromCategory = (category: string): Question | null => {
+    // Special handling for journal category
+    if (category === 'journal') {
+      return {
+        id: 5000,
+        question: "What's on your mind today?",
+        category: 'journal',
+        source: 'journal'
+      };
+    }
+
     const categoryQuestions = getQuestionsByCategory(category);
     if (categoryQuestions.length === 0) return null;
     
@@ -217,10 +337,55 @@ const useQuestionLoader = () => {
   };
 
   const markQuestionAsAnswered = (questionId: number, category: string) => {
-    setSelectedQuestionsByCategory(prev => ({
-      ...prev,
-      [category]: new Set([...prev[category], questionId])
-    }));
+    setSelectedQuestionsByCategory(prev => {
+      const updated = {
+        ...prev,
+        [category]: new Set([...(prev[category] || new Set()), questionId])
+      };
+
+      // Save to localStorage if user is available
+      if (user?.email) {
+        try {
+          const userSpecificKey = `echos_answered_questions_${user.email.toLowerCase()}`;
+          // Convert Sets to arrays for JSON storage
+          const toSave: Record<string, number[]> = {};
+          Object.keys(updated).forEach(cat => {
+            toSave[cat] = Array.from(updated[cat]);
+          });
+          localStorage.setItem(userSpecificKey, JSON.stringify(toSave));
+        } catch (error) {
+          console.warn('Failed to save answered questions to localStorage:', error);
+        }
+      }
+
+      return updated;
+    });
+  };
+
+  const unmarkQuestionAsAnswered = (questionId: number, category: string) => {
+    setSelectedQuestionsByCategory(prev => {
+      const updated = {
+        ...prev,
+        [category]: new Set([...(prev[category] || new Set())].filter(id => id !== questionId))
+      };
+
+      // Save to localStorage if user is available
+      if (user?.email) {
+        try {
+          const userSpecificKey = `echos_answered_questions_${user.email.toLowerCase()}`;
+          // Convert Sets to arrays for JSON storage
+          const toSave: Record<string, number[]> = {};
+          Object.keys(updated).forEach(cat => {
+            toSave[cat] = Array.from(updated[cat]);
+          });
+          localStorage.setItem(userSpecificKey, JSON.stringify(toSave));
+        } catch (error) {
+          console.warn('Failed to save answered questions to localStorage:', error);
+        }
+      }
+
+      return updated;
+    });
   };
 
   const getCategoryProgress = (category: string): number => {
@@ -265,10 +430,12 @@ const useQuestionLoader = () => {
     getNextReflectionTime,
     getRandomQuestionFromCategory,
     markQuestionAsAnswered,
+    unmarkQuestionAsAnswered,
     getCategoryProgress,
     getTotalProgress,
     getAnsweredCount,
     getRemainingCount,
+    syncAnsweredQuestions,
     totalQuestions: questions.length
   };
 };

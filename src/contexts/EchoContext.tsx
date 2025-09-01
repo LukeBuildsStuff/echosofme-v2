@@ -49,7 +49,7 @@ interface EchoContextType {
   reflections: Reflection[];
   addReflection: (reflection: Omit<Reflection, 'id' | 'createdAt'>) => void;
   updateReflection: (id: string, updatedReflection: Partial<Reflection>) => Promise<void>;
-  deleteReflection: (id: string) => Promise<void>;
+  deleteReflection: (id: string, onSuccess?: (questionId: number, category: string) => void) => Promise<void>;
   getReflectionsByCategory: (category: string) => Reflection[];
   
   // Statistics
@@ -187,6 +187,23 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
         }));
         
         setReflections(convertedReflections);
+        
+        // Clean up localStorage-only ghost reflections
+        try {
+          const userSpecificKey = `echos_reflections_${userEmail}`;
+          const localData = localStorage.getItem(userSpecificKey);
+          if (localData) {
+            const localReflections = JSON.parse(localData);
+            const dbIds = new Set(convertedReflections.map(r => r.id));
+            // Filter out reflections that don't exist in database
+            const cleanedLocal = localReflections.filter((lr: any) => dbIds.has(lr.id));
+            localStorage.setItem(userSpecificKey, JSON.stringify(cleanedLocal));
+            console.log('🧹 Cleaned up ghost reflections from localStorage');
+          }
+        } catch (error) {
+          console.warn('Failed to clean localStorage:', error);
+        }
+        
         return; // Success, exit function
       } else {
         console.error('❌ Failed to load reflections. Status:', response.status, response.statusText);
@@ -268,7 +285,8 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
           question_id: reflectionData.questionId,
           response_text: reflectionData.response,
           word_count: reflectionData.wordCount,
-          is_draft: false
+          is_draft: false,
+          response_type: reflectionData.category === 'journal' ? 'journal' : 'reflection'
         }),
       });
 
@@ -284,7 +302,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
           response: savedReflection.response_text,
           wordCount: savedReflection.word_count,
           qualityScore: reflectionData.qualityScore,
-          createdAt: savedReflection.created_at,
+          createdAt: savedReflection.created_at || new Date().toISOString(),
           tags: reflectionData.tags
         };
 
@@ -368,23 +386,71 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     }
   };
 
-  const deleteReflection = async (id: string) => {
+  const deleteReflection = async (id: string, onSuccess?: (questionId: number, category: string) => void) => {
     try {
       if (!user?.email) {
         throw new Error('User email not available');
       }
       
-      const userEmail = user.email;
-      const apiUrl = getEleanorApiUrl();
-      const response = await fetch(`${apiUrl}/reflections/${id}?user_email=${encodeURIComponent(userEmail)}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        // Remove the reflection from local state
+      // Find the reflection to get its questionId and category before deleting
+      const reflectionToDelete = reflections.find(r => r.id === id);
+      if (!reflectionToDelete) {
+        throw new Error('Reflection not found');
+      }
+      
+      // Check if this is a localStorage-only reflection (timestamp-based ID)
+      const isLocalStorageOnly = /^\d{13}$/.test(id); // 13-digit timestamp
+      
+      if (isLocalStorageOnly) {
+        console.log('🗑️ Deleting localStorage-only reflection:', id);
+        
+        // For localStorage-only reflections, skip API call
+        // Call the success callback to unmark the question
+        if (onSuccess) {
+          onSuccess(reflectionToDelete.questionId, reflectionToDelete.category);
+        }
+        
+        // Remove from local state
         setReflections(prev => prev.filter(r => r.id !== id));
+        
+        // Also update localStorage
+        try {
+          const userSpecificKey = `echos_reflections_${user.email}`;
+          const updatedReflections = reflections.filter(r => r.id !== id);
+          localStorage.setItem(userSpecificKey, JSON.stringify(updatedReflections));
+        } catch (localError) {
+          console.warn('Failed to update localStorage:', localError);
+        }
       } else {
-        throw new Error('Failed to delete reflection');
+        // For API-saved reflections, use the API
+        const userEmail = user.email;
+        const apiUrl = getEleanorApiUrl();
+        const response = await fetch(`${apiUrl}/reflections/${id}?user_email=${encodeURIComponent(userEmail)}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          // Call the success callback to unmark the question
+          if (onSuccess) {
+            onSuccess(reflectionToDelete.questionId, reflectionToDelete.category);
+          }
+          
+          // Remove the reflection from local state
+          setReflections(prev => prev.filter(r => r.id !== id));
+        } else if (response.status === 404) {
+          // Reflection already deleted or doesn't exist - remove from local state anyway
+          console.log('🗑️ Reflection not found in database (already deleted), removing from local state');
+          
+          // Call the success callback to unmark the question
+          if (onSuccess) {
+            onSuccess(reflectionToDelete.questionId, reflectionToDelete.category);
+          }
+          
+          // Remove from local state since it's not in the database
+          setReflections(prev => prev.filter(r => r.id !== id));
+        } else {
+          throw new Error('Failed to delete reflection from API');
+        }
       }
     } catch (error) {
       console.error('Error deleting reflection:', error);
@@ -489,6 +555,12 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
     // Group reflections by date
     const reflectionsByDate = reflections.reduce((acc, reflection) => {
+      // Safety check: skip reflections without valid createdAt
+      if (!reflection.createdAt || typeof reflection.createdAt !== 'string') {
+        console.warn('Reflection missing createdAt:', reflection.id);
+        return acc;
+      }
+      
       const date = reflection.createdAt.split('T')[0];
       if (!acc[date]) acc[date] = [];
       acc[date].push(reflection);

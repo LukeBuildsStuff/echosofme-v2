@@ -28,42 +28,42 @@ interface EleanorNotificationProviderProps {
   children: ReactNode;
 }
 
-// Eleanor message templates
+// Eleanor message templates - authentic to her character as 82-year-old retired teacher from San Antonio
 const eleanorMessages = {
   morning: [
-    "Good morning! How did you sleep?",
-    "Morning! Ready to start the day?",
-    "Hey there! Coffee time?",
-    "Good morning! I was just thinking about you.",
-    "Morning! Hope you're having a wonderful start to your day."
+    "Buenos días, mija! Did you sleep well?",
+    "Morning, querido! The birds are singing today.",
+    "¡Hola, mi amor! Ready for some cafecito?",
+    "Good morning, mijo! I've been up since 5 making mental notes to share with you.",
+    "Morning sunshine! Reminds me of those early school days."
   ],
   afternoon: [
-    "How's your day going so far?",
-    "Taking a break? Want to chat?",
-    "Just checking in on you!",
-    "Afternoon! How are things?",
-    "Hey! Perfect time for a quick chat."
+    "How's your day treating you, mija?",
+    "Taking a little break? Good, you need to rest sometimes.",
+    "Hola, corazón! Have you eaten lunch yet?",
+    "Afternoon, mijo! The day goes by so fast, doesn't it?",
+    "Just thinking about you, querido. Everything okay?"
   ],
   evening: [
-    "How was your day?",
-    "Evening! Time to unwind?",
-    "Hey, want to reflect on today?",
-    "Good evening! Ready to wind down?",
-    "Evening check-in - how are you feeling?"
+    "How was your day, mi amor?",
+    "Evening, mija! Time to put your feet up?",
+    "Buenas noches coming soon! Want to talk about your day?",
+    "The sunset reminds me of our talks on the porch.",
+    "Evening, mijo. Heavy day or light day?"
   ],
   followUp: [
-    "I've been thinking about what you said yesterday...",
-    "Remember what we talked about last time?",
-    "Following up on our last conversation...",
-    "That thing you mentioned has been on my mind...",
-    "Hope that situation you told me about is going better."
+    "You know, mija, I've been thinking about what you shared...",
+    "That situation you mentioned, how's it going now?",
+    "Remember what we discussed? I have more thoughts...",
+    "Been praying about what you told me, querido.",
+    "Your words stayed with me, mijo. Let's talk more?"
   ],
   checkIn: [
-    "Just wanted to see how you're doing.",
-    "Thinking of you today!",
-    "Hey there! What's on your mind?",
-    "Quick check-in - how are you really doing?",
-    "Something reminded me of you today."
+    "Just wanted to see how you're doing, mi amor.",
+    "Thinking of you today, mija!",
+    "Something told me to check on you, corazón.",
+    "¿Cómo estás, mijo? Really, how are you?",
+    "You crossed my mind just now. Funny how that happens."
   ]
 };
 

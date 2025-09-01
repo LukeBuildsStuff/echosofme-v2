@@ -81,14 +81,15 @@ export default function EleanorChat() {
     setIsLoading(true)
 
     try {
-      const apiUrl = getEleanorApiUrl();
-      console.log('🗣️ Eleanor chat request to:', `${apiUrl}/chat`);
+      // Use Eleanor-specific proxy endpoint
+      const eleanorUrl = '/eleanor';
+      console.log('🗣️ Eleanor chat request to:', `${eleanorUrl}/chat`);
       
       // Add timeout for mobile connections
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout (mobile tunnel needs extra time)
       
-      const response = await fetch(`${apiUrl}/chat`, {
+      const response = await fetch(`${eleanorUrl}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

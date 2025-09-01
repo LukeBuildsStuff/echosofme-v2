@@ -5,7 +5,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useToast } from '../contexts/ToastContext';
 
 const Settings: React.FC = () => {
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout, updateUser, clearAllUserData } = useAuth();
   const { settings, updateSetting } = useSettings();
   const { showSuccess, showError, showInfo } = useToast();
 
@@ -18,13 +18,18 @@ const Settings: React.FC = () => {
     bio: user?.profile?.introduction || '',
   });
 
-  // Sync profileSettings when user data changes (after login merge completes)
+  // Track if we've initialized the profile settings to prevent premature syncing
+  const [profileInitialized, setProfileInitialized] = useState(false);
+
+  // Sync profileSettings when user data changes (after login completes)
   useEffect(() => {
-    if (user) {
+    if (user && user.email) {
+      // Only sync if we have complete user data (email ensures user is fully loaded)
       setProfileSettings({
         displayName: user.displayName || '',
         bio: user.profile?.introduction || '',
       });
+      setProfileInitialized(true);
     }
   }, [user]);
 
@@ -72,6 +77,13 @@ const Settings: React.FC = () => {
     }
   };
 
+  const handleClearAllData = () => {
+    const success = clearAllUserData();
+    if (success) {
+      showSuccess('Data Cleared', 'All your data has been permanently deleted.');
+    }
+  };
+
   const handleDeleteAccount = () => {
     if (window.confirm('Are you absolutely sure? This will permanently delete your account and all reflections.')) {
       // TODO: Implement account deletion
@@ -95,7 +107,20 @@ const Settings: React.FC = () => {
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Profile Settings</h2>
               
-              <div className="space-y-4">
+              {!profileInitialized ? (
+                <div className="space-y-4">
+                  <div className="text-center py-8">
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-1/4 mb-4 mx-auto"></div>
+                      <div className="h-12 bg-gray-200 rounded mb-4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/4 mb-2 mx-auto"></div>
+                      <div className="h-12 bg-gray-200 rounded mb-4"></div>
+                    </div>
+                    <p className="text-gray-500 text-sm">Loading profile...</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
                 <div>
                   <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
                     Display Name
@@ -138,15 +163,16 @@ const Settings: React.FC = () => {
                   />
                 </div>
 
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleSaveProfile}
-                    className="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors"
-                  >
-                    Save Profile
-                  </button>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleSaveProfile}
+                      className="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                    >
+                      Save Profile
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Display Preferences */}
@@ -237,8 +263,8 @@ const Settings: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Eleanor Conversations</p>
-                    <p className="text-sm text-gray-500">Allow Eleanor to start conversations and check in on you</p>
+                    <p className="font-medium text-gray-900">Echo Conversations</p>
+                    <p className="text-sm text-gray-500">Allow Echos to start conversations and check in on you</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -297,14 +323,14 @@ const Settings: React.FC = () => {
 
                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
                   <div>
-                    <p className="font-medium text-gray-900">Clear Local Data</p>
-                    <p className="text-sm text-gray-500">Remove all locally stored data</p>
+                    <p className="font-medium text-gray-900">Clear All Data</p>
+                    <p className="text-sm text-gray-500">Permanently delete all your data (profile, reflections, settings, etc.)</p>
                   </div>
                   <button
-                    onClick={handleClearData}
-                    className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg font-medium hover:bg-yellow-200 transition-colors"
+                    onClick={handleClearAllData}
+                    className="bg-red-100 text-red-700 px-4 py-2 rounded-lg font-medium hover:bg-red-200 transition-colors"
                   >
-                    Clear
+                    Clear All
                   </button>
                 </div>
 

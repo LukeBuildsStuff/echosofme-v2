@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>localStorage Data Export Tool</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #6366F1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 8px;
+        }
+        button:hover { background: #5555E1; }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .info { 
+            background: #E0F2FE; 
+            color: #0369A1; 
+            padding: 16px; 
+            border-radius: 6px; 
+            margin: 16px 0;
+        }
+        .warning {
+            background: #FEF3C7;
+            color: #92400E;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 16px 0;
+        }
+        .success {
+            background: #D1FAE5;
+            color: #065F46;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 16px 0;
+        }
+        .domain-info {
+            background: #F3F4F6;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 localStorage Data Export Tool</h1>
+    
+    <div class="info">
+        <strong>Purpose:</strong> Export reflection data from localStorage to prepare for database migration.
+        <br><strong>Current Domain:</strong> <span id="currentDomain"></span>
+        <br><strong>Current URL:</strong> <span id="currentUrl"></span>
+    </div>
+
+    <div class="card">
+        <h2>1. Analyze Current localStorage</h2>
+        <button onclick="analyzeLocalStorage()">🔍 Analyze localStorage</button>
+        <div id="analysisResults"></div>
+    </div>
+
+    <div class="card">
+        <h2>2. Export Reflection Data</h2>
+        <button onclick="exportReflections()">📤 Export Reflections</button>
+        <div id="exportResults"></div>
+        <textarea id="exportData" placeholder="Exported data will appear here..."></textarea>
+    </div>
+
+    <div class="card">
+        <h2>3. Save Export File</h2>
+        <button onclick="downloadExport()">💾 Download as JSON</button>
+        <div class="warning">
+            <strong>Important:</strong> Save this file with a descriptive name like:
+            <ul>
+                <li><code>reflections-localhost-{timestamp}.json</code> (for localhost access)</li>
+                <li><code>reflections-mobile-{timestamp}.json</code> (for mobile/IP access)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>4. Instructions</h2>
+        <div class="info">
+            <strong>Step-by-step:</strong>
+            <ol>
+                <li>Open this page in <strong>both</strong> domains:
+                    <ul>
+                        <li><code>http://localhost:5173/export-localStorage.html</code></li>
+                        <li><code>http://192.168.x.x:5173/export-localStorage.html</code></li>
+                    </ul>
+                </li>
+                <li>Run "Analyze localStorage" on each domain</li>
+                <li>Export reflections from each domain</li>
+                <li>Download and save both JSON files</li>
+                <li>Report findings back to Claude</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Display current domain info
+        document.getElementById('currentDomain').textContent = window.location.hostname;
+        document.getElementById('currentUrl').textContent = window.location.href;
+
+        function analyzeLocalStorage() {
+            const results = document.getElementById('analysisResults');
+            
+            try {
+                const keys = [];
+                const reflectionKeys = [];
+                
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    keys.push(key);
+                    if (key && key.includes('reflection')) {
+                        reflectionKeys.push(key);
+                    }
+                }
+
+                const echoReflectionsKey = keys.find(k => k === 'echos_reflections' || k.includes('echos_reflections_'));
+                let reflectionCount = 0;
+                let reflectionData = null;
+
+                if (echoReflectionsKey) {
+                    try {
+                        reflectionData = JSON.parse(localStorage.getItem(echoReflectionsKey));
+                        reflectionCount = Array.isArray(reflectionData) ? reflectionData.length : 0;
+                    } catch (e) {
+                        console.error('Error parsing reflections:', e);
+                    }
+                }
+
+                results.innerHTML = `
+                    <div class="domain-info">
+                        <strong>Domain:</strong> ${window.location.hostname}<br>
+                        <strong>Total localStorage keys:</strong> ${localStorage.length}<br>
+                        <strong>Reflection-related keys:</strong> ${reflectionKeys.length}<br>
+                        <strong>Main reflections key:</strong> ${echoReflectionsKey || 'None found'}<br>
+                        <strong>Reflection count:</strong> ${reflectionCount}
+                    </div>
+                    <details>
+                        <summary>All localStorage keys (${keys.length})</summary>
+                        <pre>${keys.join('\\n')}</pre>
+                    </details>
+                `;
+
+                if (reflectionCount > 0) {
+                    results.innerHTML += `<div class="success">✅ Found ${reflectionCount} reflections in localStorage!</div>`;
+                } else {
+                    results.innerHTML += `<div class="warning">⚠️ No reflections found in localStorage for this domain.</div>`;
+                }
+
+            } catch (error) {
+                results.innerHTML = `<div class="warning">❌ Error analyzing localStorage: ${error.message}</div>`;
+            }
+        }
+
+        function exportReflections() {
+            const results = document.getElementById('exportResults');
+            const textarea = document.getElementById('exportData');
+            
+            try {
+                const keys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    keys.push(localStorage.key(i));
+                }
+
+                // Find the main reflections key
+                const echoReflectionsKey = keys.find(k => k === 'echos_reflections' || k.includes('echos_reflections_'));
+                
+                if (!echoReflectionsKey) {
+                    results.innerHTML = `<div class="warning">⚠️ No reflections found to export.</div>`;
+                    return;
+                }
+
+                const reflectionData = JSON.parse(localStorage.getItem(echoReflectionsKey));
+                
+                if (!reflectionData || !Array.isArray(reflectionData)) {
+                    results.innerHTML = `<div class="warning">⚠️ Reflection data is not in expected format.</div>`;
+                    return;
+                }
+
+                const exportObj = {
+                    exportInfo: {
+                        domain: window.location.hostname,
+                        url: window.location.href,
+                        timestamp: new Date().toISOString(),
+                        localStorageKey: echoReflectionsKey,
+                        reflectionCount: reflectionData.length
+                    },
+                    reflections: reflectionData
+                };
+
+                const exportJson = JSON.stringify(exportObj, null, 2);
+                textarea.value = exportJson;
+
+                results.innerHTML = `<div class="success">✅ Successfully exported ${reflectionData.length} reflections!</div>`;
+
+            } catch (error) {
+                results.innerHTML = `<div class="warning">❌ Error exporting reflections: ${error.message}</div>`;
+                console.error('Export error:', error);
+            }
+        }
+
+        function downloadExport() {
+            const textarea = document.getElementById('exportData');
+            const data = textarea.value;
+            
+            if (!data.trim()) {
+                alert('No export data available. Please run export first.');
+                return;
+            }
+
+            try {
+                const domain = window.location.hostname === 'localhost' ? 'localhost' : 'mobile';
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `reflections-${domain}-${timestamp}.json`;
+                
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                
+                URL.revokeObjectURL(url);
+                
+                alert(`✅ Downloaded: ${filename}`);
+                
+            } catch (error) {
+                alert(`❌ Error downloading file: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

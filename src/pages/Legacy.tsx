@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import Layout from '../components/Layout/Layout';
 import { useEcho, type Reflection } from '../contexts/EchoContext';
+import useQuestionLoader from '../components/QuestionLoader';
 
 const Legacy: React.FC = () => {
   const { reflections, stats, updateReflection, deleteReflection } = useEcho();
+  const { unmarkQuestionAsAnswered } = useQuestionLoader();
   const [editingReflection, setEditingReflection] = useState<Reflection | null>(null);
   const [editText, setEditText] = useState('');
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -79,7 +81,10 @@ const Legacy: React.FC = () => {
 
     setIsDeleting(reflectionId);
     try {
-      await deleteReflection(reflectionId);
+      await deleteReflection(reflectionId, (questionId, category) => {
+        // This callback is called only when deletion succeeds
+        unmarkQuestionAsAnswered(questionId, category);
+      });
     } catch (error) {
       alert('Failed to delete reflection. Please try again.');
     } finally {

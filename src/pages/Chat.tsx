@@ -100,16 +100,24 @@ const Chat: React.FC = () => {
     try {
       // Get user profile for context
       const userProfile = JSON.parse(localStorage.getItem('echos_user_profile') || '{}');
-      const contextualMessage = `[User: ${userProfile.displayName || 'User'}, Relationship: ${userProfile.profile?.relationship || 'Friendly'}] ${inputMessage}`;
+      const contextualMessage = `${userProfile.displayName || 'User'} (${userProfile.profile?.relationship || 'Friend'}): ${inputMessage}`;
+
+      // Detect question complexity for appropriate response length
+      const isSimpleGreeting = /^(hi|hello|hey|good morning|buenos dias)[\s!?]*$/i.test(inputMessage);
+      const isYesNoQuestion = /^(is |are |do |does |can |will |should |would |could ).*\?$/i.test(inputMessage);
+
+      let maxResponseLength = 500; // default for complex questions
+      if (isSimpleGreeting) maxResponseLength = 200;  // short for greetings
+      else if (isYesNoQuestion) maxResponseLength = 300; // medium for yes/no
 
       const apiUrl = getEleanorApiUrl();
-      console.log('💬 Sending chat message to:', `${apiUrl}/chat`);
+      console.log('💬 Sending chat message to:', `/eleanor/chat`);
       
       // Add timeout for mobile connections
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for chat (mobile tunnel needs extra time)
       
-      const response = await fetch(`${apiUrl}/chat`, {
+      const response = await fetch(`/eleanor/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +125,7 @@ const Chat: React.FC = () => {
         },
         body: JSON.stringify({
           message: contextualMessage,
-          max_length: 350,
+          max_length: maxResponseLength,
           temperature: 0.7,
         }),
         signal: controller.signal,
