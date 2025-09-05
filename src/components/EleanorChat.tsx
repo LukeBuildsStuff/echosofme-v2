@@ -5,12 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Volume2, VolumeX } from 'lucide-react'
+import AudioPlayer from './AudioPlayer'
 
 interface ChatMessage {
   id: string
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  audioUrl?: string
+  isGeneratingAudio?: boolean
 }
 
 interface PersonalityMode {
@@ -55,6 +59,10 @@ export default function EleanorChat() {
   const [maxLength, setMaxLength] = useState(1000)
   const [temperature, setTemperature] = useState(0.7)
   const [showSettings, setShowSettings] = useState(false)
+  const [voiceEnabled, setVoiceEnabled] = useState(() => {
+    // Load from localStorage or default to false
+    return localStorage.getItem('eleanor-voice-enabled') === 'true'
+  })
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -65,6 +73,62 @@ export default function EleanorChat() {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  const toggleVoice = () => {
+    const newVoiceEnabled = !voiceEnabled
+    setVoiceEnabled(newVoiceEnabled)
+    localStorage.setItem('eleanor-voice-enabled', newVoiceEnabled.toString())
+  }
+
+  const generateTTS = async (messageId: string, text: string) => {
+    try {
+      // Update message to show audio generation in progress
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === messageId 
+            ? { ...msg, isGeneratingAudio: true }
+            : msg
+        )
+      )
+
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: text,
+          user_email: 'user@example.com' // This would normally come from auth context
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`TTS request failed: ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      // Update message with audio URL
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === messageId 
+            ? { ...msg, audioUrl: data.audio_url, isGeneratingAudio: false }
+            : msg
+        )
+      )
+      
+    } catch (error) {
+      console.error('TTS generation failed:', error)
+      // Remove loading state on error
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === messageId 
+            ? { ...msg, isGeneratingAudio: false }
+            : msg
+        )
+      )
+    }
+  }
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return
@@ -161,12 +225,22 @@ export default function EleanorChat() {
           <h1 className="text-3xl font-bold">Chat with Eleanor</h1>
           <p className="text-muted-foreground">Your AI grandmother companion</p>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={() => setShowSettings(!showSettings)}
-        >
-          Settings
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            onClick={toggleVoice}
+            className={`${voiceEnabled ? 'bg-blue-50 border-blue-200' : ''}`}
+          >
+            {voiceEnabled ? <Volume2 className="w-4 h-4 mr-2" /> : <VolumeX className="w-4 h-4 mr-2" />}
+            Voice {voiceEnabled ? 'On' : 'Off'}
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            Settings
+          </Button>
+        </div>
       </div>
 
       {showSettings && (
@@ -240,7 +314,7 @@ export default function EleanorChat() {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
               >
                 <div
                   className={`max-w-[80%] rounded-lg p-3 ${
@@ -249,11 +323,39 @@ export default function EleanorChat() {
                       : 'bg-muted'
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
-                  <p className="text-xs opacity-60 mt-1">
-                    {message.timestamp.toLocaleTimeString()}
-                  </p>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm">{message.content}</p>
+                      <p className="text-xs opacity-60 mt-1">
+                        {message.timestamp.toLocaleTimeString()}
+                      </p>
+                    </div>
+                    {message.role === 'assistant' && voiceEnabled && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 ml-2 mt-1 opacity-60 hover:opacity-100"
+                        onClick={() => generateTTS(message.id, message.content)}
+                        disabled={message.isGeneratingAudio}
+                      >
+                        {message.isGeneratingAudio ? (
+                          <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Volume2 className="w-3 h-3" />
+                        )}
+                      </Button>
+                    )}
+                  </div>
                 </div>
+                {message.audioUrl && (
+                  <div className="mt-2 max-w-[80%]">
+                    <AudioPlayer 
+                      audioUrl={message.audioUrl} 
+                      compact={true}
+                      className="bg-white/50"
+                    />
+                  </div>
+                )}
               </div>
             ))}
             

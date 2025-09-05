@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import { getEleanorApiUrl } from '../utils/apiConfig';
 import Layout from '../components/Layout/Layout';
 import { useEcho } from '../contexts/EchoContext';
+import AudioPlayer from '../components/AudioPlayer';
+import { Volume2, VolumeX } from 'lucide-react';
 
 interface Echo {
   id: string;
@@ -48,6 +50,13 @@ const Chat: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Voice features state
+  const [voiceEnabled, setVoiceEnabled] = useState(() => {
+    return localStorage.getItem('eleanor-voice-enabled') === 'true';
+  });
+  const [audioUrls, setAudioUrls] = useState<Map<string, string>>(new Map());
+  const [generatingAudio, setGeneratingAudio] = useState<Set<string>>(new Set());
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -179,6 +188,45 @@ const Chat: React.FC = () => {
     }
   };
 
+  const toggleVoice = () => {
+    const newVoiceEnabled = !voiceEnabled;
+    setVoiceEnabled(newVoiceEnabled);
+    localStorage.setItem('eleanor-voice-enabled', newVoiceEnabled.toString());
+  };
+
+  const generateTTS = async (messageId: string, text: string) => {
+    // Only generate if not already generating or already has audio
+    if (generatingAudio.has(messageId) || audioUrls.has(messageId)) return;
+    
+    try {
+      setGeneratingAudio(prev => new Set(prev).add(messageId));
+      
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: text,
+          user_email: 'user@example.com'
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAudioUrls(prev => new Map(prev).set(messageId, data.audio_url));
+      } else {
+        console.error('TTS request failed:', response.status);
+      }
+    } catch (error) {
+      console.error('TTS generation failed:', error);
+    } finally {
+      setGeneratingAudio(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(messageId);
+        return newSet;
+      });
+    }
+  };
+
   // Show Echo selector if no Echo is selected
   if (!selectedEcho) {
     return (
@@ -274,6 +322,16 @@ const Chat: React.FC = () => {
                 <p className="text-sm text-gray-500">{selectedEcho.relationship}</p>
               </div>
             </div>
+            {/* Voice toggle button - only for Eleanor */}
+            {selectedEcho.id === 'eleanor' && (
+              <button
+                onClick={toggleVoice}
+                className="ml-4 p-2 rounded-lg border hover:bg-gray-50 transition-colors flex items-center space-x-2"
+              >
+                {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                <span className="text-sm">Voice {voiceEnabled ? 'On' : 'Off'}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -291,12 +349,32 @@ const Chat: React.FC = () => {
                     : 'bg-white border'
                 } rounded-lg p-4 shadow-sm`}>
                   <p className="text-sm">{message.content}</p>
+                  {/* Speaker icon for Eleanor messages when voice is enabled */}
+                  {message.sender === 'echo' && selectedEcho.id === 'eleanor' && voiceEnabled && (
+                    <button
+                      onClick={() => generateTTS(message.id, message.content)}
+                      disabled={generatingAudio.has(message.id)}
+                      className="mt-2 p-1 hover:bg-gray-100 rounded transition-colors inline-flex items-center"
+                    >
+                      {generatingAudio.has(message.id) ? (
+                        <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Volume2 className="w-4 h-4 text-gray-500" />
+                      )}
+                    </button>
+                  )}
                   <p className={`text-xs mt-2 ${
                     message.sender === 'user' ? 'text-white/70' : 'text-gray-500'
                   }`}>
                     {new Date(message.timestamp).toLocaleTimeString()}
                   </p>
                 </div>
+                {/* Audio player for generated TTS */}
+                {audioUrls.has(message.id) && (
+                  <div className="mt-2 max-w-xs lg:max-w-md">
+                    <AudioPlayer audioUrl={audioUrls.get(message.id)!} compact={true} />
+                  </div>
+                )}
               </div>
             ))}
             {isLoading && (

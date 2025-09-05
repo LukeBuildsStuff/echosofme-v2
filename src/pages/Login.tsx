@@ -21,15 +21,14 @@ const Login: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const normalizedEmail = formData.email.toLowerCase().trim();
     let user;
     
     if (formData.isSignUp) {
       // New user signup - use form data
-      // Normalize email for consistency
-      const normalizedEmail = formData.email.toLowerCase().trim();
       user = {
         id: Date.now().toString(),
         email: normalizedEmail,
@@ -44,22 +43,20 @@ const Login: React.FC = () => {
         }
       };
     } else {
-      // Existing user login - check for saved profile first
-      // Normalize email to lowercase to ensure consistent localStorage keys
-      const normalizedEmail = formData.email.toLowerCase().trim();
+      // Existing user login - create minimal user object
+      // AuthContext will handle profile syncing from database/localStorage
       const userSpecificKey = `echos_user_profile_${normalizedEmail}`;
       let existingProfile = localStorage.getItem(userSpecificKey);
       
       console.log('🔍 LOGIN - Email normalized to:', normalizedEmail);
       console.log('🔍 LOGIN - Found existing profile:', existingProfile ? 'YES' : 'NO');
       
-      // If no profile found with normalized key, check for profiles with different casing
+      // Migrate from old casing if needed
       if (!existingProfile && formData.email !== normalizedEmail) {
         const originalEmailKey = `echos_user_profile_${formData.email}`;
         const oldProfile = localStorage.getItem(originalEmailKey);
         if (oldProfile) {
           console.log('🔍 LOGIN - Migrating profile from old casing');
-          // Migrate to normalized key and remove old key
           localStorage.setItem(userSpecificKey, oldProfile);
           localStorage.removeItem(originalEmailKey);
           existingProfile = oldProfile;
@@ -75,10 +72,10 @@ const Login: React.FC = () => {
             id: Date.now().toString(), // Generate new session ID
             email: normalizedEmail, // Ensure email matches normalized version
           };
-          console.log('🔍 LOGIN - Loaded saved profile with displayName:', user.displayName);
+          console.log('🔍 LOGIN - Using saved profile, AuthContext will sync from database');
         } catch (error) {
           console.error('Error loading saved user profile:', error);
-          // Fallback to defaults if saved profile is corrupted
+          // Fallback to defaults
           user = {
             id: Date.now().toString(),
             email: normalizedEmail,
@@ -95,7 +92,7 @@ const Login: React.FC = () => {
         }
       } else {
         // New user (no saved profile) - use email prefix as default
-        console.log('🔍 LOGIN - No saved profile found, creating new user');
+        console.log('🔍 LOGIN - No saved profile found, creating default user');
         user = {
           id: Date.now().toString(),
           email: normalizedEmail,
@@ -112,9 +109,9 @@ const Login: React.FC = () => {
       }
     }
 
-    // Use AuthContext login method
+    // Use AuthContext login method (now async)
     try {
-      login(user);
+      await login(user);
       navigate('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);

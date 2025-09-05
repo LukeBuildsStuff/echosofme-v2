@@ -266,7 +266,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-[1.02]">
+          <Card className="opacity-70 transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Voice Clone</CardTitle>
               <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">

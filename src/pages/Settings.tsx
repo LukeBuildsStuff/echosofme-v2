@@ -5,7 +5,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useToast } from '../contexts/ToastContext';
 
 const Settings: React.FC = () => {
-  const { user, logout, updateUser, clearAllUserData } = useAuth();
+  const { user, logout, updateUser, updateProfile, clearAllUserData, syncProfile } = useAuth();
   const { settings, updateSetting } = useSettings();
   const { showSuccess, showError, showInfo } = useToast();
 
@@ -21,17 +21,59 @@ const Settings: React.FC = () => {
   // Track if we've initialized the profile settings to prevent premature syncing
   const [profileInitialized, setProfileInitialized] = useState(false);
 
-  // Sync profileSettings when user data changes (after login completes)
+  // Sync profile data from database when Settings component first mounts
   useEffect(() => {
-    if (user && user.email) {
-      // Only sync if we have complete user data (email ensures user is fully loaded)
+    const syncProfileData = async () => {
+      if (user && user.email && !profileInitialized) {
+        try {
+          // Always sync from database when Settings page loads to get latest data
+          console.log('🔄 Settings: Syncing profile from database...');
+          await syncProfile();
+          
+          // After sync, the user object should be updated, but we need to wait for the next render
+          // So we'll set a small delay to ensure the user object has been updated
+          setTimeout(() => {
+            setProfileSettings({
+              displayName: user.displayName || '',
+              bio: user.profile?.introduction || '',
+            });
+            setProfileInitialized(true);
+            console.log('✅ Settings: Profile data loaded:', { 
+              displayName: user.displayName, 
+              bio: user.profile?.introduction 
+            });
+          }, 100);
+        } catch (error) {
+          console.error('⚠️ Settings: Profile sync failed, using cached data:', error);
+          // Fallback to cached user data if sync fails
+          setProfileSettings({
+            displayName: user.displayName || '',
+            bio: user.profile?.introduction || '',
+          });
+          setProfileInitialized(true);
+        }
+      }
+    };
+
+    // Only run once when component mounts if user is loaded
+    if (user?.email) {
+      syncProfileData();
+    }
+  }, [user?.email]); // Only depend on email, not syncProfile to avoid loops
+  
+  // Update profile settings when user object changes after sync
+  useEffect(() => {
+    if (user && profileInitialized) {
       setProfileSettings({
         displayName: user.displayName || '',
         bio: user.profile?.introduction || '',
       });
-      setProfileInitialized(true);
+      console.log('📱 Settings: Updated profile settings from user context:', { 
+        displayName: user.displayName, 
+        bio: user.profile?.introduction 
+      });
     }
-  }, [user]);
+  }, [user?.displayName, user?.profile?.introduction, profileInitialized]);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -42,25 +84,17 @@ const Settings: React.FC = () => {
     }));
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     try {
-      // Use AuthContext's updateUser function
-      const updatedUserData = {
-        displayName: profileSettings.displayName,
-        profile: {
-          ...user?.profile,
-          displayName: profileSettings.displayName,
-          introduction: profileSettings.bio,
-          relationship: user?.profile?.relationship || '',
-          meetingStatus: user?.profile?.meetingStatus || '',
-          purpose: user?.profile?.purpose || '',
-          knowledgeLevel: user?.profile?.knowledgeLevel || '',
-        }
-      };
+      // Use the new updateProfile method that handles database sync
+      await updateProfile({
+        display_name: profileSettings.displayName,
+        introduction: profileSettings.bio,
+      });
       
-      updateUser(updatedUserData);
-      showSuccess('Profile Updated', 'Your profile settings have been saved successfully.');
+      showSuccess('Profile Updated', 'Your profile settings have been saved and synced across devices.');
     } catch (error) {
+      console.error('Profile update failed:', error);
       showError('Save Failed', 'There was an error saving your profile. Please try again.');
     }
   };

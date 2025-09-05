@@ -44,6 +44,16 @@ class ChatResponse(BaseModel):
 class SystemPromptRequest(BaseModel):
     custom_prompt: str
 
+class TTSRequest(BaseModel):
+    text: str
+    user_email: str
+    voice_settings: Optional[dict] = None
+
+class TTSResponse(BaseModel):
+    audio_url: str
+    status: str
+    error: Optional[str] = None
+
 class ReflectionRequest(BaseModel):
     user_email: str
     question_id: int
@@ -70,6 +80,32 @@ class UserStatsResponse(BaseModel):
     total_words: int
     categories_covered: int
     latest_reflection: Optional[datetime]
+
+class UserProfileRequest(BaseModel):
+    display_name: Optional[str] = None
+    introduction: Optional[str] = None
+    relationship: Optional[str] = None
+    meeting_status: Optional[str] = None
+    avatar_url: Optional[str] = None
+    theme_preference: Optional[str] = None
+    notification_settings: Optional[dict] = None
+    custom_settings: Optional[dict] = None
+    voice_id: Optional[str] = None
+
+class UserProfileResponse(BaseModel):
+    email: str
+    display_name: Optional[str]
+    introduction: Optional[str]
+    relationship: Optional[str]
+    meeting_status: Optional[str]
+    avatar_url: Optional[str]
+    theme_preference: Optional[str]
+    notification_settings: Optional[dict]
+    custom_settings: Optional[dict]
+    voice_id: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+    last_synced: datetime
 
 # Global variables
 model = None
@@ -907,6 +943,182 @@ async def get_user_answered_questions(user_email: str):
         raise
     except Exception as e:
         logger.error(f"Error getting answered questions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/profile/{user_email}", response_model=UserProfileResponse)
+async def get_user_profile(user_email: str):
+    """Get user profile by email"""
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT email, display_name, introduction, relationship, meeting_status,
+                           avatar_url, theme_preference, notification_settings, custom_settings, voice_id,
+                           created_at, updated_at, last_synced
+                    FROM user_profiles 
+                    WHERE email = %s
+                """, (user_email,))
+                
+                profile = cur.fetchone()
+                if not profile:
+                    # Return empty profile for new users (don't error)
+                    return UserProfileResponse(
+                        email=user_email,
+                        display_name=None,
+                        introduction=None,
+                        relationship=None,
+                        meeting_status=None,
+                        avatar_url=None,
+                        theme_preference='light',
+                        notification_settings={},
+                        custom_settings={},
+                        voice_id=None,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        last_synced=datetime.now()
+                    )
+                
+                return UserProfileResponse(**dict(profile))
+                
+        finally:
+            conn.close()
+            
+    except Exception as e:
+        logger.error(f"Error getting profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/profile/{user_email}", response_model=UserProfileResponse)
+async def update_user_profile(user_email: str, profile_data: UserProfileRequest):
+    """Update or create user profile"""
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                # Use INSERT ... ON CONFLICT (upsert pattern)
+                cur.execute("""
+                    INSERT INTO user_profiles (
+                        email, display_name, introduction, relationship, meeting_status,
+                        avatar_url, theme_preference, notification_settings, custom_settings, voice_id,
+                        created_at, updated_at, last_synced
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                    )
+                    ON CONFLICT (email) DO UPDATE SET
+                        display_name = COALESCE(EXCLUDED.display_name, user_profiles.display_name),
+                        introduction = COALESCE(EXCLUDED.introduction, user_profiles.introduction),
+                        relationship = COALESCE(EXCLUDED.relationship, user_profiles.relationship),
+                        meeting_status = COALESCE(EXCLUDED.meeting_status, user_profiles.meeting_status),
+                        avatar_url = COALESCE(EXCLUDED.avatar_url, user_profiles.avatar_url),
+                        theme_preference = COALESCE(EXCLUDED.theme_preference, user_profiles.theme_preference),
+                        notification_settings = COALESCE(EXCLUDED.notification_settings, user_profiles.notification_settings),
+                        custom_settings = COALESCE(EXCLUDED.custom_settings, user_profiles.custom_settings),
+                        voice_id = COALESCE(EXCLUDED.voice_id, user_profiles.voice_id),
+                        updated_at = CURRENT_TIMESTAMP,
+                        last_synced = CURRENT_TIMESTAMP
+                    RETURNING email, display_name, introduction, relationship, meeting_status,
+                             avatar_url, theme_preference, notification_settings, custom_settings, voice_id,
+                             created_at, updated_at, last_synced
+                """, (
+                    user_email,
+                    profile_data.display_name,
+                    profile_data.introduction,
+                    profile_data.relationship,
+                    profile_data.meeting_status,
+                    profile_data.avatar_url,
+                    profile_data.theme_preference,
+                    profile_data.notification_settings,
+                    profile_data.custom_settings,
+                    profile_data.voice_id
+                ))
+                
+                updated_profile = cur.fetchone()
+                conn.commit()
+                
+                return UserProfileResponse(**dict(updated_profile))
+                
+        finally:
+            conn.close()
+            
+    except Exception as e:
+        logger.error(f"Error updating profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/tts", response_model=TTSResponse)
+async def generate_tts(request: TTSRequest):
+    """Generate text-to-speech audio using ElevenLabs API"""
+    try:
+        import requests
+        import base64
+        import tempfile
+        import os
+        from urllib.parse import urlparse
+        
+        # ElevenLabs API configuration
+        ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY')
+        if not ELEVENLABS_API_KEY:
+            raise HTTPException(status_code=500, detail="ElevenLabs API key not configured")
+        
+        # Use Nanay Avelina Gonzales voice (Filipino mother voice, warm and familiar)
+        VOICE_ID = "HXiggO6rHDAxWaFMzhB7"  # Nanay Avelina Gonzales
+        
+        # Default voice settings optimized for Eleanor's character
+        voice_settings = {
+            "stability": 0.6,
+            "similarity_boost": 0.7,
+            "style": 0.1,
+            "use_speaker_boost": True
+        }
+        
+        # Override with custom settings if provided
+        if request.voice_settings:
+            voice_settings.update(request.voice_settings)
+        
+        # Make request to ElevenLabs API
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
+        headers = {
+            "Accept": "audio/mpeg",
+            "Content-Type": "application/json",
+            "xi-api-key": ELEVENLABS_API_KEY
+        }
+        
+        data = {
+            "text": request.text,
+            "model_id": "eleven_monolingual_v1",
+            "voice_settings": voice_settings
+        }
+        
+        response = requests.post(url, json=data, headers=headers)
+        
+        if response.status_code != 200:
+            logger.error(f"ElevenLabs API error: {response.status_code} - {response.text}")
+            raise HTTPException(status_code=response.status_code, detail=f"TTS generation failed: {response.text}")
+        
+        # Create a temporary file to store the audio
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
+            temp_file.write(response.content)
+            temp_path = temp_file.name
+        
+        # Convert to base64 data URL for immediate use
+        with open(temp_path, "rb") as audio_file:
+            audio_data = audio_file.read()
+            audio_base64 = base64.b64encode(audio_data).decode()
+            data_url = f"data:audio/mpeg;base64,{audio_base64}"
+        
+        # Clean up temp file
+        os.unlink(temp_path)
+        
+        return TTSResponse(
+            audio_url=data_url,
+            status="success"
+        )
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Network error during TTS generation: {str(e)}")
+        raise HTTPException(status_code=503, detail="TTS service unavailable")
+    except Exception as e:
+        logger.error(f"Error generating TTS: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

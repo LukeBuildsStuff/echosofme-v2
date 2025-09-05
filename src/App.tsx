@@ -13,6 +13,7 @@ import Chat from './pages/Chat'
 import EnhancedReflections from './pages/EnhancedReflections'
 import Legacy from './pages/Legacy'
 import Settings from './pages/Settings'
+import VoiceClone from './pages/VoiceClone'
 import ResetPassword from './pages/ResetPassword'
 
 // Protected Route wrapper component
@@ -91,6 +92,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Settings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/voice-clone"
+          element={
+            <ProtectedRoute>
+              <VoiceClone />
             </ProtectedRoute>
           }
         />

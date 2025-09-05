@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { profileSyncService, type UserProfile } from '../services/profileSyncService';
 
 interface User {
   id: string;
@@ -11,6 +12,7 @@ interface User {
     purpose: string;
     knowledgeLevel: string;
     introduction: string;
+    voiceId?: string;
   };
 }
 
@@ -20,7 +22,9 @@ interface AuthContextType {
   login: (userData: User) => void;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
+  updateProfile: (profileData: Partial<UserProfile>) => Promise<void>;
   clearAllUserData: () => boolean;
+  syncProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,27 +71,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = (userData: User) => {
+  const login = async (userData: User) => {
     try {
       console.log('🔍 AUTH - Login called with displayName:', userData.displayName);
       
-      // Login.tsx now provides the correct user data, so we can use it directly
+      // Set authentication state first
       localStorage.setItem('echos_authenticated', 'true');
-      localStorage.setItem('echos_user_profile', JSON.stringify(userData)); // Current user (for checkAuth)
-      
-      // Save to user-specific key for persistence across sessions
-      // Normalize email to ensure consistent key usage
-      const normalizedEmail = userData.email.toLowerCase().trim();
-      const userSpecificKey = `echos_user_profile_${normalizedEmail}`;
-      
-      // Trust Login.tsx - it already loaded the correct saved profile
-      localStorage.setItem(userSpecificKey, JSON.stringify(userData));
-      console.log('🔍 AUTH - Saved to key:', userSpecificKey, 'displayName:', userData.displayName);
-      
       localStorage.setItem('echos_current_user', userData.id);
       
       setUser(userData);
       setIsAuthenticated(true);
+      
+      // Sync profile with database after successful login
+      await syncUserProfile(userData);
     } catch (error) {
       console.error('Error during login:', error);
       throw new Error('Failed to save authentication data');
@@ -154,6 +150,92 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return false; // User cancelled
   };
 
+  const syncUserProfile = async (userData: User) => {
+    try {
+      // Always try to load the latest profile from database
+      console.log('🔄 AuthContext: Syncing profile for user:', userData.email);
+      const syncedProfile = await profileSyncService.getUserProfile(userData.email);
+      
+      if (syncedProfile) {
+        // Update user state with database profile data (database is source of truth)
+        const updatedUser = {
+          ...userData,
+          displayName: syncedProfile.display_name || userData.displayName,
+          profile: {
+            ...userData.profile,
+            displayName: syncedProfile.display_name || userData.profile?.displayName || '',
+            introduction: syncedProfile.introduction || '',  // Use database value or empty
+            relationship: syncedProfile.relationship || userData.profile?.relationship || '',
+            meetingStatus: syncedProfile.meeting_status || userData.profile?.meetingStatus || '',
+            purpose: userData.profile?.purpose || 'Personal growth and reflection',
+            knowledgeLevel: userData.profile?.knowledgeLevel || 'Learning together',
+            voiceId: syncedProfile.voice_id || userData.profile?.voiceId,
+          }
+        };
+        
+        // Save updated profile to localStorage for caching
+        localStorage.setItem('echos_user_profile', JSON.stringify(updatedUser));
+        const normalizedEmail = userData.email.toLowerCase().trim();
+        localStorage.setItem(`echos_user_profile_${normalizedEmail}`, JSON.stringify(updatedUser));
+        
+        setUser(updatedUser);
+        console.log('✅ AuthContext: Profile synced from database:', {
+          introduction: syncedProfile.introduction,
+          displayName: syncedProfile.display_name
+        });
+      } else {
+        console.log('⚠️ AuthContext: No profile found in database, using local data');
+      }
+      
+      // Retry any queued syncs
+      await profileSyncService.retryQueuedSyncs();
+    } catch (error) {
+      console.error('❌ AuthContext: Profile sync failed:', error);
+    }
+  };
+
+  const syncProfile = async () => {
+    if (user) {
+      await syncUserProfile(user);
+    }
+  };
+
+  const updateProfile = async (profileData: Partial<UserProfile>) => {
+    if (!user) return;
+    
+    try {
+      // Update through sync service
+      const updatedProfile = await profileSyncService.updateUserProfile(user.email, profileData);
+      
+      if (updatedProfile) {
+        // Update user state to reflect the changes
+        const updatedUser = {
+          ...user,
+          displayName: updatedProfile.display_name || user.displayName,
+          profile: {
+            ...user.profile,
+            displayName: updatedProfile.display_name || user.profile?.displayName || '',
+            introduction: updatedProfile.introduction || user.profile?.introduction || '',
+            relationship: updatedProfile.relationship || user.profile?.relationship || '',
+            meetingStatus: updatedProfile.meeting_status || user.profile?.meetingStatus || '',
+            voiceId: updatedProfile.voice_id || user.profile?.voiceId,
+          }
+        };
+        
+        // Save to localStorage
+        localStorage.setItem('echos_user_profile', JSON.stringify(updatedUser));
+        const normalizedEmail = user.email.toLowerCase().trim();
+        localStorage.setItem(`echos_user_profile_${normalizedEmail}`, JSON.stringify(updatedUser));
+        
+        setUser(updatedUser);
+        console.log('✅ Profile updated successfully');
+      }
+    } catch (error) {
+      console.error('❌ Profile update failed:', error);
+      throw error;
+    }
+  };
+
   const updateUser = (userData: Partial<User>) => {
     if (!user) return;
     
@@ -192,7 +274,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     updateUser,
+    updateProfile,
     clearAllUserData,
+    syncProfile,
   };
 
   // Show loading state while checking authentication

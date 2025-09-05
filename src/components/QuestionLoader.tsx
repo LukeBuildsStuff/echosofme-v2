@@ -102,12 +102,6 @@ const CATEGORIES: Record<string, QuestionCategory> = {
     color: 'bg-gray-500',
     icon: '🎯'
   },
-  dating_experiences: {
-    name: 'Dating Experiences',
-    count: 0,
-    color: 'bg-rose-400',
-    icon: '💝'
-  },
   creative_expression: {
     name: 'Creative Expression',
     count: 0,
@@ -270,31 +264,86 @@ const useQuestionLoader = () => {
     }
   };
 
+  // Hash function for consistent daily randomization
+  const hashStringToNumber = (str: string): number => {
+    let hash = 0;
+    if (str.length === 0) return hash;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+  };
+
+  const getRecentlyAnsweredQuestionIds = (daysBack: number = 14): number[] => {
+    // Get all answered question IDs from the last N days
+    const recentIds: number[] = [];
+    Object.values(selectedQuestionsByCategory).forEach(categorySet => {
+      categorySet.forEach(id => recentIds.push(id));
+    });
+    return recentIds;
+  };
+
+  const getRandomizedQuestionIndex = (seed: string, excludeRecentIds: number[] = []): number => {
+    // Filter out recently answered questions
+    const recentlyAnswered = getRecentlyAnsweredQuestionIds();
+    const allExcludedIds = [...excludeRecentIds, ...recentlyAnswered];
+    
+    const availableQuestions = questions.filter(q => !allExcludedIds.includes(q.id));
+    
+    if (availableQuestions.length === 0) {
+      // If all questions are recent, fall back to all questions (but still avoid today's other period)
+      const fallbackQuestions = questions.filter(q => !excludeRecentIds.includes(q.id));
+      if (fallbackQuestions.length === 0) {
+        return hashStringToNumber(seed) % questions.length;
+      }
+      const randomIndex = hashStringToNumber(seed) % fallbackQuestions.length;
+      const selectedQuestion = fallbackQuestions[randomIndex];
+      return questions.findIndex(q => q.id === selectedQuestion.id);
+    }
+    
+    const randomIndex = hashStringToNumber(seed) % availableQuestions.length;
+    const selectedQuestion = availableQuestions[randomIndex];
+    return questions.findIndex(q => q.id === selectedQuestion.id);
+  };
+
   const getDailyQuestion = (): Question | null => {
-    // Simple algorithm: use date to determine which question to show
-    const today = new Date();
-    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-    const questionIndex = dayOfYear % questions.length;
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const seed = `${user?.email || 'anonymous'}-daily-${today}`;
+    const questionIndex = getRandomizedQuestionIndex(seed);
     
     return questions[questionIndex] || null;
   };
 
   const getMorningQuestion = (): Question | null => {
-    // Use date + "morning" seed for consistent morning questions
-    const today = new Date();
-    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-    const morningIndex = (dayOfYear * 2) % questions.length; // Different from afternoon
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const seed = `${user?.email || 'anonymous'}-morning-${today}`;
     
-    return questions[morningIndex] || null;
+    // Get afternoon question to avoid duplicating it
+    const afternoonSeed = `${user?.email || 'anonymous'}-afternoon-${today}`;
+    const afternoonIndex = getRandomizedQuestionIndex(afternoonSeed);
+    const afternoonQuestionId = questions[afternoonIndex]?.id;
+    
+    const excludeIds = afternoonQuestionId ? [afternoonQuestionId] : [];
+    const questionIndex = getRandomizedQuestionIndex(seed, excludeIds);
+    
+    return questions[questionIndex] || null;
   };
 
   const getAfternoonQuestion = (): Question | null => {
-    // Use date + "afternoon" seed for different afternoon questions
-    const today = new Date();
-    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-    const afternoonIndex = (dayOfYear * 2 + 1) % questions.length; // Different from morning
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const seed = `${user?.email || 'anonymous'}-afternoon-${today}`;
     
-    return questions[afternoonIndex] || null;
+    // Get morning question to avoid duplicating it
+    const morningSeed = `${user?.email || 'anonymous'}-morning-${today}`;
+    const morningIndex = getRandomizedQuestionIndex(morningSeed);
+    const morningQuestionId = questions[morningIndex]?.id;
+    
+    const excludeIds = morningQuestionId ? [morningQuestionId] : [];
+    const questionIndex = getRandomizedQuestionIndex(seed, excludeIds);
+    
+    return questions[questionIndex] || null;
   };
 
   const getNextReflectionTime = (): { time: string; period: string } | null => {

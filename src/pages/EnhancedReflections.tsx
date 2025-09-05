@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Layout from '../components/Layout/Layout';
 import TrainingProgress from '../components/TrainingProgress';
 import ConversationTrainer from '../components/ConversationTrainer';
@@ -31,11 +31,82 @@ const EnhancedReflections: React.FC = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'category' | 'conversation'>('daily');
   const [currentPeriod, setCurrentPeriod] = useState<'morning' | 'afternoon' | 'none'>('none');
   const [reflectionState, setReflectionState] = useState<'available' | 'completed' | 'waiting'>('available');
+  
+  // Draft management state
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
+  const [lastDraftSaved, setLastDraftSaved] = useState<Date | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showDraftRecovered, setShowDraftRecovered] = useState(false);
+  
+  // Ref to track current response value for auto-save
+  const responseRef = useRef(response);
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Draft management functions
+  const getDraftKey = () => user?.email ? `echos_reflection_draft_${user.email}` : null;
+
+  const saveDraft = async (questionId: string, responseText: string, questionText: string, category: string) => {
+    if (!user?.email || !questionId || !responseText.trim()) return;
+    
+    setIsDraftSaving(true);
+    try {
+      const draft = {
+        questionId,
+        response: responseText.trim(),
+        category,
+        savedAt: new Date().toISOString(),
+        questionText
+      };
+      
+      const draftKey = getDraftKey();
+      if (draftKey) {
+        localStorage.setItem(draftKey, JSON.stringify(draft));
+        setLastDraftSaved(new Date());
+        setHasUnsavedChanges(false);
+        console.log('Draft saved successfully');
+      }
+    } catch (error) {
+      console.error('Failed to save draft:', error);
+    } finally {
+      setIsDraftSaving(false);
+    }
+  };
+
+  const loadDraft = () => {
+    const draftKey = getDraftKey();
+    if (!draftKey) return null;
+    
+    try {
+      const draftStr = localStorage.getItem(draftKey);
+      if (draftStr) {
+        const draft = JSON.parse(draftStr);
+        // Only return draft if it's less than 24 hours old
+        const draftAge = Date.now() - new Date(draft.savedAt).getTime();
+        if (draftAge < 24 * 60 * 60 * 1000) {
+          return draft;
+        } else {
+          // Remove old draft
+          localStorage.removeItem(draftKey);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load draft:', error);
+    }
+    return null;
+  };
+
+  const clearDraft = () => {
+    const draftKey = getDraftKey();
+    if (draftKey) {
+      localStorage.removeItem(draftKey);
+      setHasUnsavedChanges(false);
+      setLastDraftSaved(null);
+    }
+  };
 
   useEffect(() => {
     const period = getCurrentReflectionPeriod();
@@ -66,6 +137,59 @@ const EnhancedReflections: React.FC = () => {
       }
     }
   }, [viewMode, getCurrentReflectionPeriod, hasCompletedMorningReflection, hasCompletedAfternoonReflection, getMorningQuestion, getAfternoonQuestion]);
+
+  // Draft recovery on component mount
+  useEffect(() => {
+    const savedDraft = loadDraft();
+    if (savedDraft && currentQuestion?.id === savedDraft.questionId) {
+      setResponse(savedDraft.response);
+      setHasUnsavedChanges(false);
+      setShowDraftRecovered(true);
+      // Auto-hide recovery message after 5 seconds
+      setTimeout(() => setShowDraftRecovered(false), 5000);
+      console.log('Draft restored for question:', savedDraft.questionText);
+    }
+  }, [currentQuestion]);
+
+  // Auto-save timer - save draft every 30 seconds when user is typing
+  useEffect(() => {
+    if (!currentQuestion || !response.trim() || !hasUnsavedChanges) return;
+
+    const autoSaveInterval = setInterval(() => {
+      if (responseRef.current.trim().length > 10) { // Only auto-save if meaningful content
+        saveDraft(
+          currentQuestion.id,
+          responseRef.current,
+          currentQuestion.question,
+          currentQuestion.category
+        );
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [currentQuestion, hasUnsavedChanges]);
+
+  // Track unsaved changes when user types
+  useEffect(() => {
+    responseRef.current = response; // Update ref with current value
+    if (response.trim().length > 0) {
+      setHasUnsavedChanges(true);
+    }
+  }, [response]);
+
+  // Beforeunload warning for unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && response.trim().length > 10) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes to your reflection. Are you sure you want to leave?';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges, response]);
 
   const calculateQualityScore = (text: string): number => {
     const wordCount = text.trim().split(/\s+/).length;
@@ -139,6 +263,9 @@ const EnhancedReflections: React.FC = () => {
         setCurrentQuestion(null);
       }
 
+      // Clear draft after successful submission
+      clearDraft();
+      
       // Show success message
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
@@ -229,6 +356,19 @@ const EnhancedReflections: React.FC = () => {
                     <div>
                       <p className="text-green-800 font-medium">Reflection saved successfully!</p>
                       <p className="text-green-600 text-sm">Your Echo is learning from your response.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Draft Recovery Message */}
+              {showDraftRecovered && (
+                <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <div className="text-blue-500 text-xl mr-3">📝</div>
+                    <div>
+                      <p className="text-blue-800 font-medium">Draft restored!</p>
+                      <p className="text-blue-600 text-sm">Your previous reflection was automatically recovered.</p>
                     </div>
                   </div>
                 </div>
@@ -403,6 +543,28 @@ const EnhancedReflections: React.FC = () => {
                             ? 'Good length ✓' 
                             : 'Try for at least 50 words'}
                         </span>
+                      </div>
+                      
+                      {/* Draft Status Indicator */}
+                      <div className="flex justify-between items-center mt-2">
+                        <div className="text-xs text-gray-400">
+                          {isDraftSaving && (
+                            <span className="flex items-center text-blue-500">
+                              <div className="w-3 h-3 border border-blue-500 border-t-transparent rounded-full animate-spin mr-1"></div>
+                              Saving draft...
+                            </span>
+                          )}
+                          {!isDraftSaving && lastDraftSaved && (
+                            <span className="text-green-500">
+                              ✓ Draft saved {lastDraftSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                          {!isDraftSaving && !lastDraftSaved && hasUnsavedChanges && response.trim().length > 0 && (
+                            <span className="text-amber-500">
+                              Unsaved changes
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
