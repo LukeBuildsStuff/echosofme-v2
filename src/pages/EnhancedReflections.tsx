@@ -8,9 +8,9 @@ import { useAuth } from '../contexts/AuthContext';
 
 const EnhancedReflections: React.FC = () => {
   const { user } = useAuth();
-  const { 
-    categories, 
-    getDailyQuestion, 
+  const {
+    categories,
+    getDailyQuestion,
     getMorningQuestion,
     getAfternoonQuestion,
     getQuestionsByCategory,
@@ -19,7 +19,12 @@ const EnhancedReflections: React.FC = () => {
     hasCompletedAfternoonReflection,
     getNextReflectionTime,
     getRemainingCount,
-    markQuestionAsAnswered
+    markQuestionAsAnswered,
+    rerollMorningQuestion,
+    rerollAfternoonQuestion,
+    getSkippedQuestionsCount,
+    isQuestionPreviouslySkipped,
+    removeFromSkippedPool
   } = useQuestionLoader();
   const { addReflection, stats } = useEcho();
   
@@ -31,7 +36,9 @@ const EnhancedReflections: React.FC = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'category' | 'conversation'>('daily');
   const [currentPeriod, setCurrentPeriod] = useState<'morning' | 'afternoon' | 'none'>('none');
   const [reflectionState, setReflectionState] = useState<'available' | 'completed' | 'waiting'>('available');
-  
+  const [isRerolling, setIsRerolling] = useState(false);
+  const [rerollAnimation, setRerollAnimation] = useState(false);
+
   // Draft management state
   const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [lastDraftSaved, setLastDraftSaved] = useState<Date | null>(null);
@@ -216,6 +223,32 @@ const EnhancedReflections: React.FC = () => {
     return Math.min(Math.max(score, 0.1), 1.0); // Ensure score is between 0.1 and 1.0
   };
 
+  const handleReroll = async () => {
+    if (!currentQuestion || viewMode !== 'daily') return;
+
+    setIsRerolling(true);
+    setRerollAnimation(true);
+
+    // Clear any draft for the current question
+    clearDraft();
+    setResponse('');
+
+    // Perform the reroll based on the period
+    let newQuestion: Question | null = null;
+    if (currentPeriod === 'morning') {
+      newQuestion = rerollMorningQuestion();
+    } else if (currentPeriod === 'afternoon') {
+      newQuestion = rerollAfternoonQuestion();
+    }
+
+    // Update the current question with animation
+    setTimeout(() => {
+      setCurrentQuestion(newQuestion);
+      setRerollAnimation(false);
+      setIsRerolling(false);
+    }, 300);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentQuestion || !response.trim()) return;
@@ -226,7 +259,7 @@ const EnhancedReflections: React.FC = () => {
       const wordCount = response.trim().split(/\s+/).length;
       const qualityScore = calculateQualityScore(response);
       
-      addReflection({
+      await addReflection({
         questionId: currentQuestion.id,
         question: currentQuestion.question,
         category: currentQuestion.category,
@@ -238,6 +271,12 @@ const EnhancedReflections: React.FC = () => {
 
       // Mark question as answered for category tracking
       markQuestionAsAnswered(currentQuestion.id, currentQuestion.category);
+
+      // Remove from skipped pool if it was previously skipped
+      if (isQuestionPreviouslySkipped(currentQuestion.id)) {
+        removeFromSkippedPool(currentQuestion.id);
+        console.log('✅ Removed answered question from skip pool');
+      }
 
       // Mark daily reflection as completed if it's a daily reflection
       if (viewMode === 'daily') {
@@ -282,6 +321,12 @@ const EnhancedReflections: React.FC = () => {
       
     } catch (error) {
       console.error('Error saving reflection:', error);
+      
+      // Show error message to user
+      alert('Failed to save reflection. Please check your internet connection and try again. Your work has been saved locally.');
+      
+      // Clear success state if it was set
+      setShowSuccess(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -500,19 +545,42 @@ const EnhancedReflections: React.FC = () => {
 
               {/* Question & Response Form */}
               {currentQuestion && (
-                <div className="bg-white rounded-lg p-6 shadow-sm">
-                  
+                <div className={`bg-white rounded-lg p-6 shadow-sm ${rerollAnimation ? 'animate-pulse' : ''}`}>
+
                   {/* Question Header */}
                   <div className="mb-6">
-                    <div className="flex items-center mb-2">
-                      <span className="text-2xl mr-2">{getCategoryIcon(currentQuestion.category)}</span>
-                      <span className={`px-2 py-1 text-xs font-medium text-white rounded-full ${getCategoryColor(currentQuestion.category)}`}>
-                        {categories[currentQuestion.category]?.name || currentQuestion.category}
-                      </span>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-2">{getCategoryIcon(currentQuestion.category)}</span>
+                        <span className={`px-2 py-1 text-xs font-medium text-white rounded-full ${getCategoryColor(currentQuestion.category)}`}>
+                          {categories[currentQuestion.category]?.name || currentQuestion.category}
+                        </span>
+                        {isQuestionPreviouslySkipped(currentQuestion.id) && (
+                          <span className="ml-2 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 rounded-full">
+                            📌 Previously skipped
+                          </span>
+                        )}
+                      </div>
+                      {viewMode === 'daily' && (
+                        <button
+                          onClick={handleReroll}
+                          disabled={isRerolling || isSubmitting}
+                          className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          title="Skip for now - this question will come back later"
+                        >
+                          <span className={`${isRerolling ? 'animate-spin' : ''}`}>🔄</span>
+                          Skip for now
+                        </button>
+                      )}
                     </div>
                     <h2 className="text-xl font-semibold text-gray-900">
                       {currentQuestion.question}
                     </h2>
+                    {viewMode === 'daily' && getSkippedQuestionsCount() > 0 && (
+                      <div className="mt-2 text-xs text-gray-500">
+                        💡 You have {getSkippedQuestionsCount()} skipped {getSkippedQuestionsCount() === 1 ? 'question' : 'questions'} that will resurface in future reflections
+                      </div>
+                    )}
                   </div>
 
                   {/* Response Form */}

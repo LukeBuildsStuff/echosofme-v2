@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getEleanorApiUrl } from '../utils/apiConfig';
 import Layout from '../components/Layout/Layout';
 import { useEcho } from '../contexts/EchoContext';
 import AudioPlayer from '../components/AudioPlayer';
@@ -28,6 +27,15 @@ const Chat: React.FC = () => {
   const [selectedEcho, setSelectedEcho] = useState<Echo | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
 
+  // Dynamic Echo description based on readiness
+  const getEchoDescription = () => {
+    if (isEchoReady()) {
+      return 'Your complete digital reflection, trained from all your memories';
+    } else {
+      return `Your future digital self (${2500 - stats.totalReflections} more reflections to unlock)`;
+    }
+  };
+
   // Mock data for available Echos
   const availableEchos: Echo[] = [
     {
@@ -42,11 +50,29 @@ const Chat: React.FC = () => {
       id: 'my-echo',
       name: 'Your Echo',
       relationship: 'Self',
-      description: 'Your personal digital reflection (in training)',
+      description: getEchoDescription(),
       avatar: '🪞',
       isOwn: true
     }
   ];
+
+  // Dynamic greetings for Eleanor
+  const eleanorGreetings = [
+    "¡Hola, mijo! I was just thinking about you. How has your day been treating you?",
+    "Ah, there you are! Come, sit with me. What's on your heart today?",
+    "Hello, dear one. The house always feels warmer when we talk. What brings you to visit?",
+    "¡Buenas! I was just remembering something that might make you smile. But first, how are you?",
+    "My dear, perfect timing! I've been hoping we could chat. How are things going?",
+    "Ah, mijo, you know what I always say - the best conversations happen over imaginary coffee. What shall we talk about?",
+    "Hello, sweetheart. Sometimes the heart needs to speak. What's weighing on your mind?",
+    "¡Qué bueno verte! You know, at my age, every conversation is a gift. What would you like to share?",
+    "Hello, dear. I've lived long enough to know when someone needs to talk. I'm here to listen.",
+    "Mija, come close. Tell me - what stories are you carrying today?"
+  ];
+
+  const getRandomEleanorGreeting = (): string => {
+    return eleanorGreetings[Math.floor(Math.random() * eleanorGreetings.length)];
+  };
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -66,24 +92,52 @@ const Chat: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Handle navigation state to auto-select Echo
+  useEffect(() => {
+    const state = location.state as { eleanorMessage?: string; selectedEchoId?: string };
+    
+    if (state?.eleanorMessage || state?.selectedEchoId === 'eleanor') {
+      // Auto-select Eleanor if coming from popup or dashboard
+      const eleanorEcho = availableEchos.find(echo => echo.id === 'eleanor');
+      if (eleanorEcho) {
+        setSelectedEcho(eleanorEcho);
+        
+        // Set initial message
+        const initialMessage: Message = {
+          id: '1',
+          sender: 'echo',
+          content: state.eleanorMessage || getRandomEleanorGreeting(),
+          timestamp: new Date().toISOString(),
+        };
+        
+        setMessages([initialMessage]);
+      }
+    }
+  }, [location.state]);
+
   const selectEcho = (echo: Echo) => {
     // Don't allow selection if it's user's own Echo and it's not ready
     if (echo.isOwn && !isEchoReady()) {
       return;
     }
-    
+
     setSelectedEcho(echo);
-    
+
     // Set initial message based on selected Echo
+    let echoMessage;
+    if (echo.isOwn) {
+      echoMessage = "Hello! I'm your Echo - your complete digital reflection. I've learned from all your reflections and I'm ready for deep conversations. What would you like to explore together?";
+    } else {
+      echoMessage = getRandomEleanorGreeting();
+    }
+
     const initialMessage: Message = {
       id: '1',
       sender: 'echo',
-      content: echo.isOwn 
-        ? "Hello! I'm your Echo - a digital reflection of yourself. I'm still learning from your reflections, but I'm here to help you explore your thoughts and memories. What would you like to talk about?"
-        : `Hello! I'm ${echo.name}. I'm here to listen, chat, and help you reflect on your experiences. How are you feeling today?`,
+      content: echoMessage,
       timestamp: new Date().toISOString(),
     };
-    
+
     setMessages([initialMessage]);
   };
 
@@ -107,40 +161,52 @@ const Chat: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Get user profile for context
-      const userProfile = JSON.parse(localStorage.getItem('echos_user_profile') || '{}');
-      const contextualMessage = `${userProfile.displayName || 'User'} (${userProfile.profile?.relationship || 'Friend'}): ${inputMessage}`;
+      let response;
+      let apiEndpoint;
 
-      // Detect question complexity for appropriate response length
-      const isSimpleGreeting = /^(hi|hello|hey|good morning|buenos dias)[\s!?]*$/i.test(inputMessage);
-      const isYesNoQuestion = /^(is |are |do |does |can |will |should |would |could ).*\?$/i.test(inputMessage);
+      if (selectedEcho?.isOwn) {
+        // Route to full Echo endpoint (only available when Echo is ready at 2500+ reflections)
+        const userProfile = JSON.parse(localStorage.getItem('echos_user_profile') || '{}');
+        const userEmail = userProfile.email || 'user@example.com';
 
-      let maxResponseLength = 500; // default for complex questions
-      if (isSimpleGreeting) maxResponseLength = 200;  // short for greetings
-      else if (isYesNoQuestion) maxResponseLength = 300; // medium for yes/no
+        // For now, show placeholder message since full Echo isn't implemented yet
+        throw new Error('Full Echo functionality coming soon! Complete 2500 reflections to unlock.');
+      } else {
+        // Route to Eleanor endpoint
+        const userProfile = JSON.parse(localStorage.getItem('echos_user_profile') || '{}');
+        const contextualMessage = `${userProfile.displayName || 'User'} (${userProfile.profile?.relationship || 'Friend'}): ${inputMessage}`;
 
-      const apiUrl = getEleanorApiUrl();
-      console.log('💬 Sending chat message to:', `/eleanor/chat`);
-      
-      // Add timeout for mobile connections
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for chat (mobile tunnel needs extra time)
-      
-      const response = await fetch(`/eleanor/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          message: contextualMessage,
-          max_length: maxResponseLength,
-          temperature: 0.7,
-        }),
-        signal: controller.signal,
-      });
+        // Detect question complexity for appropriate response length
+        const isSimpleGreeting = /^(hi|hello|hey|good morning|buenos dias)[\s!?]*$/i.test(inputMessage);
+        const isYesNoQuestion = /^(is |are |do |does |can |will |should |would |could ).*\?$/i.test(inputMessage);
 
-      clearTimeout(timeoutId);
+        let maxResponseLength = 500; // default for complex questions
+        if (isSimpleGreeting) maxResponseLength = 200;  // short for greetings
+        else if (isYesNoQuestion) maxResponseLength = 300; // medium for yes/no
+
+        apiEndpoint = '/eleanor/chat';
+        console.log('💬 Sending chat message to Eleanor:', apiEndpoint);
+
+        // Add timeout for mobile connections
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for chat (mobile tunnel needs extra time)
+
+        response = await fetch(apiEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            message: contextualMessage,
+            max_length: maxResponseLength,
+            temperature: 0.7,
+          }),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+      }
 
       if (response.ok) {
         const data = await response.json();
@@ -261,27 +327,27 @@ const Chat: React.FC = () => {
                   <p className="text-gray-600 mb-4">{echo.description}</p>
                   {echo.isOwn && (
                     <div className={`rounded-lg p-3 ${
-                      isEchoReady() 
-                        ? 'bg-green-50 border border-green-200' 
-                        : 'bg-blue-50 border border-blue-200'
+                      isEchoReady()
+                        ? 'bg-green-50 border border-green-200'
+                        : 'bg-amber-50 border border-amber-200'
                     }`}>
                       {isEchoReady() ? (
                         <p className="text-green-800 text-sm">
-                          <span className="font-medium">Ready:</span> Your Echo is fully trained and ready for conversations!
+                          <span className="font-medium">✨ Fully Trained:</span> Your Echo is complete with {stats.totalReflections} reflections!
                         </p>
                       ) : (
                         <div>
-                          <p className="text-blue-800 text-sm mb-2">
-                            <span className="font-medium">Training Progress:</span> {Math.round(stats.echoReadiness)}% complete
+                          <p className="text-amber-800 text-sm mb-2">
+                            <span className="font-medium">🔒 Not Ready Yet:</span> {2500 - stats.totalReflections} more reflections needed
                           </p>
-                          <div className="w-full bg-blue-200 rounded-full h-2 mb-2">
-                            <div 
-                              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                              style={{ width: `${stats.echoReadiness}%` }}
+                          <div className="w-full bg-amber-200 rounded-full h-2 mb-2">
+                            <div
+                              className="bg-amber-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${(stats.totalReflections / 2500) * 100}%` }}
                             ></div>
                           </div>
-                          <p className="text-blue-700 text-xs">
-                            Continue adding reflections to train your Echo. Need {2500 - stats.totalReflections} more reflections.
+                          <p className="text-amber-700 text-xs">
+                            Add {2500 - stats.totalReflections} more reflections to unlock your Echo!
                           </p>
                         </div>
                       )}

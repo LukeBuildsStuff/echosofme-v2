@@ -5,6 +5,7 @@ interface User {
   id: string;
   email: string;
   displayName: string;
+  provider?: 'email' | 'google';
   profile: {
     displayName: string;
     relationship: string;
@@ -20,6 +21,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   login: (userData: User) => void;
+  loginWithGoogle: (email: string, name: string, googleId: string) => void;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
   updateProfile: (profileData: Partial<UserProfile>) => Promise<void>;
@@ -90,6 +92,62 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async (email: string, name: string, googleId: string) => {
+    try {
+      console.log('🔍 AUTH - Google login for:', email);
+      
+      const normalizedEmail = email.toLowerCase().trim();
+      const userSpecificKey = `echos_user_profile_${normalizedEmail}`;
+      let existingProfile = localStorage.getItem(userSpecificKey);
+      
+      let user: User;
+      
+      if (existingProfile) {
+        // Returning Google user - use saved profile
+        try {
+          const savedUser = JSON.parse(existingProfile);
+          user = {
+            ...savedUser,
+            id: googleId,
+            email: normalizedEmail,
+            displayName: name || savedUser.displayName,
+            provider: 'google' as const,
+          };
+        } catch (error) {
+          console.error('Error loading saved Google user profile:', error);
+          // Fallback to new user creation
+          user = createNewGoogleUser(normalizedEmail, name, googleId);
+        }
+      } else {
+        // New Google user
+        user = createNewGoogleUser(normalizedEmail, name, googleId);
+      }
+      
+      // Use the standard login flow
+      await login(user);
+    } catch (error) {
+      console.error('Error during Google login:', error);
+      throw new Error('Failed to authenticate with Google');
+    }
+  };
+
+  const createNewGoogleUser = (email: string, name: string, googleId: string): User => {
+    return {
+      id: googleId,
+      email: email,
+      displayName: name || email.split('@')[0],
+      provider: 'google' as const,
+      profile: {
+        displayName: name || email.split('@')[0],
+        relationship: 'Friendly',
+        meetingStatus: 'First time meeting',
+        purpose: 'Personal growth and reflection',
+        knowledgeLevel: 'Learning together',
+        introduction: '',
+      }
+    };
+  };
+
   const logout = () => {
     try {
       // Clear ONLY session data on logout (preserve user preferences/profile)
@@ -107,8 +165,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const clearAllUserData = () => {
-    if (!user?.email) return;
+  const clearAllUserData = (): boolean => {
+    if (!user?.email) return false;
     
     const confirmClear = window.confirm(
       'Are you sure you want to permanently delete ALL your data? This includes:\n' +
@@ -272,6 +330,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated,
     user,
     login,
+    loginWithGoogle,
     logout,
     updateUser,
     updateProfile,

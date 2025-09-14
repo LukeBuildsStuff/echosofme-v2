@@ -318,32 +318,168 @@ const useQuestionLoader = () => {
 
   const getMorningQuestion = (): Question | null => {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-    const seed = `${user?.email || 'anonymous'}-morning-${today}`;
-    
-    // Get afternoon question to avoid duplicating it
-    const afternoonSeed = `${user?.email || 'anonymous'}-afternoon-${today}`;
-    const afternoonIndex = getRandomizedQuestionIndex(afternoonSeed);
-    const afternoonQuestionId = questions[afternoonIndex]?.id;
-    
-    const excludeIds = afternoonQuestionId ? [afternoonQuestionId] : [];
-    const questionIndex = getRandomizedQuestionIndex(seed, excludeIds);
-    
-    return questions[questionIndex] || null;
+
+    // CHECK LOCALSTORAGE FIRST - prevent question from changing mid-day
+    if (user?.email) {
+      const storageKey = `morning_question_${today}_${user.email}`;
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          // Find the stored question by ID
+          const storedQuestion = questions.find(q => q.id === parsed.questionId);
+          if (storedQuestion) {
+            console.log('🔒 Using stored morning question:', storedQuestion.question.substring(0, 50) + '...');
+            return storedQuestion;
+          }
+        } catch (e) {
+          console.warn('Failed to parse stored morning question:', e);
+        }
+      }
+    }
+
+    // Check if we should prioritize a skipped question
+    const skippedIds = getSkippedQuestions();
+    let selectedQuestion: Question | null = null;
+
+    if (shouldPrioritizeSkipped() && skippedIds.length > 0) {
+      // Sort skipped questions by last skipped time (oldest first)
+      const skippedData = getSkippedQuestionsData();
+      const sortedSkippedIds = skippedIds.sort((a, b) => {
+        const timeA = skippedData.lastSkipped[a] || '';
+        const timeB = skippedData.lastSkipped[b] || '';
+        return timeA.localeCompare(timeB);
+      });
+
+      // Try to find the oldest skipped question that's not the afternoon question
+      const afternoonSeed = `${user?.email || 'anonymous'}-afternoon-${today}`;
+      const afternoonIndex = getRandomizedQuestionIndex(afternoonSeed);
+      const afternoonQuestionId = questions[afternoonIndex]?.id;
+
+      for (const skippedId of sortedSkippedIds) {
+        if (skippedId !== afternoonQuestionId) {
+          selectedQuestion = questions.find(q => q.id === skippedId) || null;
+          if (selectedQuestion) {
+            console.log('📌 Prioritizing previously skipped question:', selectedQuestion.question.substring(0, 50) + '...');
+            break;
+          }
+        }
+      }
+    }
+
+    // If no skipped question was selected, use normal selection
+    if (!selectedQuestion) {
+      const seed = `${user?.email || 'anonymous'}-morning-${today}`;
+
+      // Get afternoon question to avoid duplicating it
+      const afternoonSeed = `${user?.email || 'anonymous'}-afternoon-${today}`;
+      const afternoonIndex = getRandomizedQuestionIndex(afternoonSeed);
+      const afternoonQuestionId = questions[afternoonIndex]?.id;
+
+      const excludeIds = afternoonQuestionId ? [afternoonQuestionId] : [];
+      const questionIndex = getRandomizedQuestionIndex(seed, excludeIds);
+
+      selectedQuestion = questions[questionIndex] || null;
+    }
+
+    // STORE THE SELECTED QUESTION - lock it for the day
+    if (selectedQuestion && user?.email) {
+      const storageKey = `morning_question_${today}_${user.email}`;
+      const toStore = {
+        questionId: selectedQuestion.id,
+        questionText: selectedQuestion.question,
+        selectedAt: new Date().toISOString(),
+        seed: `${user?.email || 'anonymous'}-morning-${today}`,
+        previouslySkipped: skippedIds.includes(selectedQuestion.id)
+      };
+      localStorage.setItem(storageKey, JSON.stringify(toStore));
+      console.log('💾 Stored morning question for', today, ':', selectedQuestion.question.substring(0, 50) + '...');
+    }
+
+    return selectedQuestion;
   };
 
   const getAfternoonQuestion = (): Question | null => {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-    const seed = `${user?.email || 'anonymous'}-afternoon-${today}`;
-    
-    // Get morning question to avoid duplicating it
-    const morningSeed = `${user?.email || 'anonymous'}-morning-${today}`;
-    const morningIndex = getRandomizedQuestionIndex(morningSeed);
-    const morningQuestionId = questions[morningIndex]?.id;
-    
-    const excludeIds = morningQuestionId ? [morningQuestionId] : [];
-    const questionIndex = getRandomizedQuestionIndex(seed, excludeIds);
-    
-    return questions[questionIndex] || null;
+
+    // CHECK LOCALSTORAGE FIRST - prevent question from changing mid-day
+    if (user?.email) {
+      const storageKey = `afternoon_question_${today}_${user.email}`;
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          // Find the stored question by ID
+          const storedQuestion = questions.find(q => q.id === parsed.questionId);
+          if (storedQuestion) {
+            console.log('🔒 Using stored afternoon question:', storedQuestion.question.substring(0, 50) + '...');
+            return storedQuestion;
+          }
+        } catch (e) {
+          console.warn('Failed to parse stored afternoon question:', e);
+        }
+      }
+    }
+
+    // Check if we should prioritize a skipped question
+    const skippedIds = getSkippedQuestions();
+    let selectedQuestion: Question | null = null;
+
+    if (shouldPrioritizeSkipped() && skippedIds.length > 0) {
+      // Sort skipped questions by last skipped time (oldest first)
+      const skippedData = getSkippedQuestionsData();
+      const sortedSkippedIds = skippedIds.sort((a, b) => {
+        const timeA = skippedData.lastSkipped[a] || '';
+        const timeB = skippedData.lastSkipped[b] || '';
+        return timeA.localeCompare(timeB);
+      });
+
+      // Try to find the oldest skipped question that's not the morning question
+      const morningSeed = `${user?.email || 'anonymous'}-morning-${today}`;
+      const morningIndex = getRandomizedQuestionIndex(morningSeed);
+      const morningQuestionId = questions[morningIndex]?.id;
+
+      for (const skippedId of sortedSkippedIds) {
+        if (skippedId !== morningQuestionId) {
+          selectedQuestion = questions.find(q => q.id === skippedId) || null;
+          if (selectedQuestion) {
+            console.log('📌 Prioritizing previously skipped question:', selectedQuestion.question.substring(0, 50) + '...');
+            break;
+          }
+        }
+      }
+    }
+
+    // If no skipped question was selected, use normal selection
+    if (!selectedQuestion) {
+      const seed = `${user?.email || 'anonymous'}-afternoon-${today}`;
+
+      // Get morning question to avoid duplicating it
+      const morningSeed = `${user?.email || 'anonymous'}-morning-${today}`;
+      const morningIndex = getRandomizedQuestionIndex(morningSeed);
+      const morningQuestionId = questions[morningIndex]?.id;
+
+      const excludeIds = morningQuestionId ? [morningQuestionId] : [];
+      const questionIndex = getRandomizedQuestionIndex(seed, excludeIds);
+
+      selectedQuestion = questions[questionIndex] || null;
+    }
+
+    // STORE THE SELECTED QUESTION - lock it for the day
+    if (selectedQuestion && user?.email) {
+      const storageKey = `afternoon_question_${today}_${user.email}`;
+      const toStore = {
+        questionId: selectedQuestion.id,
+        questionText: selectedQuestion.question,
+        selectedAt: new Date().toISOString(),
+        seed: `${user?.email || 'anonymous'}-afternoon-${today}`,
+        previouslySkipped: skippedIds.includes(selectedQuestion.id)
+      };
+      localStorage.setItem(storageKey, JSON.stringify(toStore));
+      console.log('💾 Stored afternoon question for', today, ':', selectedQuestion.question.substring(0, 50) + '...');
+    }
+
+    return selectedQuestion;
   };
 
   const getNextReflectionTime = (): { time: string; period: string } | null => {
@@ -466,6 +602,193 @@ const useQuestionLoader = () => {
     return totalQuestions - answeredQuestions;
   };
 
+  // Skipped questions management
+  const getSkippedQuestionsData = (): { questionIds: number[], skipCounts: Record<number, number>, lastSkipped: Record<number, string> } => {
+    if (!user?.email) return { questionIds: [], skipCounts: {}, lastSkipped: {} };
+
+    const storageKey = `echos_skipped_questions_${user.email}`;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {
+      console.warn('Failed to load skipped questions:', e);
+    }
+    return { questionIds: [], skipCounts: {}, lastSkipped: {} };
+  };
+
+  const addToSkippedPool = (questionId: number) => {
+    if (!user?.email) return;
+
+    const storageKey = `echos_skipped_questions_${user.email}`;
+    const data = getSkippedQuestionsData();
+
+    // Add to pool if not already there
+    if (!data.questionIds.includes(questionId)) {
+      data.questionIds.push(questionId);
+    }
+
+    // Increment skip count
+    data.skipCounts[questionId] = (data.skipCounts[questionId] || 0) + 1;
+
+    // Update last skipped timestamp
+    data.lastSkipped[questionId] = new Date().toISOString();
+
+    localStorage.setItem(storageKey, JSON.stringify(data));
+    console.log(`📋 Added question ${questionId} to skip pool. Total skipped: ${data.questionIds.length}`);
+  };
+
+  const removeFromSkippedPool = (questionId: number) => {
+    if (!user?.email) return;
+
+    const storageKey = `echos_skipped_questions_${user.email}`;
+    const data = getSkippedQuestionsData();
+
+    // Remove from pool
+    data.questionIds = data.questionIds.filter(id => id !== questionId);
+
+    // Clean up related data
+    delete data.skipCounts[questionId];
+    delete data.lastSkipped[questionId];
+
+    localStorage.setItem(storageKey, JSON.stringify(data));
+    console.log(`✅ Removed question ${questionId} from skip pool. Remaining: ${data.questionIds.length}`);
+  };
+
+  const getSkippedQuestions = (): number[] => {
+    return getSkippedQuestionsData().questionIds;
+  };
+
+  const getSkippedQuestionsCount = (): number => {
+    return getSkippedQuestionsData().questionIds.length;
+  };
+
+  const shouldPrioritizeSkipped = (): boolean => {
+    // 30% chance to show a skipped question if any exist
+    const skippedCount = getSkippedQuestionsCount();
+    if (skippedCount === 0) return false;
+    return Math.random() < 0.3;
+  };
+
+  const rerollMorningQuestion = (): Question | null => {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Add current question to skip pool if it exists
+    if (user?.email) {
+      const storageKey = `morning_question_${today}_${user.email}`;
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed.questionId) {
+            addToSkippedPool(parsed.questionId);
+          }
+        } catch (e) {
+          console.warn('Failed to parse stored morning question:', e);
+        }
+      }
+    }
+
+    // Generate new seed with reroll counter
+    const rerollCount = Math.random() * 1000000; // Random component for new selection
+    const seed = `${user?.email || 'anonymous'}-morning-${today}-reroll-${rerollCount}`;
+
+    // Get afternoon question to avoid duplicating it
+    const afternoonSeed = `${user?.email || 'anonymous'}-afternoon-${today}`;
+    const afternoonIndex = getRandomizedQuestionIndex(afternoonSeed);
+    const afternoonQuestionId = questions[afternoonIndex]?.id;
+
+    // Get all skipped questions
+    const skippedIds = getSkippedQuestions();
+
+    // Build exclude list (afternoon question + already skipped ones for this session)
+    const excludeIds = [...skippedIds];
+    if (afternoonQuestionId) excludeIds.push(afternoonQuestionId);
+
+    const questionIndex = getRandomizedQuestionIndex(seed, excludeIds);
+    const selectedQuestion = questions[questionIndex] || null;
+
+    // Store the new question
+    if (selectedQuestion && user?.email) {
+      const storageKey = `morning_question_${today}_${user.email}`;
+      const toStore = {
+        questionId: selectedQuestion.id,
+        questionText: selectedQuestion.question,
+        selectedAt: new Date().toISOString(),
+        seed: seed,
+        isReroll: true,
+        previouslySkipped: skippedIds.includes(selectedQuestion.id)
+      };
+      localStorage.setItem(storageKey, JSON.stringify(toStore));
+      console.log('🔄 Rerolled morning question:', selectedQuestion.question.substring(0, 50) + '...');
+    }
+
+    return selectedQuestion;
+  };
+
+  const rerollAfternoonQuestion = (): Question | null => {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Add current question to skip pool if it exists
+    if (user?.email) {
+      const storageKey = `afternoon_question_${today}_${user.email}`;
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed.questionId) {
+            addToSkippedPool(parsed.questionId);
+          }
+        } catch (e) {
+          console.warn('Failed to parse stored afternoon question:', e);
+        }
+      }
+    }
+
+    // Generate new seed with reroll counter
+    const rerollCount = Math.random() * 1000000; // Random component for new selection
+    const seed = `${user?.email || 'anonymous'}-afternoon-${today}-reroll-${rerollCount}`;
+
+    // Get morning question to avoid duplicating it
+    const morningSeed = `${user?.email || 'anonymous'}-morning-${today}`;
+    const morningIndex = getRandomizedQuestionIndex(morningSeed);
+    const morningQuestionId = questions[morningIndex]?.id;
+
+    // Get all skipped questions
+    const skippedIds = getSkippedQuestions();
+
+    // Build exclude list (morning question + already skipped ones for this session)
+    const excludeIds = [...skippedIds];
+    if (morningQuestionId) excludeIds.push(morningQuestionId);
+
+    const questionIndex = getRandomizedQuestionIndex(seed, excludeIds);
+    const selectedQuestion = questions[questionIndex] || null;
+
+    // Store the new question
+    if (selectedQuestion && user?.email) {
+      const storageKey = `afternoon_question_${today}_${user.email}`;
+      const toStore = {
+        questionId: selectedQuestion.id,
+        questionText: selectedQuestion.question,
+        selectedAt: new Date().toISOString(),
+        seed: seed,
+        isReroll: true,
+        previouslySkipped: skippedIds.includes(selectedQuestion.id)
+      };
+      localStorage.setItem(storageKey, JSON.stringify(toStore));
+      console.log('🔄 Rerolled afternoon question:', selectedQuestion.question.substring(0, 50) + '...');
+    }
+
+    return selectedQuestion;
+  };
+
+  // Check if current question was previously skipped
+  const isQuestionPreviouslySkipped = (questionId: number): boolean => {
+    const skippedIds = getSkippedQuestions();
+    return skippedIds.includes(questionId);
+  };
+
   return {
     questions,
     categories,
@@ -485,7 +808,13 @@ const useQuestionLoader = () => {
     getAnsweredCount,
     getRemainingCount,
     syncAnsweredQuestions,
-    totalQuestions: questions.length
+    totalQuestions: questions.length,
+    // New reroll functions
+    rerollMorningQuestion,
+    rerollAfternoonQuestion,
+    getSkippedQuestionsCount,
+    isQuestionPreviouslySkipped,
+    removeFromSkippedPool
   };
 };
 

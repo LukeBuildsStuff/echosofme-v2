@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { EchoProvider } from './contexts/EchoContext'
 import { SettingsProvider } from './contexts/SettingsContext'
@@ -12,6 +13,7 @@ import Dashboard from './pages/Dashboard'
 import Chat from './pages/Chat'
 import EnhancedReflections from './pages/EnhancedReflections'
 import Legacy from './pages/Legacy'
+import Insights from './pages/Insights'
 import Settings from './pages/Settings'
 import VoiceClone from './pages/VoiceClone'
 import ResetPassword from './pages/ResetPassword'
@@ -88,6 +90,14 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/insights"
+          element={
+            <ProtectedRoute>
+              <Insights />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/settings"
           element={
             <ProtectedRoute>
@@ -110,21 +120,26 @@ function AppRoutes() {
 }
 
 function App() {
+  // For demo purposes - in production, this should be in environment variables
+  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "demo-client-id.apps.googleusercontent.com";
+  
   return (
     <ErrorBoundary>
-      <ToastProvider>
-        <AuthProvider>
-          <SettingsProvider>
-            <EchoProvider>
-              <EleanorNotificationProvider>
-                <Router>
-                  <AppRoutesWithNotifications />
-                </Router>
-              </EleanorNotificationProvider>
-            </EchoProvider>
-          </SettingsProvider>
-        </AuthProvider>
-      </ToastProvider>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <ToastProvider>
+          <AuthProvider>
+            <SettingsProvider>
+              <EchoProvider>
+                <EleanorNotificationProvider>
+                  <Router>
+                    <AppRoutesWithNotifications />
+                  </Router>
+                </EleanorNotificationProvider>
+              </EchoProvider>
+            </SettingsProvider>
+          </AuthProvider>
+        </ToastProvider>
+      </GoogleOAuthProvider>
     </ErrorBoundary>
   )
 }

@@ -196,7 +196,7 @@ export default function Dashboard() {
                 </div>
                 <div className="mt-6">
                   <Button 
-                    onClick={() => navigate('/chat')}
+                    onClick={() => navigate('/chat', { state: { selectedEchoId: 'eleanor' } })}
                     className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white min-h-[44px]"
                   >
                     Start Conversation

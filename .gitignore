@@ -35,3 +35,20 @@ dist-ssr
 debug-sync-issue.html
 test-env.html
 tailwind.config.js.disabled
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Backup files with potential sensitive data
+*_backup_*.py
+*_backup_*.json
+luke_reflections_export.csv
+
+# Zone identifier files
+*.Zone.Identifier
+
+# Temporary test files
+clear_today_reflection.html

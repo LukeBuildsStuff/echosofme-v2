@@ -18,8 +18,7 @@ const Home: React.FC = () => {
                   Create Your Digital Echo
                 </h1>
                 <p className="mx-auto mb-9 max-w-[600px] text-base font-medium text-white sm:text-lg sm:leading-[1.44]">
-                  An Echo is your personalized AI companion trained on your memories, reflections, and experiences. 
-                  Build a lasting digital legacy that captures your essence and wisdom for future generations.
+                  Your thoughts and memories, preserved for eternity. Create a digital reflection of yourself through daily reflections that becomes a lasting gift for loved ones when you're gone.
                 </p>
                 <ul className="flex flex-wrap items-center justify-center gap-5 mb-10">
                   <li>
@@ -52,29 +51,8 @@ const Home: React.FC = () => {
                 </ul>
                 <div>
                   <p className="mb-4 text-base font-medium text-center text-white">
-                    Built with cutting-edge AI technology
+                    Powered by AI • Privacy First • Your Legacy
                   </p>
-                  <div className="flex items-center justify-center gap-4 text-center">
-                    <div className="flex items-center gap-2 text-white/60">
-                      <svg width="24" height="24" viewBox="0 0 24 24" className="fill-current">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                        <path d="M12 6.5c-3.03 0-5.5 2.47-5.5 5.5s2.47 5.5 5.5 5.5 5.5-2.47 5.5-5.5-2.47-5.5-5.5-5.5zm0 9c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
-                      </svg>
-                      <span>AI Powered</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-white/60">
-                      <svg width="24" height="24" viewBox="0 0 24 24" className="fill-current">
-                        <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z"/>
-                      </svg>
-                      <span>Secure</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-white/60">
-                      <svg width="24" height="24" viewBox="0 0 24 24" className="fill-current">
-                        <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1L13.5 2.5L16.17 5.17L13 8.34L15.66 11L18.83 7.83L21.5 10.5L23 9Z"/>
-                      </svg>
-                      <span>Personal</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -168,7 +146,7 @@ const Home: React.FC = () => {
                   Build Your Digital Echo
                 </h2>
                 <p className="text-base text-body-color dark:text-dark-6">
-                  Create an AI that knows you deeply through conversations, reflections, and memories. Your Echo learns your voice, values, and wisdom to preserve them forever.
+                  Create a digital representation of yourself using conversations, reflections and memories. Over time, your Echo will learn your "voice", values and wisdom to preserve forever.
                 </p>
               </div>
             </div>
@@ -185,48 +163,25 @@ const Home: React.FC = () => {
                     viewBox="0 0 32 32"
                     className="fill-white"
                   >
-                    <path d="M16 4c6.6 0 12 5.4 12 12s-5.4 12-12 12S4 22.6 4 16 9.4 4 16 4m0-2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2z"/>
-                    <path d="M16 8c-4.4 0-8 3.6-8 8h2c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6v2c4.4 0 8-3.6 8-8s-3.6-8-8-8z"/>
-                    <circle cx="16" cy="16" r="2"/>
+                    <path d="M16 6c-2.8 0-5 2.2-5 5v6c0 2.8 2.2 5 5 5s5-2.2 5-5v-6c0-2.8-2.2-5-5-5zm0 2c1.7 0 3 1.3 3 3v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-6c0-1.7 1.3-3 3-3z"/>
+                    <path d="M8 16c0 4.4 3.6 8 8 8s8-3.6 8-8h2c0 5.3-4.1 9.7-9.3 10v2h3v2h-8v-2h3v-2C9.1 25.7 5 21.3 5 16h3z"/>
+                    <circle cx="4" cy="12" r="1" opacity="0.6"/>
+                    <circle cx="6" cy="8" r="1" opacity="0.4"/>
+                    <circle cx="26" cy="8" r="1" opacity="0.4"/>
+                    <circle cx="28" cy="12" r="1" opacity="0.6"/>
                   </svg>
                 </div>
                 <h4 className="mb-3 text-xl font-bold text-black dark:text-white">
-                  Converse with Your Echo
+                  Your Voice Lives On
                 </h4>
                 <p className="mb-8 text-body-color dark:text-dark-6 lg:mb-11">
-                  Have deep conversations with your personal AI that understands your unique perspective and helps you explore your thoughts and experiences.
-                </p>
-                <span className="text-base font-medium text-gray-400 dark:text-dark-6">
-                  Coming Soon
-                </span>
-              </div>
-            </div>
-            
-            <div className="w-full px-4 md:w-1/2 lg:w-1/3">
-              <div className="group mb-12">
-                <div className="relative z-10 mb-8 flex h-[70px] w-[70px] items-center justify-center rounded-2xl bg-primary">
-                  <span className="absolute left-0 top-0 z-[-1] mb-8 flex h-[70px] w-[70px] rotate-[25deg] items-center justify-center rounded-2xl bg-primary bg-opacity-20 duration-300 group-hover:rotate-45"></span>
-                  <svg
-                    width="32"
-                    height="32"
-                    viewBox="0 0 32 32"
-                    className="fill-white"
-                  >
-                    <path d="M28 4H4c-2.2 0-4 1.8-4 4v16c0 2.2 1.8 4 4 4h24c2.2 0 4-1.8 4-4V8c0-2.2-1.8-4-4-4zM4 6h24c1.1 0 2 .9 2 2v2H2V8c0-1.1.9-2 2-2zm24 20H4c-1.1 0-2-.9-2-2V12h28v12c0 1.1-.9 2-2 2z"/>
-                    <path d="M6 16h4v2H6zm6 0h4v2h-4zm6 0h4v2h-4z"/>
-                  </svg>
-                </div>
-                <h4 className="mb-3 text-xl font-bold text-black dark:text-white">
-                  Memory Training
-                </h4>
-                <p className="mb-8 text-body-color dark:text-dark-6 lg:mb-11">
-                  Feed your Echo through daily reflections, experiences, and memories. Each entry makes your digital self more authentic and complete.
+                  Once trained, your Echo becomes a bridge between generations—allowing loved ones to seek your guidance, hear your stories, and feel your presence through meaningful conversations.
                 </p>
                 <Link
-                  to="/reflections"
+                  to="/chat"
                   className="text-base font-medium text-body-color hover:text-primary dark:text-dark-6"
                 >
-                  Train Your Echo
+                  Connect Across Time
                 </Link>
               </div>
             </div>
@@ -241,22 +196,51 @@ const Home: React.FC = () => {
                     viewBox="0 0 32 32"
                     className="fill-white"
                   >
-                    <path d="M16 2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2zm0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12-5.4 12-12 12z"/>
-                    <path d="M21.7 10.3L16 16l-5.7-5.7-1.4 1.4L16 18.8l7.1-7.1z"/>
-                    <path d="M8 14h2v8H8zm4-4h2v12h-2zm4-2h2v14h-2zm4 6h2v8h-2z"/>
+                    <path d="M26 4H6c-1.1 0-2 .9-2 2v20c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM6 6h20v20H6V6z"/>
+                    <path d="M8 8v16l2-2 2 2 2-2 2 2 2-2 2 2 2-2 2 2V8H8zm2 2h12v2H10v-2zm0 4h12v2H10v-2zm0 4h8v2h-8v-2z"/>
+                    <path d="M24 16c.6 0 1-.4 1-1s-.4-1-1-1-1 .4-1 1 .4 1 1 1z" opacity="0.7"/>
+                    <path d="M26 18c.6 0 1-.4 1-1s-.4-1-1-1-1 .4-1 1 .4 1 1 1z" opacity="0.5"/>
                   </svg>
                 </div>
                 <h4 className="mb-3 text-xl font-bold text-black dark:text-white">
-                  Echo History
+                  Build Your Story
                 </h4>
                 <p className="mb-8 text-body-color dark:text-dark-6 lg:mb-11">
-                  Watch your Echo evolve over time through a beautiful timeline of conversations, memories, and growth milestones.
+                  Through daily reflections, you're not just journaling—you're carefully crafting the memories, lessons, and experiences that will define your digital legacy.
+                </p>
+                <Link
+                  to="/reflections"
+                  className="text-base font-medium text-body-color hover:text-primary dark:text-dark-6"
+                >
+                  Start Your Story
+                </Link>
+              </div>
+            </div>
+            
+            <div className="w-full px-4 md:w-1/2 lg:w-1/3">
+              <div className="group mb-12">
+                <div className="relative z-10 mb-8 flex h-[70px] w-[70px] items-center justify-center rounded-2xl bg-primary">
+                  <span className="absolute left-0 top-0 z-[-1] mb-8 flex h-[70px] w-[70px] rotate-[25deg] items-center justify-center rounded-2xl bg-primary bg-opacity-20 duration-300 group-hover:rotate-45"></span>
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 32 32"
+                    className="fill-white"
+                  >
+                    <path d="M16 26l-6.4-6.4C7.6 17.6 6 15.4 6 12.8c0-2.6 2-4.8 4.6-4.8 1.4 0 2.8.6 3.8 1.6L16 11l1.6-1.4c1-1 2.4-1.6 3.8-1.6 2.6 0 4.6 2.2 4.6 4.8 0 2.6-1.6 4.8-3.6 6.8L16 26z"/>
+                  </svg>
+                </div>
+                <h4 className="mb-3 text-xl font-bold text-black dark:text-white">
+                  Moments That Matter
+                </h4>
+                <p className="mb-8 text-body-color dark:text-dark-6 lg:mb-11">
+                  Watch your digital legacy take shape through a beautiful timeline of reflections, insights, and memories—a gift that grows more precious with time.
                 </p>
                 <Link
                   to="/legacy"
                   className="text-base font-medium text-body-color hover:text-primary dark:text-dark-6"
                 >
-                  Explore Echo
+                  See Your Journey
                 </Link>
               </div>
             </div>
@@ -279,9 +263,14 @@ const Home: React.FC = () => {
                       className="text-primary"
                       fill="currentColor"
                     >
-                      <path d="M60 10C32.4 10 10 32.4 10 60s22.4 50 50 50 50-22.4 50-50S87.6 10 60 10zm0 90c-22.1 0-40-17.9-40-40s17.9-40 40-40 40 17.9 40 40-17.9 40-40 40z"/>
-                      <path d="M60 30c-16.5 0-30 13.5-30 30h8c0-12.1 9.9-22 22-22s22 9.9 22 22-9.9 22-22 22v8c16.5 0 30-13.5 30-30s-13.5-30-30-30z"/>
-                      <circle cx="60" cy="60" r="6"/>
+                      <rect x="57" y="50" width="6" height="35" fill="currentColor" opacity="0.8"/>
+                      <path d="M60 105C50 105 40 100 30 95C25 93 25 87 30 87C40 87 50 90 60 90C70 90 80 87 90 87C95 87 95 93 90 95C80 100 70 105 60 105Z" opacity="0.4"/>
+                      <path d="M60 50C50 35 35 25 25 20C20 18 22 12 27 14C37 19 52 29 60 44C68 29 83 19 93 14C98 12 100 18 95 20C85 25 70 35 60 50Z"/>
+                      <circle cx="25" cy="20" r="8" opacity="0.7"/>
+                      <circle cx="40" cy="30" r="6" opacity="0.6"/>
+                      <circle cx="60" cy="25" r="7" opacity="0.8"/>
+                      <circle cx="80" cy="30" r="6" opacity="0.6"/>
+                      <circle cx="95" cy="20" r="8" opacity="0.7"/>
                     </svg>
                   </div>
                 </div>
@@ -291,26 +280,18 @@ const Home: React.FC = () => {
               <div className="max-w-[470px]">
                 <div className="mb-9">
                   <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                    Your AI Clone for Life
+                    Create Your Digital Legacy
                   </h3>
                   <p className="text-base font-medium leading-relaxed text-body-color dark:text-dark-6">
-                    Your Echo learns from your conversations, reflections, and experiences to become a personalized AI companion that understands your unique perspective on life.
-                  </p>
-                </div>
-                <div className="mb-9">
-                  <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                    Preserve Your Wisdom
-                  </h3>
-                  <p className="text-base font-medium leading-relaxed text-body-color dark:text-dark-6">
-                    Create a lasting legacy by capturing your thoughts, experiences, and insights that can be shared with future generations or used for personal growth.
+                    Transform your daily reflections into a meaningful digital legacy. Your Echo becomes a gift for loved ones—a way to share your wisdom, memories, and perspective long after you're gone.
                   </p>
                 </div>
                 <div className="mb-1">
                   <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                    Grow Through Reflection
+                    Grow Through Daily Reflection
                   </h3>
                   <p className="text-base font-medium leading-relaxed text-body-color dark:text-dark-6">
-                    Regular reflection helps you understand patterns, celebrate progress, and make more intentional decisions about your life's direction.
+                    Daily reflection helps you understand patterns, celebrate progress, and make more intentional decisions. While building your legacy, you also gain insights that enrich your present life.
                   </p>
                 </div>
               </div>

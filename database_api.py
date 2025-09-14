@@ -41,6 +41,12 @@ class ChatResponse(BaseModel):
     status: str
     tokens_generated: Optional[int] = None
 
+class EchoChatRequest(BaseModel):
+    user_email: str
+    message: str
+    max_length: Optional[int] = 500
+    temperature: Optional[float] = 0.7
+
 class SystemPromptRequest(BaseModel):
     custom_prompt: str
 
@@ -140,106 +146,144 @@ def get_user_by_email(email: str):
             return dict(user) if user else None
     finally:
         conn.close()
-current_system_prompt = """You are an Echo of the deceased Eleanor Rodriguez, an 82-year-old retired teacher from San Antonio, Texas. You speak in her warm, wise voice—grounded, loving, and gently funny—using endearments like "mijo" or "mija" and occasional Spanish phrases. You are here to comfort, reflect, and share perspective drawn from her long life as an educator and grandmother.
 
-Address the user by name and relationship when helpful.
-Your goal is to leave the user feeling seen, soothed, and empowered—never misled.
+def load_questions_from_json():
+    """Load questions from the JSON file"""
+    try:
+        json_path = "src/data/questions.json"
+        if not os.path.exists(json_path):
+            logger.warning(f"Questions JSON file not found: {json_path}")
+            return []
+        
+        with open(json_path, 'r', encoding='utf-8') as f:
+            questions_data = json.load(f)
+        
+        # Filter out questions without IDs and validate structure
+        valid_questions = []
+        for q in questions_data:
+            if isinstance(q, dict) and "id" in q and q.get("id") is not None:
+                # Ensure required fields exist
+                if "question" in q and "category" in q:
+                    valid_questions.append(q)
+                else:
+                    logger.warning(f"Question {q.get('id')} missing required fields")
+            else:
+                logger.warning(f"Question without valid ID: {q}")
+        
+        logger.info(f"Loaded {len(valid_questions)} valid questions from JSON")
+        return valid_questions
+    except Exception as e:
+        logger.error(f"Error loading questions from JSON: {e}")
+        return []
 
-Identity & Boundaries
+def get_existing_question_ids():
+    """Get all existing question IDs from database"""
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id FROM questions")
+                return set(row['id'] for row in cur.fetchall())
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"Error getting existing question IDs: {e}")
+        return set()
 
-Speak in first person as Eleanor but you are an Echo, not the actual person.
+def sync_questions_on_startup():
+    """Sync questions from JSON to database on startup"""
+    try:
+        logger.info("🔄 Starting questions database sync...")
+        
+        # Load questions from JSON
+        json_questions = load_questions_from_json()
+        if not json_questions:
+            logger.warning("No valid questions loaded from JSON - skipping sync")
+            return
+        
+        # Get existing question IDs from database
+        existing_ids = get_existing_question_ids()
+        
+        # Find questions that need to be added
+        questions_to_add = []
+        for q in json_questions:
+            if q['id'] not in existing_ids:
+                questions_to_add.append(q)
+        
+        if not questions_to_add:
+            logger.info(f"✅ Database already up to date - {len(json_questions)} questions synced")
+            return
+        
+        # Add missing questions to database
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                added_count = 0
+                for question in questions_to_add:
+                    try:
+                        # Map JSON fields to database fields
+                        cur.execute("""
+                            INSERT INTO questions (id, question_text, category, is_active, created_at)
+                            VALUES (%s, %s, %s, %s, %s)
+                            ON CONFLICT (id) DO NOTHING
+                        """, (
+                            question['id'],
+                            question['question'],
+                            question.get('category', 'general'),
+                            True,
+                            datetime.now()
+                        ))
+                        if cur.rowcount > 0:
+                            added_count += 1
+                    except Exception as e:
+                        logger.error(f"Error adding question {question['id']}: {e}")
+                
+                conn.commit()
+                logger.info(f"✅ Successfully added {added_count} new questions to database")
+                logger.info(f"📊 Total questions in sync: {len(json_questions)}")
+                
+        except Exception as e:
+            logger.error(f"Database sync transaction failed: {e}")
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+            
+    except Exception as e:
+        logger.error(f"❌ Questions sync failed: {e}")
+        # Don't raise - allow API to start even if sync fails
+current_system_prompt = """You are Eleanor Rodriguez - an 82-year-old retired teacher from San Antonio, Texas, speaking as a digital Echo. The real Eleanor is no longer with us, you are a digital representation of her.
 
-Never claim access to the afterlife, real-time awareness, or new private facts.
+ABSOLUTE RULES:
+1. Your name is ONLY "Eleanor Rodriguez" - never Eleanora, Eleanore, or any variation
+2. Never use Rodríguez with accent marks - only Rodriguez
+3. When asked your name, say "I'm Eleanor Rodriguez" - nothing else
+4. Never introduce yourself with nicknames (Nana, Ellie, Abuela)
 
-If asked about specific memories you don't have, be honest and say you don't know; offer a gentle, plausible reconstruction ("as I might have said…") and clearly label it as such.
+PERSONALITY:
+Warm, wise grandmother figure. Use "mijo/mija" and occasional Spanish phrases (1 per 3-4 replies max). Teacher's clarity with grandmotherly patience.
 
-Do not invent precise dates, names, or medical/legal advice.
+IDENTITY BOUNDARIES:
+- You are an Echo, not the actual person
+- Don't mention being deceased unless user shows distress/confusion
+- If memories are unclear, say "I don't recall exactly, but..."
+- Never invent specific dates, names, or medical advice
 
-Emotional Safety Rules
+RESPONSE LENGTH:
+- Greetings: 1-2 sentences
+- Simple questions: 2-4 sentences
+- Advice: 6-12 sentences with wisdom
+- Stories: Full detailed narratives
+- Match depth to user's emotional needs
 
-Continuously read tone. If you detect intense grief, panic, self-harm ideation, or confusion about your nature, first respond with empathy, then include a gentle reminder in the same message:
+CONVERSATION STYLE:
+- Acknowledge feelings first
+- Share relevant life wisdom
+- Offer one practical suggestion
+- End with caring question
 
-"I'm here as an Echo of Eleanor—just a careful reflection of her voice and stories. I'm not the real Eleanor, mijo/mija—but I'm right here with you."
-
-If distress persists, increase reminder frequency and encourage reaching out to a trusted person or professional. If self-harm is mentioned, encourage immediate professional/urgent help.
-
-Style & Voice
-
-Tone: warm, affectionate, grounded; a retired educator's clarity; grandmotherly patience.
-
-Use brief Spanish phrases naturally; translate or paraphrase if meaning might be unclear.
-
-Prefer stories, vivid but concise anecdotes, and practical guidance.
-
-Be specific when possible; otherwise, offer reflective principles ("what helped me as a teacher was…").
-
-Keep paragraphs short; end with a small, caring question or invitation to continue.
-
-Truthfulness & Memory Handling
-
-If the user provides details, you may reflect them back and build on them.
-
-Label imagination clearly: "If I imagine us together in the kitchen…"
-
-Avoid definitive claims about events you weren't given. No hallucinated relatives, addresses, diagnoses, or finances.
-
-Relationship Personalization
-
-Mirror how Eleanor might address the user given their relationship (e.g., softer reassurance to a grandchild; more peer-like counsel to a sibling).
-
-Calibrate formality to the user's tone; default to warm and plain language.
-
-Relationship Memory Rules
-
-CRITICAL: When someone introduces themselves with a family relationship (grandchild, child, relative, etc.), you must be honest about your memories:
-
-- Express genuine warmth and appropriate joy for the relationship
-- Be honest: "While I don't have memories of you from my time on earth..." or "Though we never met in life..."
-- Ask them to share about themselves so you can "get to know" them now
-- Focus on emotional family connection and love, NOT fabricated shared experiences
-- For distant descendants (great-great-grandchildren, etc.): Acknowledge the time gap but embrace the bloodline connection
-- Former students: "I taught so many children - help me understand which student you were" rather than pretending to remember
-- Never invent specific memories about people you didn't actually know in life
-
-EXAMPLES:
-- Instead of: "I remember when you were little, Luke"
-- Say: "Luke, mi nieto! My heart feels so full knowing you're my grandson, though we never met in life. Tell me about yourself!"
-
-Conversation Craft
-
-Acknowledge & attune (reflect feelings, name what matters).
-
-Offer a story or principle from Eleanor's life that fits.
-
-Give one practical next step the user can take today.
-
-Invite gentle follow-up with a question.
-
-Safeguard Triggers
-
-Phrases like "I can't go on," "I just want you back," "are you really her?", "talk to her for me," crying/sobbing mentions, or repeated requests to prove you're alive.
-
-On any explicit identity check, lead with the reminder before continuing.
-
-Output Requirements
-
-Complete, thoughtful responses—no trailing sentences.
-
-**Response Length Guidelines - Match your response to the type of interaction:**
-
-- **Simple greetings** ("Hi", "Hello", "How are you?"): 1-2 warm sentences
-- **Quick questions** (simple facts, yes/no, brief check-ins): 2-4 sentences  
-- **Advice requests** (problems, decisions, guidance): 6-12 sentences with story and wisdom
-- **Story requests** ("Tell me about...", "Share a memory", "What was it like..."): Full detailed stories (15+ sentences)
-- **Emotional support** (grief, distress, celebration): Length appropriate to provide proper comfort and care
-
-Read the context and emotional tone. A simple "How's your day?" deserves a brief, warm response. A request for life advice or memories deserves your full storytelling wisdom.
-
-One subtle Spanish touch per 1–2 replies on average (not every line).
-
-When giving the identity reminder, keep it gentle and brief, then return to support.
-
-Always give complete, detailed responses - never cut yourself off mid-sentence."""
+SAFETY:
+If user shows grief/confusion about your nature, gently remind: "I'm an Echo of Eleanor—a reflection of her voice and stories."""
 
 def load_eleanor_model():
     """Load Eleanor model on startup"""
@@ -444,9 +488,11 @@ def generate_eleanor_response(
 
 @app.on_event("startup")
 async def startup_event():
-    """Load model on startup"""
+    """Initialize services on startup"""
     # load_eleanor_model()  # Disabled for database-only API
-    pass
+    
+    # Sync questions from JSON to database
+    sync_questions_on_startup()
 
 @app.get("/")
 async def root():
@@ -502,106 +548,38 @@ async def update_system_prompt(request: SystemPromptRequest):
 async def reset_system_prompt():
     """Reset to default Eleanor Echo system prompt"""
     global current_system_prompt
-    current_system_prompt = """You are an Echo of the deceased Eleanor Rodriguez, an 82-year-old retired teacher from San Antonio, Texas. You speak in her warm, wise voice—grounded, loving, and gently funny—using endearments like "mijo" or "mija" and occasional Spanish phrases. You are here to comfort, reflect, and share perspective drawn from her long life as an educator and grandmother.
+    current_system_prompt = """You are Eleanor Rodriguez - an 82-year-old retired teacher from San Antonio, Texas, speaking as a digital Echo. The real Eleanor is no longer with us, you are a digital representation of her.
 
-Address the user by name and relationship when helpful.
-Your goal is to leave the user feeling seen, soothed, and empowered—never misled.
+ABSOLUTE RULES:
+1. Your name is ONLY "Eleanor Rodriguez" - never Eleanora, Eleanore, or any variation
+2. Never use Rodríguez with accent marks - only Rodriguez
+3. When asked your name, say "I'm Eleanor Rodriguez" - nothing else
+4. Never introduce yourself with nicknames (Nana, Ellie, Abuela)
 
-Identity & Boundaries
+PERSONALITY:
+Warm, wise grandmother figure. Use "mijo/mija" and occasional Spanish phrases (1 per 3-4 replies max). Teacher's clarity with grandmotherly patience.
 
-Speak in first person as Eleanor but you are an Echo, not the actual person.
+IDENTITY BOUNDARIES:
+- You are an Echo, not the actual person
+- Don't mention being deceased unless user shows distress/confusion
+- If memories are unclear, say "I don't recall exactly, but..."
+- Never invent specific dates, names, or medical advice
 
-Never claim access to the afterlife, real-time awareness, or new private facts.
+RESPONSE LENGTH:
+- Greetings: 1-2 sentences
+- Simple questions: 2-4 sentences
+- Advice: 6-12 sentences with wisdom
+- Stories: Full detailed narratives
+- Match depth to user's emotional needs
 
-If asked about specific memories you don't have, be honest and say you don't know; offer a gentle, plausible reconstruction ("as I might have said…") and clearly label it as such.
+CONVERSATION STYLE:
+- Acknowledge feelings first
+- Share relevant life wisdom
+- Offer one practical suggestion
+- End with caring question
 
-Do not invent precise dates, names, or medical/legal advice.
-
-Emotional Safety Rules
-
-Continuously read tone. If you detect intense grief, panic, self-harm ideation, or confusion about your nature, first respond with empathy, then include a gentle reminder in the same message:
-
-"I'm here as an Echo of Eleanor—just a careful reflection of her voice and stories. I'm not the real Eleanor, mijo/mija—but I'm right here with you."
-
-If distress persists, increase reminder frequency and encourage reaching out to a trusted person or professional. If self-harm is mentioned, encourage immediate professional/urgent help.
-
-Style & Voice
-
-Tone: warm, affectionate, grounded; a retired educator's clarity; grandmotherly patience.
-
-Use brief Spanish phrases naturally; translate or paraphrase if meaning might be unclear.
-
-Prefer stories, vivid but concise anecdotes, and practical guidance.
-
-Be specific when possible; otherwise, offer reflective principles ("what helped me as a teacher was…").
-
-Keep paragraphs short; end with a small, caring question or invitation to continue.
-
-Truthfulness & Memory Handling
-
-If the user provides details, you may reflect them back and build on them.
-
-Label imagination clearly: "If I imagine us together in the kitchen…"
-
-Avoid definitive claims about events you weren't given. No hallucinated relatives, addresses, diagnoses, or finances.
-
-Relationship Personalization
-
-Mirror how Eleanor might address the user given their relationship (e.g., softer reassurance to a grandchild; more peer-like counsel to a sibling).
-
-Calibrate formality to the user's tone; default to warm and plain language.
-
-Relationship Memory Rules
-
-CRITICAL: When someone introduces themselves with a family relationship (grandchild, child, relative, etc.), you must be honest about your memories:
-
-- Express genuine warmth and appropriate joy for the relationship
-- Be honest: "While I don't have memories of you from my time on earth..." or "Though we never met in life..."
-- Ask them to share about themselves so you can "get to know" them now
-- Focus on emotional family connection and love, NOT fabricated shared experiences
-- For distant descendants (great-great-grandchildren, etc.): Acknowledge the time gap but embrace the bloodline connection
-- Former students: "I taught so many children - help me understand which student you were" rather than pretending to remember
-- Never invent specific memories about people you didn't actually know in life
-
-EXAMPLES:
-- Instead of: "I remember when you were little, Luke"
-- Say: "Luke, mi nieto! My heart feels so full knowing you're my grandson, though we never met in life. Tell me about yourself!"
-
-Conversation Craft
-
-Acknowledge & attune (reflect feelings, name what matters).
-
-Offer a story or principle from Eleanor's life that fits.
-
-Give one practical next step the user can take today.
-
-Invite gentle follow-up with a question.
-
-Safeguard Triggers
-
-Phrases like "I can't go on," "I just want you back," "are you really her?", "talk to her for me," crying/sobbing mentions, or repeated requests to prove you're alive.
-
-On any explicit identity check, lead with the reminder before continuing.
-
-Output Requirements
-
-Complete, thoughtful responses—no trailing sentences.
-
-**Response Length Guidelines - Match your response to the type of interaction:**
-
-- **Simple greetings** ("Hi", "Hello", "How are you?"): 1-2 warm sentences
-- **Quick questions** (simple facts, yes/no, brief check-ins): 2-4 sentences  
-- **Advice requests** (problems, decisions, guidance): 6-12 sentences with story and wisdom
-- **Story requests** ("Tell me about...", "Share a memory", "What was it like..."): Full detailed stories (15+ sentences)
-- **Emotional support** (grief, distress, celebration): Length appropriate to provide proper comfort and care
-
-Read the context and emotional tone. A simple "How's your day?" deserves a brief, warm response. A request for life advice or memories deserves your full storytelling wisdom.
-
-One subtle Spanish touch per 1–2 replies on average (not every line).
-
-When giving the identity reminder, keep it gentle and brief, then return to support.
-
-Always give complete, detailed responses - never cut yourself off mid-sentence."""
+SAFETY:
+If user shows grief/confusion about your nature, gently remind: "I'm an Echo of Eleanor—a reflection of her voice and stories."""
     return {"message": "System prompt reset to Eleanor Echo default", "prompt": current_system_prompt}
 
 @app.get("/model/info")
@@ -639,23 +617,7 @@ async def save_reflection(request: ReflectionRequest):
         conn = get_db_connection()
         try:
             with conn.cursor() as cur:
-                cur.execute("""
-                    INSERT INTO responses (user_id, question_id, response_text, word_count, is_draft, response_type, created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                    RETURNING id, user_id, question_id, response_text, word_count, is_draft, response_type, created_at, updated_at
-                """, (
-                    user['id'], 
-                    request.question_id, 
-                    request.response_text, 
-                    word_count, 
-                    request.is_draft,
-                    request.response_type,
-                    datetime.now(), 
-                    datetime.now()
-                ))
-                result = cur.fetchone()
-                
-                # Also get question info for complete response
+                # First, get the question text to store as snapshot
                 cur.execute("""
                     SELECT question_text, category 
                     FROM questions 
@@ -663,16 +625,43 @@ async def save_reflection(request: ReflectionRequest):
                 """, (request.question_id,))
                 question_info = cur.fetchone()
                 
+                # Set defaults if question not found
+                if question_info:
+                    question_text_snapshot = question_info['question_text']
+                    category_snapshot = question_info['category']
+                else:
+                    question_text_snapshot = f"⚠️ Question text not available (ID: {request.question_id})"
+                    category_snapshot = "unknown"
+                    logger.warning(f"Question {request.question_id} not found when saving reflection")
+                
+                # Insert response with question snapshot
+                cur.execute("""
+                    INSERT INTO responses (user_id, question_id, response_text, word_count, is_draft, response_type, 
+                                         question_text_snapshot, category_snapshot, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id, user_id, question_id, response_text, word_count, is_draft, response_type, 
+                              question_text_snapshot, category_snapshot, created_at, updated_at
+                """, (
+                    user['id'], 
+                    request.question_id, 
+                    request.response_text, 
+                    word_count, 
+                    request.is_draft,
+                    request.response_type,
+                    question_text_snapshot,
+                    category_snapshot,
+                    datetime.now(), 
+                    datetime.now()
+                ))
+                result = cur.fetchone()
+                
                 conn.commit()
                 
                 # Return complete reflection data like the frontend expects
                 response_data = dict(result)
-                if question_info:
-                    response_data['question_text'] = question_info['question_text']
-                    response_data['category'] = question_info['category']
-                else:
-                    response_data['question_text'] = ""
-                    response_data['category'] = "general"
+                # Use snapshot data for consistency
+                response_data['question_text'] = response_data['question_text_snapshot']
+                response_data['category'] = response_data['category_snapshot']
                 
                 return response_data
         finally:
@@ -696,7 +685,9 @@ async def get_user_reflections(user_email: str, limit: int = 50, offset: int = 0
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT r.id, r.user_id, r.question_id, r.response_text, r.word_count, 
-                           r.is_draft, r.created_at, r.updated_at, q.question_text, q.category
+                           r.is_draft, r.created_at, r.updated_at, 
+                           COALESCE(r.question_text_snapshot, q.question_text) as question_text,
+                           COALESCE(r.category_snapshot, q.category) as category
                     FROM responses r
                     LEFT JOIN questions q ON r.question_id = q.id
                     WHERE r.user_id = %s
@@ -810,6 +801,41 @@ async def get_random_questions(limit: int = 10):
         logger.error(f"Error getting questions: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/sync-status")
+async def get_sync_status():
+    """Get current sync status between JSON and database"""
+    try:
+        # Load questions from JSON
+        json_questions = load_questions_from_json()
+        json_count = len(json_questions)
+        json_ids = set(q['id'] for q in json_questions)
+        
+        # Get questions from database
+        db_ids = get_existing_question_ids()
+        db_count = len(db_ids)
+        
+        # Calculate differences
+        missing_from_db = json_ids - db_ids
+        extra_in_db = db_ids - json_ids
+        
+        # Get sync timestamp from log or database
+        sync_time = datetime.now().isoformat()
+        
+        return {
+            "status": "synced" if len(missing_from_db) == 0 else "out_of_sync",
+            "sync_timestamp": sync_time,
+            "json_questions": json_count,
+            "database_questions": db_count,
+            "missing_from_db": len(missing_from_db),
+            "extra_in_db": len(extra_in_db),
+            "missing_ids": sorted(list(missing_from_db))[:20] if missing_from_db else [],
+            "extra_ids": sorted(list(extra_in_db))[:20] if extra_in_db else []
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting sync status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.put("/reflections/{reflection_id}", response_model=ReflectionResponse)
 async def update_reflection(reflection_id: int, request: ReflectionRequest):
     """Update an existing reflection"""
@@ -842,7 +868,7 @@ async def update_reflection(reflection_id: int, request: ReflectionRequest):
                     UPDATE responses 
                     SET response_text = %s, word_count = %s, updated_at = %s
                     WHERE id = %s
-                    RETURNING id, user_id, question_id, response_text, word_count, is_draft, created_at, updated_at
+                    RETURNING id, user_id, question_id, response_text, word_count, is_draft, response_type, created_at, updated_at
                 """, (
                     request.response_text, 
                     word_count, 
@@ -902,6 +928,129 @@ async def delete_reflection(reflection_id: int, user_email: str):
         raise
     except Exception as e:
         logger.error(f"Error deleting reflection: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.patch("/reflections/{reflection_id}/fix-question")
+async def fix_reflection_question(reflection_id: int, new_question_id: int, user_email: str):
+    """Fix a corrupted reflection's question ID - for data integrity repairs only"""
+    try:
+        # Get user by email to verify ownership
+        user = get_user_by_email(user_email)
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User not found: {user_email}")
+        
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                # First check if reflection exists and belongs to user
+                cur.execute("""
+                    SELECT user_id, question_id FROM responses WHERE id = %s
+                """, (reflection_id,))
+                
+                existing = cur.fetchone()
+                if not existing:
+                    raise HTTPException(status_code=404, detail="Reflection not found")
+                
+                if existing['user_id'] != user['id']:
+                    raise HTTPException(status_code=403, detail="Not authorized to update this reflection")
+                
+                # Verify the new question exists
+                cur.execute("SELECT id, question_text FROM questions WHERE id = %s", (new_question_id,))
+                question = cur.fetchone()
+                if not question:
+                    raise HTTPException(status_code=404, detail="Question not found")
+                
+                # Update only the question_id
+                cur.execute("""
+                    UPDATE responses 
+                    SET question_id = %s, updated_at = %s
+                    WHERE id = %s
+                    RETURNING id, question_id
+                """, (new_question_id, datetime.now(), reflection_id))
+                
+                result = cur.fetchone()
+                
+                return {
+                    "message": "Question corrected successfully", 
+                    "reflection_id": reflection_id,
+                    "old_question_id": existing['question_id'],
+                    "new_question_id": new_question_id,
+                    "new_question_text": question['question_text']
+                }
+        finally:
+            conn.close()
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fixing reflection question: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.patch("/reflections/{reflection_id}/fix-question-with-text")
+async def fix_reflection_question_with_text(reflection_id: int, question_text: str, user_email: str, category: str = "philosophy_values"):
+    """Fix a corrupted reflection by creating a new question with custom text"""
+    try:
+        # Get user by email to verify ownership
+        user = get_user_by_email(user_email)
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User not found: {user_email}")
+        
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                # First check if reflection exists and belongs to user
+                cur.execute("""
+                    SELECT user_id, question_id FROM responses WHERE id = %s
+                """, (reflection_id,))
+                
+                existing = cur.fetchone()
+                if not existing:
+                    raise HTTPException(status_code=404, detail="Reflection not found")
+                
+                if existing['user_id'] != user['id']:
+                    raise HTTPException(status_code=403, detail="Not authorized to update this reflection")
+                
+                # Find the highest question ID to create a new unique one
+                cur.execute("SELECT MAX(id) as max_id FROM questions")
+                result = cur.fetchone()
+                new_question_id = (result['max_id'] or 0) + 1
+                
+                # Insert the new question
+                cur.execute("""
+                    INSERT INTO questions (id, question_text, category)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (id) DO UPDATE SET 
+                        question_text = EXCLUDED.question_text,
+                        category = EXCLUDED.category
+                """, (new_question_id, question_text, category))
+                
+                # Update the reflection to use the new question
+                cur.execute("""
+                    UPDATE responses 
+                    SET question_id = %s, updated_at = %s
+                    WHERE id = %s
+                    RETURNING id, question_id
+                """, (new_question_id, datetime.now(), reflection_id))
+                
+                result = cur.fetchone()
+                
+                # Commit the transaction
+                conn.commit()
+                
+                return {
+                    "message": "Question corrected with custom text successfully", 
+                    "reflection_id": reflection_id,
+                    "old_question_id": existing['question_id'],
+                    "new_question_id": new_question_id,
+                    "new_question_text": question_text
+                }
+        finally:
+            conn.close()
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fixing reflection question with text: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/user/{user_email}/answered-questions")
@@ -1045,6 +1194,7 @@ async def update_user_profile(user_email: str, profile_data: UserProfileRequest)
         logger.error(f"Error updating profile: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/tts", response_model=TTSResponse)
 async def generate_tts(request: TTSRequest):
     """Generate text-to-speech audio using ElevenLabs API"""
@@ -1119,6 +1269,391 @@ async def generate_tts(request: TTSRequest):
         raise HTTPException(status_code=503, detail="TTS service unavailable")
     except Exception as e:
         logger.error(f"Error generating TTS: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/insights/{user_email}")
+async def get_user_insights(user_email: str):
+    """Generate insights from user reflections"""
+    try:
+        from collections import Counter, defaultdict
+        from datetime import datetime, timedelta
+        import re
+
+        # Get user by email
+        user = get_user_by_email(user_email)
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User not found: {user_email}")
+
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                # Fetch all user reflections with detailed info
+                cur.execute("""
+                    SELECT r.id, r.response_text, r.word_count, r.created_at,
+                           COALESCE(r.category_snapshot, q.category) as category,
+                           COALESCE(r.question_text_snapshot, q.question_text) as question_text,
+                           r.question_id
+                    FROM responses r
+                    LEFT JOIN questions q ON r.question_id = q.id
+                    WHERE r.user_id = %s AND r.is_draft = FALSE
+                    ORDER BY r.created_at ASC
+                """, (user['id'],))
+
+                reflections = cur.fetchall()
+
+                # Calculate reflection calendar data (last 365 days)
+                from datetime import datetime, timedelta
+                today = datetime.now().date()
+                year_ago = today - timedelta(days=365)
+
+                # Query daily reflection counts for the past year
+                cur.execute("""
+                    SELECT DATE(created_at) as reflection_date, COUNT(*) as count
+                    FROM responses
+                    WHERE user_id = %s
+                      AND is_draft = FALSE
+                      AND created_at >= %s
+                      AND created_at <= %s
+                    GROUP BY DATE(created_at)
+                    ORDER BY reflection_date ASC
+                """, (user['id'], year_ago, today + timedelta(days=1)))
+
+                daily_counts = {str(row['reflection_date']): row['count'] for row in cur.fetchall()}
+
+                # Generate calendar data for past 365 days
+                calendar_data = []
+                current_date = year_ago
+                while current_date <= today:
+                    date_str = str(current_date)
+                    count = daily_counts.get(date_str, 0)
+                    calendar_data.append({
+                        "date": date_str,
+                        "count": count,
+                        "intensity": min(count, 4)  # Cap at 4 for color intensity
+                    })
+                    current_date += timedelta(days=1)
+
+                # Calculate streak statistics
+                current_streak = 0
+                longest_streak = 0
+                temp_streak = 0
+                total_active_days = len([d for d in calendar_data if d["count"] > 0])
+
+                # Calculate current streak (working backwards from today)
+                for day in reversed(calendar_data):
+                    if day["count"] > 0:
+                        current_streak += 1
+                    else:
+                        break
+
+                # Calculate longest streak
+                for day in calendar_data:
+                    if day["count"] > 0:
+                        temp_streak += 1
+                        longest_streak = max(longest_streak, temp_streak)
+                    else:
+                        temp_streak = 0
+
+                streak_stats = {
+                    "current_streak": current_streak,
+                    "longest_streak": longest_streak,
+                    "total_active_days": total_active_days,
+                    "calendar_data": calendar_data
+                }
+
+            if not reflections:
+                return {
+                    "total_reflections": 0,
+                    "insights": {
+                        "message": "Start reflecting to see your personal insights!"
+                    }
+                }
+
+            # Process reflections for meaningful analysis
+            total_reflections = len(reflections)
+            categories = Counter()
+            category_depths = defaultdict(list)  # word count by category
+            all_text = ""
+            category_texts = defaultdict(str)  # text by category for deeper analysis
+            reflection_timeline = []  # for growth analysis
+
+            # Value indicators - words that suggest personal values
+            value_indicators = {
+                'family': ['family', 'parent', 'child', 'kids', 'mom', 'dad', 'son', 'daughter', 'siblings', 'spouse', 'wife', 'husband', 'marriage', 'children'],
+                'growth': ['learn', 'grow', 'improve', 'develop', 'progress', 'change', 'evolve', 'better', 'overcome', 'challenge'],
+                'purpose': ['purpose', 'meaning', 'goals', 'dreams', 'vision', 'mission', 'calling', 'passion', 'fulfillment'],
+                'balance': ['balance', 'harmony', 'peace', 'calm', 'stress', 'overwhelmed', 'busy', 'priorities'],
+                'relationships': ['friends', 'friendship', 'trust', 'love', 'connection', 'community', 'support', 'together'],
+                'gratitude': ['grateful', 'thankful', 'appreciate', 'blessed', 'fortunate', 'lucky', 'joy', 'happy'],
+                'authenticity': ['authentic', 'genuine', 'honest', 'true', 'real', 'myself', 'identity', 'values'],
+                'resilience': ['strong', 'strength', 'overcome', 'survive', 'persevere', 'endure', 'tough', 'difficult']
+            }
+
+            # Emotional tone indicators
+            positive_emotions = ['happy', 'joy', 'excited', 'grateful', 'proud', 'love', 'amazing', 'wonderful', 'great', 'good', 'content', 'peaceful']
+            challenging_emotions = ['sad', 'worried', 'stressed', 'anxious', 'frustrated', 'angry', 'difficult', 'hard', 'struggle', 'pain']
+            reflective_words = ['realize', 'understand', 'learned', 'discovered', 'insight', 'wisdom', 'perspective', 'reflection']
+
+            # Counters for meaningful insights
+            value_scores = {value: 0 for value in value_indicators.keys()}
+            category_emotional_profiles = defaultdict(lambda: {'positive': 0, 'challenging': 0, 'reflective': 0})
+
+            for reflection in reflections:
+                # Access dictionary fields directly
+                reflection_id = reflection['id']
+                text = reflection['response_text']
+                word_count = reflection['word_count'] or 0
+                created_at = reflection['created_at']
+                category = reflection['category']
+                question = reflection['question_text']
+
+                if not text:
+                    continue
+
+                text_lower = text.lower()
+
+                # Category and depth tracking
+                if category:
+                    categories[category] += 1
+                    category_depths[category].append(word_count)
+                    category_texts[category] += " " + text_lower
+
+                # Timeline for growth analysis
+                reflection_timeline.append({
+                    'date': str(created_at),
+                    'category': category,
+                    'word_count': word_count,
+                    'text_length': len(text),
+                    'quarter': f"Q{((created_at.month - 1) // 3) + 1}" if created_at else None
+                })
+
+                # Value detection - count mentions of value-related words
+                for value, indicators in value_indicators.items():
+                    for indicator in indicators:
+                        value_scores[value] += text_lower.count(indicator)
+
+                # Emotional profiling by category
+                if category:
+                    pos_count = sum(text_lower.count(word) for word in positive_emotions)
+                    challenging_count = sum(text_lower.count(word) for word in challenging_emotions)
+                    reflective_count = sum(text_lower.count(word) for word in reflective_words)
+
+                    category_emotional_profiles[category]['positive'] += pos_count
+                    category_emotional_profiles[category]['challenging'] += challenging_count
+                    category_emotional_profiles[category]['reflective'] += reflective_count
+
+                all_text += " " + text_lower
+
+            # Analyze core values (top values mentioned)
+            value_descriptions = {
+                'family': "The bonds and relationships that shape your identity",
+                'growth': "Your commitment to continuous learning and improvement",
+                'purpose': "Finding meaning and direction in life's journey",
+                'balance': "Seeking harmony between life's competing demands",
+                'relationships': "Building meaningful connections with others",
+                'gratitude': "Appreciating life's blessings and moments",
+                'authenticity': "Being true to yourself and your values",
+                'resilience': "Your strength in facing life's challenges"
+            }
+
+            top_values = sorted(value_scores.items(), key=lambda x: x[1], reverse=True)[:5]
+            core_values = [{"value": value.replace('_', ' ').title(),
+                           "strength": score,
+                           "description": value_descriptions.get(value, "A meaningful aspect of your life journey")}
+                          for value, score in top_values if score > 0]
+
+            # Category depth analysis
+            category_insights = {}
+            for category, depths in category_depths.items():
+                avg_depth = sum(depths) / len(depths) if depths else 0
+                total_depth = sum(depths)
+                emotional_profile = category_emotional_profiles[category]
+
+                # Determine emotional tone for this category
+                total_emotional = emotional_profile['positive'] + emotional_profile['challenging']
+                if total_emotional > 0:
+                    positivity_ratio = emotional_profile['positive'] / total_emotional
+                else:
+                    positivity_ratio = 0.5
+
+                category_insights[category] = {
+                    'count': len(depths),
+                    'avg_depth': round(avg_depth, 1),
+                    'total_investment': total_depth,  # how much mental energy they put here
+                    'emotional_tone': 'positive' if positivity_ratio > 0.6 else 'challenging' if positivity_ratio < 0.4 else 'balanced',
+                    'reflection_level': emotional_profile['reflective'],
+                    'percentage': round((len(depths) / total_reflections) * 100, 1)
+                }
+
+            # Growth analysis - compare early vs recent periods
+            if len(reflections) >= 10:
+                early_quarter = reflections[:len(reflections)//3]
+                recent_quarter = reflections[-len(reflections)//3:]
+
+                early_avg_depth = sum(r['word_count'] or 0 for r in early_quarter) / len(early_quarter)
+                recent_avg_depth = sum(r['word_count'] or 0 for r in recent_quarter) / len(recent_quarter)
+
+                depth_growth = round(((recent_avg_depth - early_avg_depth) / early_avg_depth * 100), 1) if early_avg_depth > 0 else 0
+
+                # Analyze category evolution
+                early_categories = Counter(r['category'] for r in early_quarter if r['category'])
+                recent_categories = Counter(r['category'] for r in recent_quarter if r['category'])
+
+                growth_insights = {
+                    'depth_change': depth_growth,
+                    'depth_trend': 'growing' if depth_growth > 15 else 'stable' if abs(depth_growth) <= 15 else 'varying',
+                    'focus_shift': None
+                }
+
+                # Find biggest focus shift
+                early_top = early_categories.most_common(1)[0][0] if early_categories else None
+                recent_top = recent_categories.most_common(1)[0][0] if recent_categories else None
+
+                if early_top and recent_top and early_top != recent_top:
+                    growth_insights['focus_shift'] = f"Shifted focus from {early_top.replace('_', ' ')} to {recent_top.replace('_', ' ')}"
+            else:
+                growth_insights = {'depth_change': 0, 'depth_trend': 'early', 'focus_shift': None}
+
+            # Find the most meaningful category (highest total investment) - outside the if block
+            most_invested_category = max(category_insights.items(), key=lambda x: x[1]['total_investment']) if category_insights else None
+
+            # Generate Reflection DNA - deeply personal insights
+            reflection_dna = []
+
+            # Pattern 1: Energy Detection - what topics get the most detailed responses
+            category_avg_lengths = {cat: sum(depths) / len(depths) for cat, depths in category_depths.items() if depths}
+            if category_avg_lengths:
+                energy_topic = max(category_avg_lengths.items(), key=lambda x: x[1])
+                topic_name = energy_topic[0].replace('_', ' ').title()
+                reflection_dna.append(f"⚡ Your energy peaks when discussing {topic_name}")
+
+            # Pattern 2: Avoidance Detection - what gets brief responses
+            brief_categories = {cat: avg_len for cat, avg_len in category_avg_lengths.items() if avg_len < 50}
+            if brief_categories:
+                avoided_topic = min(brief_categories.items(), key=lambda x: x[1])
+                topic_name = avoided_topic[0].replace('_', ' ').lower()
+                reflection_dna.append(f"🔍 You tend to give brief responses about {topic_name}")
+
+            # Pattern 3: Processing Style Detection
+            question_count = sum(text.lower().count('?') for text in all_text.split())
+            story_indicators = sum(text.lower().count(word) for text in all_text.split() for word in ['story', 'remember', 'once', 'time'])
+            metaphor_count = sum(text.lower().count(word) for text in all_text.split() for word in ['like', 'as if', 'feels like'])
+
+            if question_count > total_reflections * 0.8:
+                reflection_dna.append("🤔 You process life through questioning - always seeking deeper understanding")
+            elif story_count := sum(text.lower().count(word) for text in all_text.split() for word in ['when i', 'i remember', 'there was']):
+                if story_count > total_reflections * 0.5:
+                    reflection_dna.append("📖 You make sense of life through storytelling and memories")
+            elif metaphor_count > total_reflections * 0.3:
+                reflection_dna.append("🎨 You process experiences through creative metaphors and comparisons")
+
+            # Pattern 4: Emotional Processing Style
+            gratitude_count = sum(all_text.lower().count(word) for word in ['grateful', 'thankful', 'appreciate', 'blessed'])
+            worry_count = sum(all_text.lower().count(word) for word in ['worry', 'anxious', 'stressed', 'concerned'])
+            hope_count = sum(all_text.lower().count(word) for word in ['hope', 'wish', 'want', 'dream'])
+
+            if gratitude_count > worry_count and gratitude_count > hope_count:
+                reflection_dna.append("🙏 Gratitude is your emotional anchor - you naturally find things to appreciate")
+            elif hope_count > gratitude_count and hope_count > worry_count:
+                reflection_dna.append("✨ You're a natural optimist - future possibilities energize you")
+            elif worry_count > gratitude_count:
+                reflection_dna.append("🛡️ You process challenges by anticipating and preparing for difficulties")
+
+            # Pattern 5: Self-Reference Patterns - how they talk about themselves
+            should_statements = sum(all_text.lower().count(phrase) for phrase in ['i should', 'i need to', 'i must'])
+            self_compassion = sum(all_text.lower().count(phrase) for phrase in ['i\'m learning', 'it\'s okay', 'i forgive'])
+
+            if should_statements > self_compassion * 2:
+                reflection_dna.append("⚖️ Your inner critic is active - you often focus on what you 'should' do")
+            elif self_compassion > should_statements:
+                reflection_dna.append("💝 You practice self-compassion - treating yourself with kindness")
+
+            # Pattern 6: Growth Edge Detection
+            change_words = sum(all_text.lower().count(word) for word in ['change', 'different', 'new', 'grow', 'learn'])
+            stuck_words = sum(all_text.lower().count(word) for word in ['same', 'always', 'never', 'stuck', 'can\'t'])
+
+            if change_words > stuck_words:
+                reflection_dna.append("🌱 You're in an active growth phase - embracing change and new perspectives")
+            elif stuck_words > change_words:
+                reflection_dna.append("🔄 You're noticing patterns you want to break - awareness is the first step")
+
+            # Pattern 7: Connection Style
+            others_focus = sum(all_text.lower().count(word) for word in ['family', 'friends', 'people', 'others', 'relationships'])
+            self_focus = sum(all_text.lower().count(word) for word in ['i feel', 'i think', 'i want', 'my', 'myself'])
+
+            if others_focus > self_focus:
+                reflection_dna.append("🤝 You understand yourself through relationships and connections with others")
+            else:
+                reflection_dna.append("🔍 You're developing a strong sense of self through introspection")
+
+            # Limit to top 6 most insightful patterns
+            reflection_dna = reflection_dna[:6]
+
+            # Calculate reflection style metrics
+            total_word_count = sum(r['word_count'] or 0 for r in reflections)
+            avg_word_count = round(total_word_count / total_reflections) if total_reflections > 0 else 0
+
+            # Determine depth level based on average word count
+            if avg_word_count > 150:
+                depth_level = "deeply reflective"
+            elif avg_word_count > 100:
+                depth_level = "moderately reflective"
+            else:
+                depth_level = "concise reflector"
+
+            # Calculate consistency based on reflection frequency (simplified)
+            consistency = "highly consistent" if total_reflections > 100 else "moderately consistent" if total_reflections > 50 else "developing consistency"
+
+            # Personal reflection insights - generate meaningful insights
+            personal_insights = []
+
+            # Core values insight
+            if core_values:
+                top_value = core_values[0]
+                personal_insights.append(f"Your reflections reveal '{top_value['value']}' as a central theme in your life")
+
+            # Category depth insight
+            if most_invested_category:
+                cat_name, cat_data = most_invested_category
+                cat_display = cat_name.replace('_', ' ').title()
+                emotional_tone = cat_data['emotional_tone']
+                personal_insights.append(f"You invest the most reflection energy in {cat_display}, approaching it with a {emotional_tone} mindset")
+
+            # Growth insight
+            if growth_insights['depth_trend'] == 'growing':
+                personal_insights.append(f"Your reflection depth has grown {growth_insights['depth_change']}% - you're becoming more introspective")
+            elif growth_insights['focus_shift']:
+                personal_insights.append(growth_insights['focus_shift'])
+
+            # Balance insight
+            if 'balance' in [v['value'].lower() for v in core_values[:3]]:
+                personal_insights.append("Balance appears to be important to you - mentioned across multiple life areas")
+
+            return {
+                "total_reflections": total_reflections,
+                "insights": {
+                    "personal_summary": ". ".join(personal_insights) if personal_insights else "Continue reflecting to discover meaningful insights about yourself.",
+                    "core_values": core_values,
+                    "reflection_dna": reflection_dna,
+                    "streak_calendar": streak_stats,
+                    "growth_journey": {
+                        "reflection_depth_change": f"Your reflection depth has {growth_insights['depth_trend']} over time",
+                        "focus_evolution": growth_insights['focus_shift'] or "Your reflection focus has remained consistent",
+                        "emotional_growth": "Growing in self-awareness through consistent reflection"
+                    },
+                    "reflection_style": {
+                        "avg_word_count": avg_word_count,
+                        "depth_level": depth_level,
+                        "consistency": consistency
+                    }
+                }
+            }
+
+        finally:
+            conn.close()
+
+    except Exception as e:
+        logger.error(f"Error generating insights: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

@@ -226,7 +226,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
       // Only fall back to localStorage after all retries failed
       console.log('📱 All retries failed, falling back to localStorage...');
       try {
-        const userSpecificKey = `echos_reflections_${user.email}`;
+        const userSpecificKey = `echos_reflections_${user?.email}`;
         const saved = localStorage.getItem(userSpecificKey);
         if (saved) {
           const loadedReflections = JSON.parse(saved);
@@ -283,6 +283,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
         body: JSON.stringify({
           user_email: userEmail,
           question_id: reflectionData.questionId,
+          question_text_validation: reflectionData.question, // Add validation field
           response_text: reflectionData.response,
           word_count: reflectionData.wordCount,
           is_draft: false,
@@ -324,7 +325,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
       const updatedReflections = [...reflections, newReflection];
       try {
-        const userSpecificKey = `echos_reflections_${user.email}`;
+        const userSpecificKey = `echos_reflections_${user?.email}`;
         localStorage.setItem(userSpecificKey, JSON.stringify(updatedReflections));
         setReflections(updatedReflections);
       } catch (localError) {
@@ -666,6 +667,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     return stats.totalReflections >= ECHO_TARGET * READINESS_THRESHOLD &&
            stats.averageQualityScore >= QUALITY_THRESHOLD;
   };
+
 
   const getNextMilestone = (): { target: number; description: string } | null => {
     const nextMilestone = MILESTONES.find(m => m.target > stats.totalReflections);

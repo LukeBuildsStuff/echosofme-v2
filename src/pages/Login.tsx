@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import type { CredentialResponse } from '@react-oauth/google';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../contexts/AuthContext';
+import GoogleAuth from '../components/GoogleAuth';
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -9,10 +11,14 @@ const Login: React.FC = () => {
     password: '',
     isSignUp: false,
     displayName: '',
+    rememberMe: false,
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -21,11 +27,44 @@ const Login: React.FC = () => {
     });
   };
 
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    try {
+      setError('');
+      setLoading(true);
+      
+      // Decode the JWT token to get user information
+      if (credentialResponse.credential) {
+        const payload = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
+        
+        const { email, name, sub: googleId } = payload;
+        
+        console.log('🔍 Google login successful for:', email);
+        
+        await loginWithGoogle(email, name, googleId);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Google login failed:', error);
+      setError('Google login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    console.error('Google login error');
+    setError('Google login failed. Please check your internet connection and try again.');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const normalizedEmail = formData.email.toLowerCase().trim();
-    let user;
+    setError('');
+    setLoading(true);
+    
+    try {
+      const normalizedEmail = formData.email.toLowerCase().trim();
+      let user;
     
     if (formData.isSignUp) {
       // New user signup - use form data
@@ -33,6 +72,7 @@ const Login: React.FC = () => {
         id: Date.now().toString(),
         email: normalizedEmail,
         displayName: formData.displayName,
+        provider: 'email' as const,
         profile: {
           displayName: formData.displayName,
           relationship: 'Friendly',
@@ -71,6 +111,7 @@ const Login: React.FC = () => {
             ...savedUser,
             id: Date.now().toString(), // Generate new session ID
             email: normalizedEmail, // Ensure email matches normalized version
+            provider: savedUser.provider || 'email' as const, // Ensure provider is set
           };
           console.log('🔍 LOGIN - Using saved profile, AuthContext will sync from database');
         } catch (error) {
@@ -80,6 +121,7 @@ const Login: React.FC = () => {
             id: Date.now().toString(),
             email: normalizedEmail,
             displayName: normalizedEmail.split('@')[0],
+            provider: 'email' as const,
             profile: {
               displayName: normalizedEmail.split('@')[0],
               relationship: 'Friendly',
@@ -97,6 +139,7 @@ const Login: React.FC = () => {
           id: Date.now().toString(),
           email: normalizedEmail,
           displayName: normalizedEmail.split('@')[0],
+          provider: 'email' as const,
           profile: {
             displayName: normalizedEmail.split('@')[0],
             relationship: 'Friendly',
@@ -109,13 +152,14 @@ const Login: React.FC = () => {
       }
     }
 
-    // Use AuthContext login method (now async)
-    try {
+      // Use AuthContext login method (now async)
       await login(user);
       navigate('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
-      alert('Login failed. Please try again.');
+      setError('Login failed. Please check your information and try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -124,6 +168,13 @@ const Login: React.FC = () => {
       ...formData,
       isSignUp: !formData.isSignUp,
       displayName: '',
+    });
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.checked,
     });
   };
 
@@ -185,6 +236,12 @@ const Login: React.FC = () => {
                 </div>
                 
                 <form onSubmit={handleSubmit}>
+                  {error && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                      {error}
+                    </div>
+                  )}
+                  
                   {formData.isSignUp && (
                     <div className="mb-[22px]">
                       <input
@@ -222,14 +279,56 @@ const Login: React.FC = () => {
                       className="w-full px-5 py-3 text-base transition bg-transparent border rounded-md outline-none border-stroke dark:border-dark-3 text-body-color dark:text-dark-6 placeholder:text-dark-6 focus:border-primary dark:focus:border-primary focus-visible:shadow-none"
                     />
                   </div>
+
+                  {!formData.isSignUp && (
+                    <div className="mb-[22px] flex items-center">
+                      <input
+                        type="checkbox"
+                        name="rememberMe"
+                        id="rememberMe"
+                        checked={formData.rememberMe}
+                        onChange={handleCheckboxChange}
+                        className="mr-2 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                      />
+                      <label 
+                        htmlFor="rememberMe"
+                        className="text-sm text-body-color dark:text-dark-6"
+                      >
+                        Remember me for 30 days
+                      </label>
+                    </div>
+                  )}
                   
-                  <div className="mb-9">
+                  <div className="mb-6">
                     <button
                       type="submit"
-                      className="w-full px-5 py-3 text-base text-white transition duration-300 ease-in-out border rounded-md cursor-pointer border-primary bg-primary hover:bg-primary/90"
+                      disabled={loading}
+                      className="w-full px-5 py-3 text-base text-white transition duration-300 ease-in-out border rounded-md cursor-pointer border-primary bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {formData.isSignUp ? 'Create Account' : 'Sign In'}
+                      {loading ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          {formData.isSignUp ? 'Creating Account...' : 'Signing In...'}
+                        </div>
+                      ) : (
+                        formData.isSignUp ? 'Create Account' : 'Sign In'
+                      )}
                     </button>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="flex items-center justify-center mb-4">
+                      <div className="border-t border-gray-300 flex-1"></div>
+                      <span className="px-3 text-sm text-gray-500">or</span>
+                      <div className="border-t border-gray-300 flex-1"></div>
+                    </div>
+                    
+                    <div className="flex justify-center">
+                      <GoogleAuth
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                      />
+                    </div>
                   </div>
                 </form>
 

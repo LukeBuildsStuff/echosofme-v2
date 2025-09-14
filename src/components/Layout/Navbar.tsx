@@ -132,6 +132,14 @@ const Navbar: React.FC<NavbarProps> = () => {
                           Legacy
                         </Link>
                       </li>
+                      <li className="relative group">
+                        <Link
+                          to="/insights"
+                          className={`flex py-2 mx-8 text-base font-medium text-dark group-hover:text-primary dark:text-white lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 lg:group-hover:text-primary xl:ml-10`}
+                        >
+                          Insights
+                        </Link>
+                      </li>
                     </>
                   )}
                   

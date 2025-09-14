@@ -14,13 +14,20 @@ const Legacy: React.FC = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 1) return 'Today';
-    if (diffDays === 2) return 'Yesterday';
-    if (diffDays <= 7) return `${diffDays - 1} days ago`;
-    if (diffDays <= 30) return `${Math.ceil((diffDays - 1) / 7)} weeks ago`;
+    // Compare dates at midnight to get accurate day differences
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    
+    const compareDate = new Date(date);
+    compareDate.setHours(0, 0, 0, 0);
+    
+    const diffDays = Math.round((today.getTime() - compareDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays <= 7) return `${diffDays} days ago`;
+    if (diffDays <= 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
     return date.toLocaleDateString();
   };
 

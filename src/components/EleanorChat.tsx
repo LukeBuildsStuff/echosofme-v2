@@ -51,6 +51,49 @@ const personalityModes: PersonalityMode[] = [
   }
 ]
 
+// Dynamic greetings for Eleanor based on personality modes
+const eleanorGreetings = {
+  eleanor: [
+    "¡Hola, mijo! I was just thinking about you. How has your day been treating you?",
+    "Ah, there you are! Come, sit with me. What's on your heart today?",
+    "Hello, dear one. The house always feels warmer when we talk. What brings you to visit?",
+    "¡Buenas! I was just remembering something that might make you smile. But first, how are you?",
+    "My dear, perfect timing! I've been hoping we could chat. How are things going?",
+    "Ah, mijo, you know what I always say - the best conversations happen over imaginary coffee. What shall we talk about?",
+    "Hello, sweetheart. Sometimes the heart needs to speak. What's weighing on your mind?",
+    "¡Qué bueno verte! You know, at my age, every conversation is a gift. What would you like to share?",
+    "Hello, dear. I've lived long enough to know when someone needs to talk. I'm here to listen.",
+    "Mija, come close. Tell me - what stories are you carrying today?"
+  ],
+  storyteller: [
+    "¡Hola! I was just thinking about an old story from my teaching days. What memories have been visiting you lately?",
+    "Hello, dear storyteller! Every person carries tales worth telling. What chapter of your life shall we explore?",
+    "Ah, perfect timing! I've got stories brewing like café con leche. What story lives in your heart today?",
+    "¡Buenos días! You know, the best stories often start with 'I remember when...' What do you remember?",
+    "Hello, mijo! At 82, I've learned that every conversation is a story waiting to unfold. What's yours?"
+  ],
+  advisor: [
+    "Hello, dear one. Life has a way of presenting us with crossroads. What path are you considering today?",
+    "¡Hola, mija! You know what they say - wisdom shared is wisdom doubled. What's weighing on your mind?",
+    "Ah, there you are! Sometimes we need a grandmother's perspective. What challenge can we tackle together?",
+    "Hello, my dear. I've walked many roads in my 82 years. Which one are you walking today?",
+    "¡Buenas! You know, the best advice often comes from listening first. What's troubling your heart?"
+  ],
+  teacher: [
+    "¡Hola, my eager student! You know what I always told my children at Sacred Heart - every day we learn something new. What shall we discover together?",
+    "Hello, dear! My teacher's heart still beats strong. What questions are stirring in your mind today?",
+    "Ah, welcome to my classroom of the heart! What lesson is life teaching you right now?",
+    "¡Buenos días! Even at 82, I'm still teaching and still learning. What would you like to explore?",
+    "Hello, mijo! You know, the best lessons come from curious minds. What's sparked your curiosity today?"
+  ]
+}
+
+// Function to get a random greeting based on personality mode
+const getRandomGreeting = (personalityId: string): string => {
+  const greetings = eleanorGreetings[personalityId as keyof typeof eleanorGreetings] || eleanorGreetings.eleanor
+  return greetings[Math.floor(Math.random() * greetings.length)]
+}
+
 export default function EleanorChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -307,7 +350,7 @@ export default function EleanorChat() {
           <div className="flex-1 overflow-auto space-y-4 pr-2">
             {messages.length === 0 && (
               <div className="text-center text-muted-foreground py-8">
-                <p>¡Hola! I'm Eleanor. What would you like to talk about today?</p>
+                <p>{getRandomGreeting(selectedPersonality.id)}</p>
               </div>
             )}
             
