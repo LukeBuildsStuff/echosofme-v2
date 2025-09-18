@@ -80,7 +80,23 @@ const Insights: React.FC = () => {
         const data = await response.json();
         setInsights(data);
       } else {
-        throw new Error(`Failed to load insights: ${response.statusText}`);
+        // Try to parse error response as JSON, fallback to text
+        let errorMessage = `Failed to load insights: ${response.statusText}`;
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } else {
+            const errorText = await response.text();
+            if (errorText && errorText.length < 200) {
+              errorMessage = errorText;
+            }
+          }
+        } catch (parseError) {
+          console.error('Error parsing error response:', parseError);
+        }
+        throw new Error(errorMessage);
       }
     } catch (err) {
       console.error('Error loading insights:', err);

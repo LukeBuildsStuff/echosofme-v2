@@ -290,6 +290,55 @@ class SupabaseService:
             logger.error(f"Error getting AI conversation history for {user_id}: {e}")
             return []
 
+    # Insights Data
+    def get_user_insights_data(self, user_id: int) -> Dict[str, Any]:
+        """Get comprehensive data for insights analysis"""
+        try:
+            from datetime import datetime, timedelta
+            from collections import defaultdict
+
+            # Get all non-draft reflections with question details (past 365 days for performance)
+            year_ago = (datetime.now() - timedelta(days=365)).isoformat()
+
+            reflections_result = self.client.table('reflections')\
+                .select('*, questions(id, question_text, category)')\
+                .eq('user_id', user_id)\
+                .eq('is_draft', False)\
+                .gte('created_at', year_ago)\
+                .order('created_at', desc=False)\
+                .execute()
+
+            reflections = reflections_result.data
+
+            # Group reflections by date for calendar view
+            daily_counts = defaultdict(int)
+            for reflection in reflections:
+                created_date = reflection['created_at'][:10]  # Extract YYYY-MM-DD
+                daily_counts[created_date] += 1
+
+            # Convert to list format for calendar
+            calendar_data = []
+            for date_str, count in daily_counts.items():
+                calendar_data.append({
+                    'date': date_str,
+                    'count': count,
+                    'level': min(count, 4)  # Cap intensity at 4
+                })
+
+            return {
+                'reflections': reflections,
+                'calendar_data': calendar_data,
+                'daily_counts': dict(daily_counts)
+            }
+
+        except Exception as e:
+            logger.error(f"Error getting insights data for user {user_id}: {e}")
+            return {
+                'reflections': [],
+                'calendar_data': [],
+                'daily_counts': {}
+            }
+
     # Health Check
     def health_check(self) -> bool:
         """Check if Supabase connection is healthy"""
