@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { CredentialResponse } from '@react-oauth/google';
 import Layout from '../components/Layout/Layout';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import GoogleAuth from '../components/GoogleAuth';
 
 const Login: React.FC = () => {
@@ -18,7 +18,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   
   const navigate = useNavigate();
-  const { login, loginWithGoogle } = useAuth();
+  const { login, signup, loginWithGoogle } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -58,105 +58,24 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     setError('');
     setLoading(true);
-    
+
     try {
       const normalizedEmail = formData.email.toLowerCase().trim();
-      let user;
-    
-    if (formData.isSignUp) {
-      // New user signup - use form data
-      user = {
-        id: Date.now().toString(),
-        email: normalizedEmail,
-        displayName: formData.displayName,
-        provider: 'email' as const,
-        profile: {
-          displayName: formData.displayName,
-          relationship: 'Friendly',
-          meetingStatus: 'First time meeting',
-          purpose: 'Personal growth and reflection',
-          knowledgeLevel: 'Learning together',
-          introduction: '',
-        }
-      };
-    } else {
-      // Existing user login - create minimal user object
-      // AuthContext will handle profile syncing from database/localStorage
-      const userSpecificKey = `echos_user_profile_${normalizedEmail}`;
-      let existingProfile = localStorage.getItem(userSpecificKey);
-      
-      console.log('🔍 LOGIN - Email normalized to:', normalizedEmail);
-      console.log('🔍 LOGIN - Found existing profile:', existingProfile ? 'YES' : 'NO');
-      
-      // Migrate from old casing if needed
-      if (!existingProfile && formData.email !== normalizedEmail) {
-        const originalEmailKey = `echos_user_profile_${formData.email}`;
-        const oldProfile = localStorage.getItem(originalEmailKey);
-        if (oldProfile) {
-          console.log('🔍 LOGIN - Migrating profile from old casing');
-          localStorage.setItem(userSpecificKey, oldProfile);
-          localStorage.removeItem(originalEmailKey);
-          existingProfile = oldProfile;
-        }
-      }
-      
-      if (existingProfile) {
-        try {
-          // Use saved profile data for returning user
-          const savedUser = JSON.parse(existingProfile);
-          user = {
-            ...savedUser,
-            id: Date.now().toString(), // Generate new session ID
-            email: normalizedEmail, // Ensure email matches normalized version
-            provider: savedUser.provider || 'email' as const, // Ensure provider is set
-          };
-          console.log('🔍 LOGIN - Using saved profile, AuthContext will sync from database');
-        } catch (error) {
-          console.error('Error loading saved user profile:', error);
-          // Fallback to defaults
-          user = {
-            id: Date.now().toString(),
-            email: normalizedEmail,
-            displayName: normalizedEmail.split('@')[0],
-            provider: 'email' as const,
-            profile: {
-              displayName: normalizedEmail.split('@')[0],
-              relationship: 'Friendly',
-              meetingStatus: 'First time meeting',
-              purpose: 'Personal growth and reflection',
-              knowledgeLevel: 'Learning together',
-              introduction: '',
-            }
-          };
-        }
-      } else {
-        // New user (no saved profile) - use email prefix as default
-        console.log('🔍 LOGIN - No saved profile found, creating default user');
-        user = {
-          id: Date.now().toString(),
-          email: normalizedEmail,
-          displayName: normalizedEmail.split('@')[0],
-          provider: 'email' as const,
-          profile: {
-            displayName: normalizedEmail.split('@')[0],
-            relationship: 'Friendly',
-            meetingStatus: 'First time meeting',
-            purpose: 'Personal growth and reflection',
-            knowledgeLevel: 'Learning together',
-            introduction: '',
-          }
-        };
-      }
-    }
 
-      // Use AuthContext login method (now async)
-      await login(user);
+      if (formData.isSignUp) {
+        // New user signup
+        await signup(normalizedEmail, formData.password, formData.displayName);
+      } else {
+        // Existing user login
+        await login(normalizedEmail, formData.password);
+      }
+
       navigate('/dashboard');
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Authentication failed:', error);
       setError('Login failed. Please check your information and try again.');
     } finally {
       setLoading(false);

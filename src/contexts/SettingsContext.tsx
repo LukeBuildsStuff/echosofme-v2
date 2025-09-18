@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuth } from './SupabaseAuthContext';
 
 export interface SettingsData {
   theme: 'light' | 'dark' | 'auto';

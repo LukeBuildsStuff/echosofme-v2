@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import questionsData from '../data/questions.json';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import { getEleanorApiUrl } from '../utils/apiConfig';
 
 export interface Question {

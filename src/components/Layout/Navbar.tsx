@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/SupabaseAuthContext';
 
 interface NavbarProps {
   isAuthenticated?: boolean;
@@ -8,10 +8,12 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
   const isHome = location.pathname === '/';
+  const profileRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -20,11 +22,30 @@ const Navbar: React.FC<NavbarProps> = () => {
   const handleSignOut = () => {
     logout();
     navigate('/');
+    setIsProfileOpen(false);
   };
 
   const handleSettingsClick = () => {
     navigate('/settings');
+    setIsProfileOpen(false);
   };
+
+  const toggleProfileDropdown = () => {
+    setIsProfileOpen(!isProfileOpen);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className={`absolute top-0 left-0 z-40 flex items-center w-full ${isHome ? 'bg-transparent' : 'bg-white dark:bg-dark-2 shadow-lg'} ud-header`}>
@@ -185,9 +206,14 @@ const Navbar: React.FC<NavbarProps> = () => {
                   </Link>
                 </>
               ) : (
-                <div className="hidden lg:block relative group">
+                <div ref={profileRef} className="hidden lg:block relative group">
                   {/* Desktop Profile Icon */}
-                  <button className="flex items-center px-4 py-2 text-base font-medium text-dark hover:text-primary dark:text-white min-h-[44px]">
+                  <button
+                    onClick={toggleProfileDropdown}
+                    className="flex items-center px-4 py-2 text-base font-medium text-dark hover:text-primary dark:text-white min-h-[44px]"
+                    aria-expanded={isProfileOpen}
+                    aria-haspopup="true"
+                  >
                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                     </svg>
@@ -202,12 +228,32 @@ const Navbar: React.FC<NavbarProps> = () => {
                       <path d="M7.99999 14.9C7.84999 14.9 7.72499 14.85 7.59999 14.75L1.84999 9.10005C1.62499 8.87505 1.62499 8.52505 1.84999 8.30005C2.07499 8.07505 2.42499 8.07505 2.64999 8.30005L7.99999 13.525L13.35 8.25005C13.575 8.02505 13.925 8.02505 14.15 8.25005C14.375 8.47505 14.375 8.82505 14.15 9.05005L8.39999 14.7C8.27499 14.825 8.14999 14.9 7.99999 14.9Z" />
                     </svg>
                   </button>
-                  <div className="submenu invisible absolute right-0 top-[110%] w-[200px] rounded-lg bg-white p-4 opacity-0 shadow-lg transition-all duration-300 group-hover:visible group-hover:top-full group-hover:opacity-100 dark:bg-dark-2">
+                  <div className={`submenu absolute right-0 top-[110%] w-[200px] rounded-lg bg-white p-4 shadow-lg transition-all duration-300 dark:bg-dark-2 ${
+                    isProfileOpen
+                      ? 'visible opacity-100 top-full'
+                      : 'invisible opacity-0 group-hover:visible group-hover:top-full group-hover:opacity-100'
+                  }`}>
                     <div className="px-4 py-2 text-sm text-gray-900 border-b border-gray-200">
                       <div className="font-medium">{user?.displayName || 'User'}</div>
                       <div className="text-gray-500">{user?.email}</div>
                     </div>
-                    <button 
+                    {user?.email === 'lukemoeller@yahoo.com' && (
+                      <button
+                        onClick={() => {
+                          navigate('/admin/database');
+                          setIsProfileOpen(false);
+                        }}
+                        className="block w-full rounded-sm px-4 py-2 text-left text-sm text-body-color hover:text-primary dark:text-dark-6 dark:hover:text-primary min-h-[44px]"
+                      >
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                          </svg>
+                          Admin Panel
+                        </div>
+                      </button>
+                    )}
+                    <button
                       onClick={handleSettingsClick}
                       className="block w-full rounded-sm px-4 py-2 text-left text-sm text-body-color hover:text-primary dark:text-dark-6 dark:hover:text-primary min-h-[44px]"
                     >

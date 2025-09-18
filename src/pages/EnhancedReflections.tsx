@@ -4,7 +4,7 @@ import TrainingProgress from '../components/TrainingProgress';
 import ConversationTrainer from '../components/ConversationTrainer';
 import useQuestionLoader, { type Question } from '../components/QuestionLoader';
 import { useEcho } from '../contexts/EchoContext';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 
 const EnhancedReflections: React.FC = () => {
   const { user } = useAuth();

@@ -4,6 +4,7 @@ import Layout from '../components/Layout/Layout';
 import { useEcho } from '../contexts/EchoContext';
 import AudioPlayer from '../components/AudioPlayer';
 import { Volume2, VolumeX } from 'lucide-react';
+import SparkleLoader from '../components/SparkleLoader';
 
 interface Echo {
   id: string;
@@ -445,11 +446,9 @@ const Chat: React.FC = () => {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white border rounded-lg p-4 shadow-sm">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                <div className="bg-white border rounded-lg p-2 shadow-sm">
+                  <div className="flex items-center justify-center">
+                    <SparkleLoader />
                   </div>
                 </div>
               </div>

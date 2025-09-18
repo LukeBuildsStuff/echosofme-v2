@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Layout from '../components/Layout/Layout';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import { getEleanorApiUrl } from '../utils/apiConfig';
 
 interface InsightsData {
@@ -335,52 +335,149 @@ const Insights: React.FC = () => {
                 {/* Heatmap Calendar */}
                 <div ref={calendarRef} className="overflow-x-auto">
                   <div className="min-w-max">
-                    <div className="grid grid-cols-53 gap-1">
-                      {streak_calendar.calendar_data.map((day, index) => {
-                        const date = new Date(day.date);
-                        const weekday = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
-                        const isToday = day.date === new Date().toISOString().slice(0, 10);
+                    {/* Create weeks structure and track months */}
+                    {(() => {
+                      if (!streak_calendar.calendar_data.length) return null;
+
+                      // Group days by week and track month positions
+                      const weeks = [];
+                      const monthPositions = [];
+                      let currentWeek = [];
+                      const startDate = new Date(streak_calendar.calendar_data[0].date);
+                      const endDate = new Date(streak_calendar.calendar_data[streak_calendar.calendar_data.length - 1].date);
+
+                      // Start from the first Sunday of the year containing the start date
+                      const yearStart = new Date(startDate.getFullYear(), 0, 1);
+                      const firstSunday = new Date(yearStart);
+                      firstSunday.setDate(yearStart.getDate() - yearStart.getDay());
+
+                      const currentDate = new Date(firstSunday);
+                      let currentMonth = null;
+                      let weekIndex = 0;
+
+                      // Build calendar data by iterating through all days
+                      while (currentDate <= endDate) {
+                        const dateStr = currentDate.toISOString().slice(0, 10);
+                        const dayData = streak_calendar.calendar_data.find(d => d.date === dateStr);
+                        const isToday = dateStr === new Date().toISOString().slice(0, 10);
+
+                        // Check if we've entered a new month
+                        const monthKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
+                        if (monthKey !== currentMonth && currentDate.getDate() <= 7) { // Only on first week of month
+                          currentMonth = monthKey;
+                          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                          const monthName = monthNames[currentDate.getMonth()];
+                          const yearSuffix = currentDate.getFullYear() !== new Date().getFullYear() ?
+                            ` '${currentDate.getFullYear().toString().slice(-2)}` : '';
+
+                          monthPositions.push({
+                            name: `${monthName}${yearSuffix}`,
+                            weekIndex: weekIndex,
+                            isCurrentMonth: currentDate.getMonth() === new Date().getMonth() &&
+                                          currentDate.getFullYear() === new Date().getFullYear()
+                          });
+                        }
 
                         // Color based on intensity
                         let colorClass = 'bg-gray-100';
-                        if (day.intensity === 1) colorClass = 'bg-green-200';
-                        else if (day.intensity === 2) colorClass = 'bg-green-300';
-                        else if (day.intensity === 3) colorClass = 'bg-green-400';
-                        else if (day.intensity >= 4) colorClass = 'bg-green-600';
+                        if (dayData?.intensity === 1) colorClass = 'bg-green-200';
+                        else if (dayData?.intensity === 2) colorClass = 'bg-green-300';
+                        else if (dayData?.intensity === 3) colorClass = 'bg-green-400';
+                        else if (dayData?.intensity >= 4) colorClass = 'bg-green-600';
 
-                        return (
-                          <div
-                            key={day.date}
-                            className={`w-3 h-3 rounded-sm ${colorClass} ${isToday ? 'ring-2 ring-primary' : ''}`}
-                            title={`${date.toLocaleDateString()}: ${day.count} reflection${day.count !== 1 ? 's' : ''}`}
-                            style={{
-                              gridColumn: Math.floor(index / 7) + 1,
-                              gridRow: weekday + 1,
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
+                        currentWeek.push({
+                          date: dateStr,
+                          count: dayData?.count || 0,
+                          colorClass,
+                          isToday,
+                          dayOfWeek: currentDate.getDay()
+                        });
 
-                    {/* Month labels */}
-                    <div className="flex justify-between text-xs text-gray-500 mt-2">
-                      <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span>
-                      <span>May</span><span>Jun</span><span>Jul</span><span>Aug</span>
-                      <span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
-                    </div>
+                        // If Saturday (end of week), push the week
+                        if (currentDate.getDay() === 6) {
+                          weeks.push([...currentWeek]);
+                          currentWeek = [];
+                          weekIndex++;
+                        }
 
-                    {/* Legend */}
-                    <div className="flex items-center justify-between mt-4 text-xs text-gray-500">
-                      <span>Less</span>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-gray-100 rounded-sm"></div>
-                        <div className="w-3 h-3 bg-green-200 rounded-sm"></div>
-                        <div className="w-3 h-3 bg-green-300 rounded-sm"></div>
-                        <div className="w-3 h-3 bg-green-400 rounded-sm"></div>
-                        <div className="w-3 h-3 bg-green-600 rounded-sm"></div>
-                      </div>
-                      <span>More</span>
-                    </div>
+                        currentDate.setDate(currentDate.getDate() + 1);
+                      }
+
+                      // Add any remaining days to the last week
+                      if (currentWeek.length > 0) {
+                        weeks.push(currentWeek);
+                      }
+
+                      return (
+                        <div>
+                          <div className="flex gap-1">
+                            {/* Weekday labels */}
+                            <div className="flex flex-col gap-1 mr-2 text-xs text-gray-500">
+                              <div className="h-3"></div> {/* spacer for alignment */}
+                              <div className="h-3 flex items-center">Sun</div>
+                              <div className="h-3"></div>
+                              <div className="h-3 flex items-center">Tue</div>
+                              <div className="h-3"></div>
+                              <div className="h-3 flex items-center">Thu</div>
+                              <div className="h-3"></div>
+                            </div>
+
+                            {/* Calendar grid */}
+                            <div className="flex gap-1">
+                              {weeks.map((week, weekIndex) => (
+                                <div key={weekIndex} className="flex flex-col gap-1">
+                                  {/* Ensure we have 7 slots for each week */}
+                                  {[0, 1, 2, 3, 4, 5, 6].map(dayOfWeek => {
+                                    const dayData = week.find(d => d.dayOfWeek === dayOfWeek);
+
+                                    if (!dayData) {
+                                      return <div key={dayOfWeek} className="w-3 h-3"></div>;
+                                    }
+
+                                    return (
+                                      <div
+                                        key={dayData.date}
+                                        className={`w-3 h-3 rounded-sm ${dayData.colorClass} ${dayData.isToday ? 'ring-2 ring-primary' : ''}`}
+                                        title={`${new Date(dayData.date).toLocaleDateString()}: ${dayData.count} reflection${dayData.count !== 1 ? 's' : ''}`}
+                                      />
+                                    );
+                                  })}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Month labels positioned under actual weeks */}
+                          <div className="ml-12 mt-2 relative">
+                            {monthPositions.map((month, index) => (
+                              <div
+                                key={index}
+                                className={`absolute text-xs ${month.isCurrentMonth ? 'font-semibold text-gray-700' : 'text-gray-500'}`}
+                                style={{
+                                  left: `${month.weekIndex * 16}px`, // 12px width + 4px gap = 16px per week
+                                  transform: 'translateX(-50%)'
+                                }}
+                              >
+                                {month.name}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Legend */}
+                          <div className="flex items-center justify-between mt-8 text-xs text-gray-500">
+                            <span>Less</span>
+                            <div className="flex items-center gap-1">
+                              <div className="w-3 h-3 bg-gray-100 rounded-sm"></div>
+                              <div className="w-3 h-3 bg-green-200 rounded-sm"></div>
+                              <div className="w-3 h-3 bg-green-300 rounded-sm"></div>
+                              <div className="w-3 h-3 bg-green-400 rounded-sm"></div>
+                              <div className="w-3 h-3 bg-green-600 rounded-sm"></div>
+                            </div>
+                            <span>More</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

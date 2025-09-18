@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Volume2, VolumeX } from 'lucide-react'
 import AudioPlayer from './AudioPlayer'
+import SparkleLoader from './SparkleLoader'
 
 interface ChatMessage {
   id: string
@@ -404,8 +405,8 @@ export default function EleanorChat() {
             
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-muted rounded-lg p-3 max-w-[80%]">
-                  <p className="text-sm">Eleanor is thinking...</p>
+                <div className="bg-muted rounded-lg p-2 max-w-[80%]">
+                  <SparkleLoader />
                 </div>
               </div>
             )}

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { getEleanorApiUrl } from '../utils/apiConfig';
-import { useAuth } from './AuthContext';
+import { supabase } from '../lib/supabase';
+import { useAuth } from './SupabaseAuthContext';
 
 export interface Reflection {
   id: string;
@@ -99,8 +99,18 @@ interface EchoProviderProps {
   children: ReactNode;
 }
 
+// Helper function to get the Eleanor API URL
+const getEleanorApiUrl = (): string => {
+  // Check if we're running the Supabase API locally
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:8001';
+  }
+  // For production, use your deployed Supabase API URL
+  return 'https://your-api-domain.com'; // TODO: Replace with actual production URL
+};
+
 export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [reflections, setReflections] = useState<Reflection[]>([]);
   const [stats, setStats] = useState<EchoStats>({
     totalReflections: 0,
@@ -141,100 +151,91 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     }
   }, [user?.email]);
 
-  const loadReflections = async (retryCount = 0) => {
-    const maxRetries = 3;
-    const retryDelay = 1000; // 1 second
-    
+  const loadReflections = async () => {
     try {
-      if (!user?.email) {
-        console.log('⚠️ No user email available, skipping reflection loading');
+      if (!user?.id) {
+        console.log('⚠️ No user ID available, skipping reflection loading');
         return;
       }
-      
-      const userEmail = user.email;
-      const apiUrl = getEleanorApiUrl();
-      console.log('📊 Loading reflections from:', `${apiUrl}/reflections/${userEmail}`, retryCount > 0 ? `(retry ${retryCount})` : '');
-      
-      // Add timeout for mobile connections
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
-      const response = await fetch(`${apiUrl}/reflections/${userEmail}?limit=5000`, {
-        signal: controller.signal,
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (response.ok) {
-        const reflectionsData = await response.json();
+
+      // Clear old localStorage cache if it exists (one-time cleanup)
+      const userSpecificKey = `echos_reflections_${user.email}`;
+      const cacheVersionKey = `echos_cache_version_${user.email}`;
+      const currentCacheVersion = '2024-09-17'; // Update when structure changes
+
+      const storedVersion = localStorage.getItem(cacheVersionKey);
+      if (storedVersion !== currentCacheVersion) {
+        console.log('🧹 Clearing old cache version:', storedVersion, '-> updating to:', currentCacheVersion);
+        localStorage.removeItem(userSpecificKey);
+        localStorage.setItem(cacheVersionKey, currentCacheVersion);
+      }
+
+      const userId = parseInt(user.id);
+      console.log('📊 Loading reflections from Supabase for user ID:', userId);
+
+      if (isNaN(userId)) {
+        console.error('❌ Invalid user ID - cannot convert to integer:', user.id);
+        return;
+      }
+
+      // Use standard supabase client for all operations
+      const client = supabase;
+
+      console.log('🔧 Using standard client for reflections query');
+
+      const { data: reflectionsData, error } = await client
+        .from('reflections')
+        .select(`
+          *,
+          questions (
+            id,
+            question_text,
+            category
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ Error loading reflections from Supabase:', error);
+        throw error;
+      }
+
+      if (reflectionsData) {
         console.log('✅ Successfully loaded reflections:', reflectionsData.length, 'items');
-        
+
         // Convert database format to our interface format
         const convertedReflections: Reflection[] = reflectionsData.map((r: any) => ({
           id: r.id.toString(),
           questionId: r.question_id,
-          question: r.question_text || '',
-          category: r.category || 'general',
+          question: r.questions?.question_text || '',
+          category: r.questions?.category || 'general',
           response: r.response_text,
           wordCount: r.word_count || 0,
           qualityScore: calculateQualityScore(r.response_text, r.word_count || 0),
           createdAt: r.created_at,
           tags: []
         }));
-        
+
         setReflections(convertedReflections);
-        
-        // Clean up localStorage-only ghost reflections
-        try {
-          const userSpecificKey = `echos_reflections_${userEmail}`;
-          const localData = localStorage.getItem(userSpecificKey);
-          if (localData) {
-            const localReflections = JSON.parse(localData);
-            const dbIds = new Set(convertedReflections.map(r => r.id));
-            // Filter out reflections that don't exist in database
-            const cleanedLocal = localReflections.filter((lr: any) => dbIds.has(lr.id));
-            localStorage.setItem(userSpecificKey, JSON.stringify(cleanedLocal));
-            console.log('🧹 Cleaned up ghost reflections from localStorage');
-          }
-        } catch (error) {
-          console.warn('Failed to clean localStorage:', error);
-        }
-        
-        return; // Success, exit function
-      } else {
-        console.error('❌ Failed to load reflections. Status:', response.status, response.statusText);
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
     } catch (error) {
-      console.error('❌ Error loading reflections from API:', error);
-      
-      // Retry logic for network failures
-      if (retryCount < maxRetries && (
-        error instanceof TypeError || // Network error
-        error instanceof DOMException || // Abort error
-        (error instanceof Error && error.message.includes('fetch'))
-      )) {
-        console.log(`🔄 Retrying in ${retryDelay}ms... (attempt ${retryCount + 1}/${maxRetries})`);
-        setTimeout(() => loadReflections(retryCount + 1), retryDelay);
-        return;
-      }
-      
-      // Only fall back to localStorage after all retries failed
-      console.log('📱 All retries failed, falling back to localStorage...');
+      console.error('❌ Error loading reflections from database:', error);
+      console.warn('⚠️  Database query failed - this may indicate a JavaScript error or network issue');
+
+      // Only fall back to localStorage as a last resort
+      console.log('🔄 Attempting fallback to localStorage...');
       try {
         const userSpecificKey = `echos_reflections_${user?.email}`;
         const saved = localStorage.getItem(userSpecificKey);
         if (saved) {
           const loadedReflections = JSON.parse(saved);
-          console.log('✅ Loaded from localStorage:', loadedReflections.length, 'items');
+          console.warn('⚠️  Using cached data from localStorage:', loadedReflections.length, 'items');
+          console.warn('⚠️  This may not reflect your latest reflections. Check browser console for errors.');
           setReflections(loadedReflections);
         } else {
-          console.log('❌ No data in localStorage - user will see 0 reflections');
-          console.log('🔍 This likely means the API connection failed and no data was previously cached');
+          console.error('❌ No cached data available - user will see 0 reflections');
+          console.error('❌ This indicates a serious issue. Please check your internet connection and refresh the page.');
         }
       } catch (localError) {
         console.error('❌ Error loading from localStorage:', localError);
@@ -269,31 +270,33 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
   const addReflection = async (reflectionData: Omit<Reflection, 'id' | 'createdAt'>) => {
     try {
-      if (!user?.email) {
-        throw new Error('User email not available');
+      if (!user?.id) {
+        throw new Error('User ID not available');
       }
-      
-      const userEmail = user.email;
-      const apiUrl = getEleanorApiUrl();
-      const response = await fetch(`${apiUrl}/reflections`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_email: userEmail,
+
+      const userId = parseInt(user.id);
+
+      // Use standard supabase client for all operations
+      const client = supabase;
+
+      const { data: savedReflection, error } = await client
+        .from('reflections')
+        .insert({
+          user_id: userId,
           question_id: reflectionData.questionId,
-          question_text_validation: reflectionData.question, // Add validation field
           response_text: reflectionData.response,
           word_count: reflectionData.wordCount,
           is_draft: false,
           response_type: reflectionData.category === 'journal' ? 'journal' : 'reflection'
-        }),
-      });
+        })
+        .select()
+        .single();
 
-      if (response.ok) {
-        const savedReflection = await response.json();
-        
+      if (error) {
+        throw error;
+      }
+
+      if (savedReflection) {
         // Convert back to our format and add to local state
         const newReflection: Reflection = {
           id: savedReflection.id.toString(),
@@ -303,19 +306,15 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
           response: savedReflection.response_text,
           wordCount: savedReflection.word_count,
           qualityScore: reflectionData.qualityScore,
-          createdAt: savedReflection.created_at || new Date().toISOString(),
+          createdAt: savedReflection.created_at,
           tags: reflectionData.tags
         };
 
         setReflections(prev => [...prev, newReflection]);
-        
-        // Stats will be updated automatically via useEffect when reflections change
-      } else {
-        throw new Error('Failed to save reflection to database');
       }
     } catch (error) {
-      console.error('Error saving reflection to API:', error);
-      
+      console.error('Error saving reflection to Supabase:', error);
+
       // Fallback to localStorage
       const newReflection: Reflection = {
         ...reflectionData,

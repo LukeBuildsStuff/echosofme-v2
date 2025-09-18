@@ -190,6 +190,20 @@ def get_existing_question_ids():
         logger.error(f"Error getting existing question IDs: {e}")
         return set()
 
+def get_existing_question_texts():
+    """Get all existing question texts from database"""
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT question_text FROM questions")
+                return set(row['question_text'] for row in cur.fetchall())
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"Error getting existing question texts: {e}")
+        return set()
+
 def sync_questions_on_startup():
     """Sync questions from JSON to database on startup"""
     try:
@@ -201,14 +215,25 @@ def sync_questions_on_startup():
             logger.warning("No valid questions loaded from JSON - skipping sync")
             return
         
-        # Get existing question IDs from database
+        # Get existing question IDs and texts from database
         existing_ids = get_existing_question_ids()
-        
-        # Find questions that need to be added
+        existing_texts = get_existing_question_texts()
+
+        # Find questions that need to be added (not duplicate ID or text)
         questions_to_add = []
+        skipped_duplicates = 0
         for q in json_questions:
             if q['id'] not in existing_ids:
-                questions_to_add.append(q)
+                question_text = q['question']
+                if question_text not in existing_texts:
+                    questions_to_add.append(q)
+                    existing_texts.add(question_text)  # Track for subsequent checks
+                else:
+                    skipped_duplicates += 1
+                    logger.warning(f"Skipping duplicate question text (ID {q['id']}): {question_text[:80]}...")
+
+        if skipped_duplicates > 0:
+            logger.info(f"⚠️  Skipped {skipped_duplicates} questions with duplicate text")
         
         if not questions_to_add:
             logger.info(f"✅ Database already up to date - {len(json_questions)} questions synced")
@@ -1654,6 +1679,328 @@ async def get_user_insights(user_email: str):
 
     except Exception as e:
         logger.error(f"Error generating insights: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== ADMIN ENDPOINTS ====================
+
+def check_admin_user(user_email: str):
+    """Check if user is admin"""
+    if user_email != "lukemoeller@yahoo.com":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+@app.get("/admin/questions")
+async def get_admin_questions(limit: int = 50, offset: int = 0, search: str = None, category: str = None):
+    """Get paginated questions for admin interface"""
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                # Build base query without complex joins for count
+                base_where = []
+                count_params = []
+
+                if search:
+                    base_where.append("(LOWER(question_text) LIKE %s OR CAST(id AS TEXT) LIKE %s)")
+                    count_params.extend([f"%{search.lower()}%", f"%{search}%"])
+
+                if category and category != 'all':
+                    base_where.append("category = %s")
+                    count_params.append(category)
+
+                where_clause = ""
+                if base_where:
+                    where_clause = "WHERE " + " AND ".join(base_where)
+
+                # Get total count (simple query)
+                count_query = f"SELECT COUNT(*) AS count FROM questions {where_clause}"
+                cur.execute(count_query, count_params)
+                total_count = cur.fetchone()['count']
+
+                # Get paginated results with usage count
+                data_params = count_params.copy()
+                data_params.extend([limit, offset])
+
+                data_query = f"""
+                    SELECT q.id, q.question_text, q.category, q.subcategory, q.difficulty_level, q.question_type,
+                           COALESCE(r.usage_count, 0) as usage_count
+                    FROM questions q
+                    LEFT JOIN (
+                        SELECT question_id, COUNT(*) as usage_count
+                        FROM responses
+                        GROUP BY question_id
+                    ) r ON q.id = r.question_id
+                    {where_clause}
+                    ORDER BY q.id
+                    LIMIT %s OFFSET %s
+                """
+                cur.execute(data_query, data_params)
+                questions = cur.fetchall()
+
+                return {
+                    "questions": questions,
+                    "total": total_count,
+                    "limit": limit,
+                    "offset": offset
+                }
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"Error getting admin questions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/responses")
+async def get_admin_responses(limit: int = 50, offset: int = 0, search: str = None, user_filter: str = None):
+    """Get paginated responses for admin interface"""
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                # Build WHERE clause for filtering
+                where_conditions = []
+                params = []
+
+                if search:
+                    where_conditions.append("(LOWER(r.response_text) LIKE %s OR CAST(r.id AS TEXT) LIKE %s OR LOWER(r.question_text_snapshot) LIKE %s)")
+                    params.extend([f"%{search.lower()}%", f"%{search}%", f"%{search.lower()}%"])
+
+                if user_filter and user_filter != 'all':
+                    where_conditions.append("u.email = %s")
+                    params.append(user_filter)
+
+                where_clause = ""
+                if where_conditions:
+                    where_clause = "WHERE " + " AND ".join(where_conditions)
+
+                # Get total count
+                count_query = f"""
+                    SELECT COUNT(r.id) AS count
+                    FROM responses r
+                    LEFT JOIN users u ON r.user_id = u.id
+                    {where_clause}
+                """
+                cur.execute(count_query, params)
+                total_count = cur.fetchone()['count']
+
+                # Get paginated results
+                params.extend([limit, offset])
+                data_query = f"""
+                    SELECT r.id, r.user_id, r.question_id, r.response_text,
+                           r.word_count, r.created_at, r.question_text_snapshot,
+                           r.category_snapshot, u.email as user_email
+                    FROM responses r
+                    LEFT JOIN users u ON r.user_id = u.id
+                    {where_clause}
+                    ORDER BY r.created_at DESC
+                    LIMIT %s OFFSET %s
+                """
+                cur.execute(data_query, params)
+                responses = cur.fetchall()
+
+                return {
+                    "responses": responses,
+                    "total": total_count,
+                    "limit": limit,
+                    "offset": offset
+                }
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"Error getting admin responses: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+class AdminQuestionUpdate(BaseModel):
+    question_text: Optional[str] = None
+    category: Optional[str] = None
+
+@app.put("/admin/questions/{question_id}")
+async def update_admin_question(question_id: int, updates: AdminQuestionUpdate):
+    """Update a question (admin only)"""
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                # Build update query dynamically
+                update_fields = []
+                values = []
+
+                if updates.question_text is not None:
+                    update_fields.append("question_text = %s")
+                    values.append(updates.question_text)
+
+                if updates.category is not None:
+                    update_fields.append("category = %s")
+                    values.append(updates.category)
+
+                if not update_fields:
+                    raise HTTPException(status_code=400, detail="No fields to update")
+
+                values.append(question_id)
+
+                update_query = f"""
+                    UPDATE questions
+                    SET {', '.join(update_fields)}
+                    WHERE id = %s
+                    RETURNING id, question_text, category
+                """
+
+                cur.execute(update_query, values)
+                updated_question = cur.fetchone()
+
+                if not updated_question:
+                    raise HTTPException(status_code=404, detail="Question not found")
+
+                conn.commit()
+                return updated_question
+
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"Error updating question: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/admin/questions/{question_id}")
+async def delete_admin_question(question_id: int):
+    """Delete a question (admin only)"""
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                # Check if question exists
+                cur.execute("SELECT id FROM questions WHERE id = %s", (question_id,))
+                if not cur.fetchone():
+                    raise HTTPException(status_code=404, detail="Question not found")
+
+                # Delete associated responses first (cascade)
+                cur.execute("DELETE FROM responses WHERE question_id = %s", (question_id,))
+                responses_deleted = cur.rowcount
+
+                # Delete the question
+                cur.execute("DELETE FROM questions WHERE id = %s", (question_id,))
+
+                conn.commit()
+                return {
+                    "message": f"Question {question_id} deleted successfully",
+                    "responses_deleted": responses_deleted
+                }
+
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"Error deleting question: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/admin/responses/{response_id}")
+async def delete_admin_response(response_id: int):
+    """Delete a response (admin only)"""
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                # Check if response exists
+                cur.execute("SELECT id FROM responses WHERE id = %s", (response_id,))
+                if not cur.fetchone():
+                    raise HTTPException(status_code=404, detail="Response not found")
+
+                # Delete the response
+                cur.execute("DELETE FROM responses WHERE id = %s", (response_id,))
+
+                conn.commit()
+                return {"message": f"Response {response_id} deleted successfully"}
+
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"Error deleting response: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/duplicates")
+async def find_duplicate_questions():
+    """Find potential duplicate questions"""
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                # Get all questions
+                cur.execute("SELECT id, question_text, category FROM questions ORDER BY id")
+                questions = cur.fetchall()
+
+                # Simple duplicate detection logic
+                duplicates = []
+                seen = set()
+
+                for i, q1 in enumerate(questions):
+                    if q1['id'] in seen:
+                        continue
+
+                    similar = [q1]
+                    seen.add(q1['id'])
+
+                    for j, q2 in enumerate(questions[i+1:], i+1):
+                        if q2['id'] in seen:
+                            continue
+
+                        # Normalize text for comparison
+                        text1 = q1['question_text'].lower().strip()
+                        text2 = q2['question_text'].lower().strip()
+
+                        # Check for exact matches or very similar
+                        if text1 == text2:
+                            similar.append(q2)
+                            seen.add(q2['id'])
+                        else:
+                            # Simple word overlap check
+                            words1 = set(text1.split())
+                            words2 = set(text2.split())
+
+                            if len(words1) > 3 and len(words2) > 3:
+                                overlap = len(words1.intersection(words2))
+                                similarity = overlap / max(len(words1), len(words2))
+
+                                if similarity > 0.8:
+                                    similar.append(q2)
+                                    seen.add(q2['id'])
+
+                    if len(similar) > 1:
+                        duplicates.append(similar)
+
+                return {"duplicate_groups": duplicates}
+
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"Error finding duplicates: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/users")
+async def get_admin_users():
+    """Get all users who have responses in the system"""
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                query = """
+                    SELECT u.email, COUNT(r.id) AS response_count
+                    FROM users u
+                    INNER JOIN responses r ON u.id = r.user_id
+                    GROUP BY u.email
+                    ORDER BY response_count DESC, u.email ASC
+                """
+                cur.execute(query)
+                users = cur.fetchall()
+
+                return {
+                    "users": [
+                        {
+                            "email": user['email'],
+                            "response_count": user['response_count']
+                        }
+                        for user in users
+                    ]
+                }
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"Error getting admin users: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

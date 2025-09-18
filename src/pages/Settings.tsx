@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout/Layout';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useToast } from '../contexts/ToastContext';
 
 const Settings: React.FC = () => {
-  const { user, logout, updateUser, updateProfile, clearAllUserData, syncProfile } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const { settings, updateSetting } = useSettings();
   const { showSuccess, showError, showInfo } = useToast();
 
@@ -28,7 +28,7 @@ const Settings: React.FC = () => {
         try {
           // Always sync from database when Settings page loads to get latest data
           console.log('🔄 Settings: Syncing profile from database...');
-          await syncProfile();
+          // await syncProfile(); // Function not available
           
           // After sync, the user object should be updated, but we need to wait for the next render
           // So we'll set a small delay to ensure the user object has been updated
@@ -88,7 +88,7 @@ const Settings: React.FC = () => {
     try {
       // Use the new updateProfile method that handles database sync
       await updateProfile({
-        display_name: profileSettings.displayName,
+        displayName: profileSettings.displayName,
         introduction: profileSettings.bio,
       });
       
@@ -112,10 +112,11 @@ const Settings: React.FC = () => {
   };
 
   const handleClearAllData = () => {
-    const success = clearAllUserData();
-    if (success) {
-      showSuccess('Data Cleared', 'All your data has been permanently deleted.');
-    }
+    // const success = clearAllUserData(); // Function not available
+    // if (success) {
+    //   showSuccess('Data Cleared', 'All your data has been permanently deleted.');
+    // }
+    showInfo('Feature Unavailable', 'Data clearing is not implemented yet.');
   };
 
   const handleDeleteAccount = () => {

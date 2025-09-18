@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { AuthProvider, useAuth } from './contexts/SupabaseAuthContext'
 import { EchoProvider } from './contexts/EchoContext'
 import { SettingsProvider } from './contexts/SettingsContext'
 import { ToastProvider } from './contexts/ToastContext'
@@ -17,6 +17,7 @@ import Insights from './pages/Insights'
 import Settings from './pages/Settings'
 import VoiceClone from './pages/VoiceClone'
 import ResetPassword from './pages/ResetPassword'
+import DatabaseAdmin from './pages/admin/DatabaseAdmin'
 
 // Protected Route wrapper component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -113,7 +114,15 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        
+        <Route
+          path="/admin/database"
+          element={
+            <ProtectedRoute>
+              <DatabaseAdmin />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
   )

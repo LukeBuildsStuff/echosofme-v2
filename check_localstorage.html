@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check LocalStorage</title>
+</head>
+<body>
+    <h1>LocalStorage Reflection Check</h1>
+    <div id="output"></div>
+    <script>
+        const output = document.getElementById('output');
+        const keys = Object.keys(localStorage).filter(k => k.includes('reflection'));
+        
+        keys.forEach(key => {
+            try {
+                const data = JSON.parse(localStorage.getItem(key));
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <h2>${key}</h2>
+                    <p>Number of reflections: ${data.length}</p>
+                    <p>Last 3 reflections:</p>
+                    <ul>
+                        ${data.slice(-3).map(r => `<li>ID: ${r.id}, Created: ${r.createdAt}, Text: ${r.response?.substring(0, 50)}...</li>`).join('')}
+                    </ul>
+                `;
+                output.appendChild(div);
+            } catch(e) {
+                console.error('Error parsing', key, e);
+            }
+        });
+        
+        if (keys.length === 0) {
+            output.innerHTML = '<p>No reflection data in localStorage</p>';
+        }
+    </script>
+</body>
+</html>

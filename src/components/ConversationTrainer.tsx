@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useEcho } from '../contexts/EchoContext';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import { getEleanorApiUrl } from '../utils/apiConfig';
 
 const CONVERSATION_OPENERS = [
