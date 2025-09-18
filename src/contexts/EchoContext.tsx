@@ -348,9 +348,13 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
       if (!user?.email) {
         throw new Error('User email not available');
       }
-      
+
+      if (!session?.access_token) {
+        throw new Error('Authentication session not available');
+      }
+
       const userEmail = user.email;
-      
+
       // Find the reflection to update
       const existingReflection = reflections.find(r => r.id === id);
       if (!existingReflection) {
@@ -362,6 +366,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
           user_email: userEmail,
@@ -434,9 +439,17 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
       } else {
         // For API-saved reflections, use the API
         const userEmail = user.email;
+
+        if (!session?.access_token) {
+          throw new Error('Authentication session not available');
+        }
+
         const apiUrl = getEleanorApiUrl();
         const response = await fetch(`${apiUrl}/reflections/${id}?user_email=${encodeURIComponent(userEmail)}`, {
           method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
         });
 
         if (response.ok) {
