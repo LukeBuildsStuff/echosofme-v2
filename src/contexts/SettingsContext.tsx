@@ -1,6 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useAuth } from './SupabaseAuthContext';
 
+// Safe JSON parser to prevent crashes on invalid data
+const safeJSONParse = <T,>(str: string | null, defaultValue: T): T => {
+  if (!str) return defaultValue;
+  try {
+    return JSON.parse(str);
+  } catch {
+    return defaultValue;
+  }
+};
+
 export interface SettingsData {
   theme: 'light' | 'dark' | 'auto';
   dailyReminders: boolean;
@@ -70,29 +80,19 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     const savedSettings = localStorage.getItem(userSpecificKey);
     
     if (savedSettings) {
-      try {
-        const parsedSettings = JSON.parse(savedSettings);
-        setSettings({ ...defaultSettings, ...parsedSettings });
-      } catch (error) {
-        console.error('Error parsing saved settings:', error);
-        setSettings(defaultSettings);
-      }
+      const parsedSettings = safeJSONParse(savedSettings, {});
+      setSettings({ ...defaultSettings, ...parsedSettings });
     } else {
       // Check for old generic settings and migrate them
       const oldSettings = localStorage.getItem('echos_settings');
       if (oldSettings) {
-        try {
-          const parsedOldSettings = JSON.parse(oldSettings);
-          const migratedSettings = { ...defaultSettings, ...parsedOldSettings };
-          setSettings(migratedSettings);
-          // Save migrated settings with user-specific key
-          localStorage.setItem(userSpecificKey, JSON.stringify(migratedSettings));
-          // Remove old generic settings
-          localStorage.removeItem('echos_settings');
-        } catch (error) {
-          console.error('Error migrating old settings:', error);
-          setSettings(defaultSettings);
-        }
+        const parsedOldSettings = safeJSONParse(oldSettings, {});
+        const migratedSettings = { ...defaultSettings, ...parsedOldSettings };
+        setSettings(migratedSettings);
+        // Save migrated settings with user-specific key
+        localStorage.setItem(userSpecificKey, JSON.stringify(migratedSettings));
+        // Remove old generic settings
+        localStorage.removeItem('echos_settings');
       } else {
         // No saved settings, use defaults
         setSettings(defaultSettings);

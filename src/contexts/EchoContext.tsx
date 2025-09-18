@@ -2,6 +2,16 @@ import React, { createContext, useContext, useState, useEffect, type ReactNode }
 import { supabase } from '../lib/supabase';
 import { useAuth } from './SupabaseAuthContext';
 
+// Safe JSON parser to prevent crashes on invalid data
+const safeJSONParse = <T,>(str: string | null, defaultValue: T): T => {
+  if (!str) return defaultValue;
+  try {
+    return JSON.parse(str);
+  } catch {
+    return defaultValue;
+  }
+};
+
 export interface Reflection {
   id: string;
   questionId: number;
@@ -229,7 +239,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
         const userSpecificKey = `echos_reflections_${user?.email}`;
         const saved = localStorage.getItem(userSpecificKey);
         if (saved) {
-          const loadedReflections = JSON.parse(saved);
+          const loadedReflections = safeJSONParse(saved, []);
           console.warn('⚠️  Using cached data from localStorage:', loadedReflections.length, 'items');
           console.warn('⚠️  This may not reflect your latest reflections. Check browser console for errors.');
           setReflections(loadedReflections);
@@ -469,13 +479,9 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     const saved = localStorage.getItem(userSpecificKey);
     
     if (saved) {
-      try {
-        const history: HistoricalStats[] = JSON.parse(saved);
-        if (history.length > 0) {
-          setPreviousStats(history[history.length - 1].stats);
-        }
-      } catch (error) {
-        console.error('Error loading previous stats:', error);
+      const history: HistoricalStats[] = safeJSONParse(saved, []);
+      if (history.length > 0) {
+        setPreviousStats(history[history.length - 1].stats);
       }
     }
   };
@@ -488,11 +494,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     
     let history: HistoricalStats[] = [];
     if (saved) {
-      try {
-        history = JSON.parse(saved);
-      } catch (error) {
-        console.error('Error parsing stats history:', error);
-      }
+      history = safeJSONParse(saved, []);
     }
     
     // Save current stats as historical data

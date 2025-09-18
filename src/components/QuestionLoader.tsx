@@ -3,6 +3,16 @@ import questionsData from '../data/questions.json';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import { getEleanorApiUrl } from '../utils/apiConfig';
 
+// Safe JSON parser to prevent crashes on invalid data
+const safeJSONParse = <T,>(str: string | null, defaultValue: T): T => {
+  if (!str) return defaultValue;
+  try {
+    return JSON.parse(str);
+  } catch {
+    return defaultValue;
+  }
+};
+
 export interface Question {
   id: number;
   question: string;
@@ -155,7 +165,7 @@ const useQuestionLoader = () => {
       try {
         const savedAnswers = localStorage.getItem(userSpecificKey);
         if (savedAnswers) {
-          const parsed = JSON.parse(savedAnswers);
+          const parsed = safeJSONParse(savedAnswers, {});
           // Convert arrays back to Sets
           Object.keys(parsed).forEach(cat => {
             if (initialSelected[cat] && Array.isArray(parsed[cat])) {
@@ -240,12 +250,8 @@ const useQuestionLoader = () => {
     const lastMorning = localStorage.getItem(userSpecificKey);
     if (!lastMorning) return false;
     
-    try {
-      const data = JSON.parse(lastMorning);
-      return data.date === today;
-    } catch {
-      return false;
-    }
+    const data = safeJSONParse(lastMorning, { date: '' });
+    return data.date === today;
   };
 
   const hasCompletedAfternoonReflection = (): boolean => {
@@ -256,12 +262,8 @@ const useQuestionLoader = () => {
     const lastAfternoon = localStorage.getItem(userSpecificKey);
     if (!lastAfternoon) return false;
     
-    try {
-      const data = JSON.parse(lastAfternoon);
-      return data.date === today;
-    } catch {
-      return false;
-    }
+    const data = safeJSONParse(lastAfternoon, { date: '' });
+    return data.date === today;
   };
 
   // Hash function for consistent daily randomization
@@ -324,16 +326,14 @@ const useQuestionLoader = () => {
       const storageKey = `morning_question_${today}_${user.email}`;
       const stored = localStorage.getItem(storageKey);
       if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
+        const parsed = safeJSONParse(stored, { questionId: null });
+        if (parsed.questionId) {
           // Find the stored question by ID
           const storedQuestion = questions.find(q => q.id === parsed.questionId);
           if (storedQuestion) {
             console.log('🔒 Using stored morning question:', storedQuestion.question.substring(0, 50) + '...');
             return storedQuestion;
           }
-        } catch (e) {
-          console.warn('Failed to parse stored morning question:', e);
         }
       }
     }
@@ -407,16 +407,14 @@ const useQuestionLoader = () => {
       const storageKey = `afternoon_question_${today}_${user.email}`;
       const stored = localStorage.getItem(storageKey);
       if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
+        const parsed = safeJSONParse(stored, { questionId: null });
+        if (parsed.questionId) {
           // Find the stored question by ID
           const storedQuestion = questions.find(q => q.id === parsed.questionId);
           if (storedQuestion) {
             console.log('🔒 Using stored afternoon question:', storedQuestion.question.substring(0, 50) + '...');
             return storedQuestion;
           }
-        } catch (e) {
-          console.warn('Failed to parse stored afternoon question:', e);
         }
       }
     }
@@ -607,13 +605,9 @@ const useQuestionLoader = () => {
     if (!user?.email) return { questionIds: [], skipCounts: {}, lastSkipped: {} };
 
     const storageKey = `echos_skipped_questions_${user.email}`;
-    try {
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch (e) {
-      console.warn('Failed to load skipped questions:', e);
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      return safeJSONParse(stored, { questionIds: [], skipCounts: {}, lastSkipped: {} });
     }
     return { questionIds: [], skipCounts: {}, lastSkipped: {} };
   };
@@ -679,13 +673,9 @@ const useQuestionLoader = () => {
       const storageKey = `morning_question_${today}_${user.email}`;
       const stored = localStorage.getItem(storageKey);
       if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (parsed.questionId) {
-            addToSkippedPool(parsed.questionId);
-          }
-        } catch (e) {
-          console.warn('Failed to parse stored morning question:', e);
+        const parsed = safeJSONParse(stored, { questionId: null });
+        if (parsed.questionId) {
+          addToSkippedPool(parsed.questionId);
         }
       }
     }
@@ -735,13 +725,9 @@ const useQuestionLoader = () => {
       const storageKey = `afternoon_question_${today}_${user.email}`;
       const stored = localStorage.getItem(storageKey);
       if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (parsed.questionId) {
-            addToSkippedPool(parsed.questionId);
-          }
-        } catch (e) {
-          console.warn('Failed to parse stored afternoon question:', e);
+        const parsed = safeJSONParse(stored, { questionId: null });
+        if (parsed.questionId) {
+          addToSkippedPool(parsed.questionId);
         }
       }
     }
