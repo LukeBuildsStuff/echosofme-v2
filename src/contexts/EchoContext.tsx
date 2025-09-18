@@ -361,7 +361,20 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
         throw new Error('Reflection not found');
       }
 
-      const apiUrl = getEleanorApiUrl();
+      let apiUrl;
+      try {
+        apiUrl = getEleanorApiUrl();
+      } catch (error) {
+        // Eleanor API disabled in production - fall back to localStorage only
+        console.log('Eleanor API disabled, updating localStorage only');
+        setReflections(prev => prev.map(r =>
+          r.id === id
+            ? { ...r, ...updatedReflection }
+            : r
+        ));
+        return;
+      }
+
       const response = await fetch(`${apiUrl}/reflections/${id}`, {
         method: 'PUT',
         headers: {
@@ -444,7 +457,19 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
           throw new Error('Authentication session not available');
         }
 
-        const apiUrl = getEleanorApiUrl();
+        let apiUrl;
+        try {
+          apiUrl = getEleanorApiUrl();
+        } catch (error) {
+          // Eleanor API disabled in production - fall back to localStorage only
+          console.log('Eleanor API disabled, deleting from localStorage only');
+          if (onSuccess) {
+            onSuccess(reflectionToDelete.questionId, reflectionToDelete.category);
+          }
+          setReflections(prev => prev.filter(r => r.id !== id));
+          return;
+        }
+
         const response = await fetch(`${apiUrl}/reflections/${id}?user_email=${encodeURIComponent(userEmail)}`, {
           method: 'DELETE',
           headers: {
