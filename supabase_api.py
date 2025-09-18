@@ -2,13 +2,16 @@
 FastAPI server using Supabase backend
 Replaces database_api.py with Supabase integration
 """
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 import jwt
-import os
 import logging
 from datetime import datetime, timedelta
 from collections import Counter, defaultdict
@@ -16,7 +19,12 @@ import re
 from dateutil import parser as date_parser
 
 # Import Supabase service
-from src.services.supabase_service import get_supabase_service
+try:
+    from src.services.supabase_service import get_supabase_service
+except ImportError:
+    # Fallback for Railway deployment
+    sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+    from services.supabase_service import get_supabase_service
 
 # Keep Eleanor LLM integration from original API
 import torch
