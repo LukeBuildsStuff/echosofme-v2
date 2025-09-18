@@ -28,11 +28,24 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Echoes of Me - Supabase API", description="Supabase-powered backend for Echoes of Me")
 
+# CORS configuration for development and production
+allowed_origins = [
+    "http://localhost:5173",  # Vite dev server
+    "http://localhost:3000",  # Alternative React dev server
+    "https://echosofme-v2-brqqndi2w-luke-moellers-projects.vercel.app",  # Current Vercel deployment
+    "https://echosofme-v2.vercel.app",  # Future production Vercel domain
+]
+
+# In production, allow Railway to set additional origins via environment variable
+production_origin = os.getenv("FRONTEND_URL")
+if production_origin:
+    allowed_origins.append(production_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

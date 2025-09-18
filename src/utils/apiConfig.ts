@@ -21,9 +21,9 @@ export const isEleanorEnabled = (): boolean => {
     return true;
   }
 
-  // Production - check if explicitly disabled
+  // Production - check if explicitly disabled or not set
   const prodApiUrl = import.meta.env.VITE_ELEANOR_API_URL;
-  return prodApiUrl !== 'disabled';
+  return prodApiUrl && prodApiUrl !== 'disabled';
 };
 
 export const getEleanorApiUrl = (): string => {
@@ -50,9 +50,11 @@ export const getEleanorApiUrl = (): string => {
 
   // Production - use environment variable
   const prodApiUrl = import.meta.env.VITE_ELEANOR_API_URL;
-  const finalApiUrl = prodApiUrl || 'https://your-api-domain.com';
-  console.log('🚀 Using production Eleanor API:', finalApiUrl);
-  return finalApiUrl;
+  if (!prodApiUrl || prodApiUrl === 'disabled') {
+    throw new Error('Eleanor API URL not configured for production');
+  }
+  console.log('🚀 Using production Eleanor API:', prodApiUrl);
+  return prodApiUrl;
 };
 
 /**
