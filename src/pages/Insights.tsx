@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../contexts/SupabaseAuthContext';
-import { getEleanorApiUrl } from '../utils/apiConfig';
+import { getEleanorApiUrl, isEleanorEnabled } from '../utils/apiConfig';
 
 interface InsightsData {
   total_reflections: number;
@@ -67,6 +67,12 @@ const Insights: React.FC = () => {
       setLoading(true);
       setError(null);
 
+      // Check if Eleanor API is enabled
+      if (!isEleanorEnabled()) {
+        setError('Eleanor AI insights are not available in this environment. Insights require the Eleanor AI service to be running.');
+        return;
+      }
+
       const apiUrl = getEleanorApiUrl();
       const response = await fetch(`${apiUrl}/insights/${user?.email}`);
 
@@ -78,7 +84,11 @@ const Insights: React.FC = () => {
       }
     } catch (err) {
       console.error('Error loading insights:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load insights');
+      if (err instanceof Error && err.message.includes('Eleanor API is disabled')) {
+        setError('Eleanor AI insights are not available in this environment. Insights require the Eleanor AI service to be running.');
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to load insights');
+      }
     } finally {
       setLoading(false);
     }
@@ -162,24 +172,78 @@ const Insights: React.FC = () => {
   }
 
   if (error) {
+    const isEleanorDisabled = error.includes('Eleanor AI insights are not available');
+
     return (
       <Layout hideFooter={true}>
         <div className="min-h-screen bg-gray-50 pt-20">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto mt-20">
+            <div className={`border rounded-lg p-6 max-w-2xl mx-auto mt-20 ${
+              isEleanorDisabled
+                ? 'bg-blue-50 border-blue-200'
+                : 'bg-red-50 border-red-200'
+            }`}>
               <div className="flex">
-                <svg className="w-5 h-5 text-red-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
+                {isEleanorDisabled ? (
+                  <svg className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                )}
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">Error Loading Insights</h3>
-                  <p className="text-sm text-red-700 mt-1">{error}</p>
-                  <button
-                    onClick={loadInsights}
-                    className="mt-3 text-sm bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded-md transition-colors"
-                  >
-                    Try Again
-                  </button>
+                  <h3 className={`text-sm font-medium ${
+                    isEleanorDisabled ? 'text-blue-800' : 'text-red-800'
+                  }`}>
+                    {isEleanorDisabled ? 'AI Insights Not Available' : 'Error Loading Insights'}
+                  </h3>
+                  <p className={`text-sm mt-1 ${
+                    isEleanorDisabled ? 'text-blue-700' : 'text-red-700'
+                  }`}>
+                    {error}
+                  </p>
+                  {isEleanorDisabled && (
+                    <div className="mt-3 text-sm text-blue-700">
+                      <p className="mb-2">While AI insights aren't available, you can still:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>View and create reflections</li>
+                        <li>Export your data for analysis</li>
+                        <li>Browse your reflection history</li>
+                      </ul>
+                    </div>
+                  )}
+                  {!isEleanorDisabled && (
+                    <button
+                      onClick={loadInsights}
+                      className="mt-3 text-sm bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded-md transition-colors"
+                    >
+                      Try Again
+                    </button>
+                  )}
+                  <div className="mt-4 flex gap-3">
+                    <a
+                      href="/reflections"
+                      className={`text-sm px-3 py-1 rounded-md transition-colors ${
+                        isEleanorDisabled
+                          ? 'bg-blue-100 hover:bg-blue-200 text-blue-800'
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                      }`}
+                    >
+                      View Reflections
+                    </a>
+                    <a
+                      href="/dashboard"
+                      className={`text-sm px-3 py-1 rounded-md transition-colors ${
+                        isEleanorDisabled
+                          ? 'bg-blue-100 hover:bg-blue-200 text-blue-800'
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                      }`}
+                    >
+                      Dashboard
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
