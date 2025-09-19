@@ -30,6 +30,11 @@ export default defineConfig({
           return `/insights/${encodeURIComponent(email || '')}`;
         }
       },
+      '/api/admin': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      },
       '/api': {
         target: 'http://localhost:8001',
         changeOrigin: true,

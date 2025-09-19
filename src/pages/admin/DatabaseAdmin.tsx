@@ -54,7 +54,7 @@ interface DuplicateGroup {
 }
 
 const DatabaseAdmin: React.FC = () => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const navigate = useNavigate();
 
   // Security check
@@ -96,7 +96,6 @@ const DatabaseAdmin: React.FC = () => {
     setError(null);
 
     try {
-      const apiUrl = getEleanorApiUrl();
       const offset = (page - 1) * itemsPerPage;
       const params = new URLSearchParams({
         limit: itemsPerPage.toString(),
@@ -106,7 +105,12 @@ const DatabaseAdmin: React.FC = () => {
       if (search) params.append('search', search);
       if (category !== 'all') params.append('category', category);
 
-      const response = await fetch(`${apiUrl}/admin/questions?${params}`);
+      const response = await fetch(`/api/admin/questions?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setQuestionsData(data);
@@ -118,7 +122,7 @@ const DatabaseAdmin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [session?.access_token]);
 
   // Load responses with pagination
   const loadResponses = useCallback(async (page: number = 1, search: string = '', userFilter: string = 'all') => {
@@ -126,7 +130,6 @@ const DatabaseAdmin: React.FC = () => {
     setError(null);
 
     try {
-      const apiUrl = getEleanorApiUrl();
       const offset = (page - 1) * itemsPerPage;
       const params = new URLSearchParams({
         limit: itemsPerPage.toString(),
@@ -136,7 +139,12 @@ const DatabaseAdmin: React.FC = () => {
       if (search) params.append('search', search);
       if (userFilter !== 'all') params.append('user_filter', userFilter);
 
-      const response = await fetch(`${apiUrl}/admin/responses?${params}`);
+      const response = await fetch(`/api/admin/responses?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setResponsesData(data);
@@ -148,7 +156,7 @@ const DatabaseAdmin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [session?.access_token]);
 
   // Load duplicates (only when tab is active)
   const loadDuplicates = useCallback(async () => {
@@ -158,8 +166,12 @@ const DatabaseAdmin: React.FC = () => {
     setError(null);
 
     try {
-      const apiUrl = getEleanorApiUrl();
-      const response = await fetch(`${apiUrl}/admin/duplicates`);
+      const response = await fetch(`/api/admin/duplicates`, {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setDuplicates(data.duplicate_groups || []);
@@ -172,13 +184,17 @@ const DatabaseAdmin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [duplicatesLoaded]);
+  }, [duplicatesLoaded, session?.access_token]);
 
   // Fetch users who have responses
   const fetchUsers = useCallback(async () => {
     try {
-      const apiUrl = getEleanorApiUrl();
-      const response = await fetch(`${apiUrl}/admin/users`);
+      const response = await fetch(`/api/admin/users`, {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setUsersList(data.users || []);
@@ -188,7 +204,7 @@ const DatabaseAdmin: React.FC = () => {
     } catch (err) {
       console.error('Error fetching users:', err);
     }
-  }, []);
+  }, [session?.access_token]);
 
   // Handle tab changes with lazy loading
   const handleTabChange = (tab: 'questions' | 'responses' | 'duplicates') => {
@@ -240,10 +256,12 @@ const DatabaseAdmin: React.FC = () => {
   // Edit and delete functions
   const updateQuestion = async (id: number, updates: { question_text?: string; category?: string }) => {
     try {
-      const apiUrl = getEleanorApiUrl();
-      const response = await fetch(`${apiUrl}/admin/questions/${id}`, {
+      const response = await fetch(`/api/admin/questions/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(updates),
       });
 
@@ -264,9 +282,12 @@ const DatabaseAdmin: React.FC = () => {
     }
 
     try {
-      const apiUrl = getEleanorApiUrl();
-      const response = await fetch(`${apiUrl}/admin/questions/${id}`, {
+      const response = await fetch(`/api/admin/questions/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.ok) {
@@ -285,9 +306,12 @@ const DatabaseAdmin: React.FC = () => {
     }
 
     try {
-      const apiUrl = getEleanorApiUrl();
-      const response = await fetch(`${apiUrl}/admin/responses/${id}`, {
+      const response = await fetch(`/api/admin/responses/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.ok) {
