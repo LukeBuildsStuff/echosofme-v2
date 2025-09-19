@@ -21,6 +21,15 @@ export default defineConfig({
       '.trycloudflare.com'  // Allow all trycloudflare.com subdomains
     ],
     proxy: {
+      '/api/insights': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        rewrite: (path) => {
+          const url = new URL(path, 'http://localhost');
+          const email = url.searchParams.get('email');
+          return `/insights/${encodeURIComponent(email || '')}`;
+        }
+      },
       '/api': {
         target: 'http://localhost:8001',
         changeOrigin: true,

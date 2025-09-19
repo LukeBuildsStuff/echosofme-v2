@@ -37,7 +37,7 @@ interface InsightsData {
 }
 
 const Insights: React.FC = () => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [insights, setInsights] = useState<InsightsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +66,12 @@ const Insights: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/insights?email=${encodeURIComponent(user?.email)}`);
+      const response = await fetch(`/api/insights?email=${encodeURIComponent(user?.email)}`, {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
       if (response.ok) {
         const data = await response.json();
