@@ -100,7 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // Apply search filter to both queries
       if (search && typeof search === 'string') {
-        const searchCondition = `reflection_text.ilike.%${search}%,id.eq.${search}`;
+        const searchCondition = `response_text.ilike.%${search}%,id.eq.${search}`;
         countQuery = countQuery.or(searchCondition);
         mainQuery = mainQuery.or(searchCondition);
       }
@@ -135,7 +135,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         id: response.id,
         user_id: response.user_id,
         question_id: response.question_id,
-        response_text: response.reflection_text,
+        response_text: response.response_text,
         word_count: response.word_count,
         created_at: response.created_at,
         question_text_snapshot: response.questions?.question_text,

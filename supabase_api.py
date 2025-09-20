@@ -39,6 +39,7 @@ app = FastAPI(title="Echoes of Me - Supabase API", description="Supabase-powered
 # CORS configuration for development and production
 allowed_origins = [
     "http://localhost:5173",  # Vite dev server
+    "http://localhost:5174",  # Vite dev server (alternative port)
     "http://localhost:3000",  # Alternative React dev server
     "https://echosofme-v2-brqqndi2w-luke-moellers-projects.vercel.app",  # Current Vercel deployment
     "https://echosofme-v2.vercel.app",  # Future production Vercel domain
@@ -107,36 +108,71 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     """Verify JWT token and return user info"""
     try:
         token = credentials.credentials
+        logger.info(f"Received authorization token: {token[:20]}...")
 
         # Decode JWT token (Supabase tokens are self-verifying)
         # In production, verify signature with Supabase JWT secret
         payload = jwt.decode(
             token,
-            options={"verify_signature": False}  # Supabase handles verification
+            options={
+                "verify_signature": False,  # Supabase handles verification
+                "verify_aud": False,        # Skip audience verification for local dev
+                "verify_iss": False,        # Skip issuer verification for local dev
+                "verify_exp": True,         # Still check expiration
+            }
         )
+
+        logger.info(f"JWT payload decoded successfully. Subject: {payload.get('sub')}, Email: {payload.get('email')}")
 
         # Get user from database using auth ID
         supabase = get_supabase_service()
         user = supabase.get_user_by_auth_id(payload.get('sub'))
 
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
+            logger.warning(f"User not found in database for auth_id: {payload.get('sub')}")
+            # Create user if not exists using email from JWT
+            if payload.get('email'):
+                logger.info(f"Creating new user for email: {payload.get('email')}")
+                user = supabase.create_user(payload.get('email'), payload.get('sub'))
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found and email not available in token"
+                )
 
+        logger.info(f"Authentication successful for user: {user.get('email')}")
         return user
-    except jwt.InvalidTokenError:
+
+    except jwt.ExpiredSignatureError:
+        logger.warning("JWT token has expired")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired"
+        )
+    except jwt.InvalidTokenError as e:
+        logger.warning(f"Invalid JWT token: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         )
     except Exception as e:
-        logger.error(f"Authentication error: {e}")
+        logger.error(f"Authentication error: {type(e).__name__}: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed"
         )
+
+# Admin authorization dependency
+ADMIN_EMAIL = 'lukemoeller@yahoo.com'
+
+async def get_admin_user(current_user: dict = Depends(get_current_user)):
+    """Verify user has admin privileges"""
+    if current_user.get('email') != ADMIN_EMAIL:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied - admin privileges required"
+        )
+    return current_user
 
 # Health Check
 @app.get("/health")
@@ -739,6 +775,337 @@ async def get_chat_history(
         "conversations": history,
         "total": len(history)
     }
+
+# Admin Endpoints
+@app.get("/admin/responses")
+async def get_admin_responses(
+    limit: int = 50,
+    offset: int = 0,
+    search: Optional[str] = None,
+    user_filter: Optional[str] = None,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Get all responses with admin privileges"""
+    try:
+        supabase = get_supabase_service()
+
+        # Build the query
+        query = supabase.client.table('reflections').select(
+            '''
+            *,
+            users(email),
+            questions(question_text, category)
+            '''
+        ).order('created_at', desc=True)
+
+        # Apply search filter
+        if search:
+            query = query.or_(f'response_text.ilike.%{search}%,id.eq.{search}')
+
+        # Apply user filter
+        if user_filter and user_filter != 'all':
+            # Get user ID by email
+            user_result = supabase.client.table('users').select('id').eq('email', user_filter).single().execute()
+            if user_result.data:
+                query = query.eq('user_id', user_result.data['id'])
+            else:
+                # Return empty if user not found
+                return {
+                    "responses": [],
+                    "total": 0,
+                    "limit": limit,
+                    "offset": offset
+                }
+
+        # Get total count (without pagination)
+        count_query = supabase.client.table('reflections').select('*', count='exact')
+        if search:
+            count_query = count_query.or_(f'response_text.ilike.%{search}%,id.eq.{search}')
+        if user_filter and user_filter != 'all':
+            user_result = supabase.client.table('users').select('id').eq('email', user_filter).single().execute()
+            if user_result.data:
+                count_query = count_query.eq('user_id', user_result.data['id'])
+
+        count_result = count_query.execute()
+        total_count = count_result.count
+
+        # Apply pagination
+        query = query.range(offset, offset + limit - 1)
+
+        result = query.execute()
+
+        # Transform data to match expected format
+        responses = []
+        for response in result.data:
+            responses.append({
+                "id": response['id'],
+                "user_id": response['user_id'],
+                "question_id": response['question_id'],
+                "response_text": response['response_text'],
+                "word_count": response['word_count'],
+                "created_at": response['created_at'],
+                "question_text_snapshot": response['questions']['question_text'] if response.get('questions') else None,
+                "category_snapshot": response['questions']['category'] if response.get('questions') else None,
+                "user_email": response['users']['email'] if response.get('users') else None
+            })
+
+        return {
+            "responses": responses,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+
+    except Exception as e:
+        logger.error(f"Admin responses error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/admin/responses")
+async def delete_admin_response(
+    id: int,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Delete a response (admin only)"""
+    try:
+        supabase = get_supabase_service()
+
+        result = supabase.client.table('reflections').delete().eq('id', id).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Response not found")
+
+        return {"message": "Response deleted successfully"}
+
+    except Exception as e:
+        logger.error(f"Admin delete response error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/questions")
+async def get_admin_questions(
+    limit: int = 50,
+    offset: int = 0,
+    search: Optional[str] = None,
+    category: Optional[str] = None,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Get all questions with admin privileges"""
+    try:
+        supabase = get_supabase_service()
+
+        # Build the query
+        query = supabase.client.table('questions').select('*').order('id', desc=True)
+
+        # Apply search filter
+        if search:
+            query = query.or_(f'question_text.ilike.%{search}%,id.eq.{search}')
+
+        # Apply category filter
+        if category and category != 'all':
+            query = query.eq('category', category)
+
+        # Get total count (without pagination)
+        count_query = supabase.client.table('questions').select('*', count='exact')
+        if search:
+            count_query = count_query.or_(f'question_text.ilike.%{search}%,id.eq.{search}')
+        if category and category != 'all':
+            count_query = count_query.eq('category', category)
+
+        count_result = count_query.execute()
+        total_count = count_result.count
+
+        # Apply pagination
+        query = query.range(offset, offset + limit - 1)
+
+        result = query.execute()
+
+        return {
+            "questions": result.data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+
+    except Exception as e:
+        logger.error(f"Admin questions error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/admin/questions")
+async def create_admin_question(
+    question_text: str,
+    category: str,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Create a new question (admin only)"""
+    try:
+        supabase = get_supabase_service()
+
+        result = supabase.client.table('questions').insert({
+            'question_text': question_text,
+            'category': category,
+            'usage_count': 0
+        }).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to create question")
+
+        return result.data[0]
+
+    except Exception as e:
+        logger.error(f"Admin create question error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/admin/questions/{question_id}")
+async def update_admin_question(
+    question_id: int,
+    question_text: Optional[str] = None,
+    category: Optional[str] = None,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Update a question (admin only)"""
+    try:
+        supabase = get_supabase_service()
+
+        update_data = {}
+        if question_text is not None:
+            update_data['question_text'] = question_text
+        if category is not None:
+            update_data['category'] = category
+
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No updates provided")
+
+        result = supabase.client.table('questions').update(update_data).eq('id', question_id).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Question not found")
+
+        return result.data[0]
+
+    except Exception as e:
+        logger.error(f"Admin update question error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/admin/questions/{question_id}")
+async def delete_admin_question(
+    question_id: int,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Delete a question (admin only)"""
+    try:
+        supabase = get_supabase_service()
+
+        result = supabase.client.table('questions').delete().eq('id', question_id).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Question not found")
+
+        return {"message": "Question deleted successfully"}
+
+    except Exception as e:
+        logger.error(f"Admin delete question error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/users")
+async def get_admin_users(
+    limit: int = 50,
+    offset: int = 0,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Get all users with response counts (admin only)"""
+    try:
+        supabase = get_supabase_service()
+
+        # Try to use RPC function first
+        try:
+            result = supabase.client.rpc('get_users_with_response_counts', {
+                'limit_val': limit,
+                'offset_val': offset
+            }).execute()
+
+            if result.data:
+                return {
+                    "users": result.data,
+                    "total": len(result.data),
+                    "limit": limit,
+                    "offset": offset
+                }
+        except Exception as rpc_error:
+            logger.info(f"RPC function not available, using fallback: {rpc_error}")
+            pass
+
+        # Fallback - use regular query with manual joins
+        users_result = supabase.client.table('users').select('*').range(offset, offset + limit - 1).execute()
+        users = []
+        for user in users_result.data:
+            # Get response count for each user
+            responses_result = supabase.client.table('reflections').select('*', count='exact').eq('user_id', user['id']).execute()
+            users.append({
+                "email": user['email'],
+                "response_count": responses_result.count or 0
+            })
+
+        # Get total count
+        count_result = supabase.client.table('users').select('*', count='exact').execute()
+
+        return {
+            "users": users,
+            "total": count_result.count,
+            "limit": limit,
+            "offset": offset
+        }
+
+    except Exception as e:
+        logger.error(f"Admin users error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/duplicates")
+async def get_admin_duplicates(
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Find duplicate questions using similarity (admin only)"""
+    try:
+        supabase = get_supabase_service()
+
+        # Get all questions
+        result = supabase.client.table('questions').select('*').execute()
+        questions = result.data
+
+        duplicates = []
+
+        # Simple similarity check (can be enhanced with Levenshtein distance)
+        for i, q1 in enumerate(questions):
+            for j, q2 in enumerate(questions[i+1:], i+1):
+                text1 = q1['question_text'].lower().strip()
+                text2 = q2['question_text'].lower().strip()
+
+                # Check for exact matches or very similar questions
+                if text1 == text2:
+                    similarity = 1.0
+                elif len(text1) > 10 and len(text2) > 10:
+                    # Simple similarity check based on common words
+                    words1 = set(text1.split())
+                    words2 = set(text2.split())
+                    common = len(words1.intersection(words2))
+                    total = len(words1.union(words2))
+                    similarity = common / total if total > 0 else 0
+                else:
+                    similarity = 0
+
+                if similarity > 0.8:  # 80% similarity threshold
+                    duplicates.append({
+                        "question1": q1,
+                        "question2": q2,
+                        "similarity": round(similarity, 3)
+                    })
+
+        return {
+            "duplicates": duplicates,
+            "total": len(duplicates)
+        }
+
+    except Exception as e:
+        logger.error(f"Admin duplicates error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # User Management (Admin endpoints)
 @app.post("/admin/users/{auth_id}/link")
