@@ -57,12 +57,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'GET') {
-      // Get users who have responses with their response counts
+      // Get users who have reflections with their reflection counts
       const { data: users, error } = await supabase
         .from('users')
         .select(`
           email,
-          responses!responses_user_id_fkey(id)
+          reflections!reflections_user_id_fkey(id)
         `)
         .order('email');
 
@@ -70,13 +70,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         throw error;
       }
 
-      // Transform data to include response counts
+      // Transform data to include reflection counts
       const usersWithCounts = users?.map(user => ({
         email: user.email,
-        response_count: user.responses?.length || 0
+        response_count: user.reflections?.length || 0
       }))
-      .filter(user => user.response_count > 0) // Only include users with responses
-      .sort((a, b) => b.response_count - a.response_count); // Sort by response count descending
+      .filter(user => user.response_count > 0) // Only include users with reflections
+      .sort((a, b) => b.response_count - a.response_count); // Sort by reflection count descending
 
       return res.status(200).json({
         users: usersWithCounts || []

@@ -88,18 +88,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       // Build the base query conditions
-      let countQuery = supabase.from('responses').select('*', { count: 'exact', head: true });
+      let countQuery = supabase.from('reflections').select('*', { count: 'exact', head: true });
       let mainQuery = supabase
-        .from('responses')
+        .from('reflections')
         .select(`
           *,
-          users(email)
+          users(email),
+          questions(question_text, category)
         `)
         .order('created_at', { ascending: false });
 
       // Apply search filter to both queries
       if (search && typeof search === 'string') {
-        const searchCondition = `response_text.ilike.%${search}%,id.eq.${search}`;
+        const searchCondition = `reflection_text.ilike.%${search}%,id.eq.${search}`;
         countQuery = countQuery.or(searchCondition);
         mainQuery = mainQuery.or(searchCondition);
       }
@@ -134,11 +135,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         id: response.id,
         user_id: response.user_id,
         question_id: response.question_id,
-        response_text: response.response_text,
+        response_text: response.reflection_text,
         word_count: response.word_count,
         created_at: response.created_at,
-        question_text_snapshot: response.question_text_snapshot,
-        category_snapshot: response.category_snapshot,
+        question_text_snapshot: response.questions?.question_text,
+        category_snapshot: response.questions?.category,
         user_email: response.users?.email
       })) || [];
 
@@ -160,7 +161,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const responseId = parseInt(id, 10);
 
       const { error } = await supabase
-        .from('responses')
+        .from('reflections')
         .delete()
         .eq('id', responseId);
 
