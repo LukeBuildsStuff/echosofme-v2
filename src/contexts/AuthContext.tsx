@@ -6,6 +6,7 @@ interface User {
   email: string;
   displayName: string;
   provider?: 'email' | 'google';
+  isAdmin?: boolean;
   profile: {
     displayName: string;
     relationship: string;
@@ -48,6 +49,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Admin email constant
+  const ADMIN_EMAIL = 'lukemoeller@yahoo.com';
+
+  // Helper function to check if user is admin
+  const checkIsAdmin = (email: string): boolean => {
+    return email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase();
+  };
+
   useEffect(() => {
     // Check for existing authentication on app load
     const checkAuth = () => {
@@ -57,6 +66,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         if (auth === 'true' && userProfile) {
           const userData = JSON.parse(userProfile);
+          // Ensure isAdmin flag is set correctly
+          userData.isAdmin = checkIsAdmin(userData.email);
           setUser(userData);
           setIsAuthenticated(true);
         }
@@ -76,14 +87,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (userData: User) => {
     try {
       console.log('🔍 AUTH - Login called with displayName:', userData.displayName);
-      
+
       // Set authentication state first
       localStorage.setItem('echos_authenticated', 'true');
       localStorage.setItem('echos_current_user', userData.id);
-      
+
+      // Set admin flag based on email
+      userData.isAdmin = checkIsAdmin(userData.email);
+
       setUser(userData);
       setIsAuthenticated(true);
-      
+
       // Sync profile with database after successful login
       await syncUserProfile(userData);
     } catch (error) {
@@ -137,6 +151,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email: email,
       displayName: name || email.split('@')[0],
       provider: 'google' as const,
+      isAdmin: checkIsAdmin(email),
       profile: {
         displayName: name || email.split('@')[0],
         relationship: 'Friendly',

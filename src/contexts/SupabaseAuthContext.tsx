@@ -7,6 +7,7 @@ interface User {
   email: string;
   displayName: string;
   provider?: 'email' | 'google';
+  isAdmin?: boolean;
   profile: {
     displayName: string;
     relationship: string;
@@ -27,6 +28,9 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (profileData: Partial<User['profile']>) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
+  verifyPasswordReset: (accessToken: string, refreshToken: string) => Promise<void>;
   loading: boolean;
 }
 
@@ -47,6 +51,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
 
   const isAuthenticated = !!session;
+
+  // Admin email constant
+  const ADMIN_EMAIL = 'lukemoeller@yahoo.com';
+
+  // Helper function to check if user is admin
+  const checkIsAdmin = (email: string): boolean => {
+    return email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase();
+  };
 
   useEffect(() => {
     // Get initial session
@@ -121,6 +133,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         email: userData.email,
         displayName: userData.name || userData.email.split('@')[0],
         provider: 'email', // TODO: Detect provider from auth metadata
+        isAdmin: checkIsAdmin(userData.email),
         profile: {
           displayName: profileData?.display_name || userData.name || '',
           relationship: profileData?.relationship || 'Friendly',
@@ -211,6 +224,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const resetPassword = async (email: string) => {
+    const { error } = await api.resetPasswordForEmail(email);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    // Email sent successfully
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await api.updatePassword(newPassword);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    // Password updated successfully
+  };
+
+  const verifyPasswordReset = async (accessToken: string, refreshToken: string) => {
+    const { error } = await api.verifyPasswordResetToken(accessToken, refreshToken);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    // Session updated - user is now logged in and can update password
+  };
+
   const value = {
     isAuthenticated,
     user,
@@ -220,6 +260,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loginWithGoogle,
     logout,
     updateProfile,
+    resetPassword,
+    updatePassword,
+    verifyPasswordReset,
     loading,
   };
 

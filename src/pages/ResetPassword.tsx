@@ -1,63 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
+import { useAuth } from '../contexts/SupabaseAuthContext';
+import { validatePassword, getPasswordStrengthColor } from '../utils/passwordValidator';
+import { api } from '../lib/supabase';
 
 const ResetPassword: React.FC = () => {
-  const [step, setStep] = useState<'email' | 'verify' | 'newPassword' | 'success'>('email');
+  const [step, setStep] = useState<'email' | 'newPassword' | 'success'>('email');
   const [formData, setFormData] = useState({
     email: '',
-    verificationCode: '',
     newPassword: '',
     confirmPassword: '',
   });
   const [errors, setErrors] = useState<string[]>([]);
-  const [generatedCode, setGeneratedCode] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { resetPassword, updatePassword, verifyPasswordReset } = useAuth();
+
+  // Check for password reset tokens in URL on component mount
+  useEffect(() => {
+    const tokens = api.getPasswordResetTokensFromUrl();
+    if (tokens) {
+      // User clicked reset link from email
+      handlePasswordResetFromEmail(tokens.accessToken, tokens.refreshToken);
+    }
+  }, []);
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  const validatePassword = (password: string) => {
-    const errors: string[] = [];
-    if (password.length < 8) errors.push('At least 8 characters');
-    if (!/[A-Z]/.test(password)) errors.push('One uppercase letter');
-    if (!/[a-z]/.test(password)) errors.push('One lowercase letter');
-    if (!/[0-9]/.test(password)) errors.push('One number');
-    return errors;
+  const handlePasswordResetFromEmail = async (accessToken: string, refreshToken: string) => {
+    try {
+      setLoading(true);
+      setErrors([]);
+
+      // Verify the reset token and log the user in
+      await verifyPasswordReset(accessToken, refreshToken);
+
+      // Move to password update step
+      setStep('newPassword');
+    } catch (error: any) {
+      console.error('Password reset verification failed:', error);
+      setErrors(['Invalid or expired reset link. Please request a new password reset.']);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!validateEmail(formData.email)) {
       setErrors(['Please enter a valid email address']);
       return;
     }
 
-    // Simulate sending email with verification code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(code);
-    setErrors([]);
-    setStep('verify');
-  };
+    try {
+      setLoading(true);
+      setErrors([]);
 
-  const handleVerifySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.verificationCode !== generatedCode) {
-      setErrors(['Invalid verification code']);
-      return;
+      await resetPassword(formData.email);
+
+      // Show success message
+      setStep('success');
+    } catch (error: any) {
+      console.error('Password reset failed:', error);
+      setErrors([error.message || 'Failed to send reset email. Please try again.']);
+    } finally {
+      setLoading(false);
     }
-
-    setErrors([]);
-    setStep('newPassword');
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const passwordErrors = validatePassword(formData.newPassword);
-    
-    if (passwordErrors.length > 0) {
-      setErrors(['Password must have:', ...passwordErrors]);
+
+    const validation = validatePassword(formData.newPassword);
+
+    if (!validation.isValid) {
+      setErrors(validation.errors);
       return;
     }
 
@@ -66,10 +87,20 @@ const ResetPassword: React.FC = () => {
       return;
     }
 
-    // Simulate updating password (in real app, this would be secure)
-    // For demo purposes, just show success
-    setErrors([]);
-    setStep('success');
+    try {
+      setLoading(true);
+      setErrors([]);
+
+      await updatePassword(formData.newPassword);
+
+      // Password updated successfully
+      setStep('success');
+    } catch (error: any) {
+      console.error('Password update failed:', error);
+      setErrors([error.message || 'Failed to update password. Please try again.']);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,10 +111,11 @@ const ResetPassword: React.FC = () => {
   };
 
   const getPasswordStrength = (password: string) => {
-    const errors = validatePassword(password);
-    if (errors.length === 0) return { strength: 'Strong', color: 'text-green-600' };
-    if (errors.length <= 2) return { strength: 'Medium', color: 'text-yellow-600' };
-    return { strength: 'Weak', color: 'text-red-600' };
+    const validation = validatePassword(password);
+    return {
+      strength: validation.strength.charAt(0).toUpperCase() + validation.strength.slice(1),
+      color: getPasswordStrengthColor(validation.strength)
+    };
   };
 
   return (
@@ -98,10 +130,9 @@ const ResetPassword: React.FC = () => {
                   Reset Password
                 </h2>
                 <p className="mb-5 text-base text-white/80">
-                  {step === 'email' && 'Enter your email to reset your password'}
-                  {step === 'verify' && 'Check your email for the verification code'}
-                  {step === 'newPassword' && 'Create a new password'}
-                  {step === 'success' && 'Password reset successful!'}
+                  {step === 'email' && 'Enter your email to receive a password reset link'}
+                  {step === 'newPassword' && 'Create a new secure password'}
+                  {step === 'success' && 'Password reset completed successfully!'}
                 </p>
 
                 <ul className="flex items-center justify-center gap-[10px]">
@@ -164,54 +195,31 @@ const ResetPassword: React.FC = () => {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full px-5 py-3 text-base transition bg-transparent border rounded-md outline-none border-stroke dark:border-dark-3 text-body-color dark:text-dark-6 placeholder:text-dark-6 focus:border-primary dark:focus:border-primary focus-visible:shadow-none"
+                        disabled={loading}
+                        className="w-full px-5 py-3 text-base transition bg-transparent border rounded-md outline-none border-stroke dark:border-dark-3 text-body-color dark:text-dark-6 placeholder:text-dark-6 focus:border-primary dark:focus:border-primary focus-visible:shadow-none disabled:opacity-50"
                       />
                     </div>
-                    
+
                     <div className="mb-9">
                       <button
                         type="submit"
-                        className="w-full px-5 py-3 text-base text-white transition duration-300 ease-in-out border rounded-md cursor-pointer border-primary bg-primary hover:bg-primary/90"
+                        disabled={loading}
+                        className="w-full px-5 py-3 text-base text-white transition duration-300 ease-in-out border rounded-md cursor-pointer border-primary bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Send Reset Code
+                        {loading ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Sending Reset Link...
+                          </div>
+                        ) : (
+                          'Send Reset Link'
+                        )}
                       </button>
                     </div>
                   </form>
                 )}
 
-                {/* Step 2: Verification */}
-                {step === 'verify' && (
-                  <form onSubmit={handleVerifySubmit}>
-                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-blue-800 text-sm mb-2">Demo Mode: Your verification code is:</p>
-                      <p className="text-blue-900 font-bold text-lg">{generatedCode}</p>
-                      <p className="text-blue-600 text-xs mt-2">In a real app, this would be sent to your email</p>
-                    </div>
-
-                    <div className="mb-[22px]">
-                      <input
-                        type="text"
-                        name="verificationCode"
-                        placeholder="Enter verification code"
-                        value={formData.verificationCode}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-5 py-3 text-base transition bg-transparent border rounded-md outline-none border-stroke dark:border-dark-3 text-body-color dark:text-dark-6 placeholder:text-dark-6 focus:border-primary dark:focus:border-primary focus-visible:shadow-none"
-                      />
-                    </div>
-                    
-                    <div className="mb-9">
-                      <button
-                        type="submit"
-                        className="w-full px-5 py-3 text-base text-white transition duration-300 ease-in-out border rounded-md cursor-pointer border-primary bg-primary hover:bg-primary/90"
-                      >
-                        Verify Code
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                {/* Step 3: New Password */}
+                {/* Step 2: New Password */}
                 {step === 'newPassword' && (
                   <form onSubmit={handlePasswordSubmit}>
                     <div className="mb-[22px]">
@@ -222,7 +230,8 @@ const ResetPassword: React.FC = () => {
                         value={formData.newPassword}
                         onChange={handleChange}
                         required
-                        className="w-full px-5 py-3 text-base transition bg-transparent border rounded-md outline-none border-stroke dark:border-dark-3 text-body-color dark:text-dark-6 placeholder:text-dark-6 focus:border-primary dark:focus:border-primary focus-visible:shadow-none"
+                        disabled={loading}
+                        className="w-full px-5 py-3 text-base transition bg-transparent border rounded-md outline-none border-stroke dark:border-dark-3 text-body-color dark:text-dark-6 placeholder:text-dark-6 focus:border-primary dark:focus:border-primary focus-visible:shadow-none disabled:opacity-50"
                       />
                       {formData.newPassword && (
                         <div className="mt-2 text-left">
@@ -232,7 +241,7 @@ const ResetPassword: React.FC = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="mb-[22px]">
                       <input
                         type="password"
@@ -241,33 +250,65 @@ const ResetPassword: React.FC = () => {
                         value={formData.confirmPassword}
                         onChange={handleChange}
                         required
-                        className="w-full px-5 py-3 text-base transition bg-transparent border rounded-md outline-none border-stroke dark:border-dark-3 text-body-color dark:text-dark-6 placeholder:text-dark-6 focus:border-primary dark:focus:border-primary focus-visible:shadow-none"
+                        disabled={loading}
+                        className="w-full px-5 py-3 text-base transition bg-transparent border rounded-md outline-none border-stroke dark:border-dark-3 text-body-color dark:text-dark-6 placeholder:text-dark-6 focus:border-primary dark:focus:border-primary focus-visible:shadow-none disabled:opacity-50"
                       />
                     </div>
-                    
+
                     <div className="mb-9">
                       <button
                         type="submit"
-                        className="w-full px-5 py-3 text-base text-white transition duration-300 ease-in-out border rounded-md cursor-pointer border-primary bg-primary hover:bg-primary/90"
+                        disabled={loading}
+                        className="w-full px-5 py-3 text-base text-white transition duration-300 ease-in-out border rounded-md cursor-pointer border-primary bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Reset Password
+                        {loading ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Updating Password...
+                          </div>
+                        ) : (
+                          'Update Password'
+                        )}
                       </button>
                     </div>
                   </form>
                 )}
 
-                {/* Step 4: Success */}
+                {/* Step 3: Success */}
                 {step === 'success' && (
                   <div>
                     <div className="mb-6 text-green-600 text-6xl">✓</div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Password Reset Successful!</h3>
-                    <p className="text-gray-600 mb-6">Your password has been updated successfully.</p>
-                    <button
-                      onClick={() => navigate('/login')}
-                      className="w-full px-5 py-3 text-base text-white transition duration-300 ease-in-out border rounded-md cursor-pointer border-primary bg-primary hover:bg-primary/90"
-                    >
-                      Sign In
-                    </button>
+                    {formData.newPassword ? (
+                      // Password was updated
+                      <>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Password Updated Successfully!</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">Your password has been updated successfully. You can now sign in with your new password.</p>
+                        <button
+                          onClick={() => navigate('/login')}
+                          className="w-full px-5 py-3 text-base text-white transition duration-300 ease-in-out border rounded-md cursor-pointer border-primary bg-primary hover:bg-primary/90"
+                        >
+                          Sign In
+                        </button>
+                      </>
+                    ) : (
+                      // Reset email was sent
+                      <>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Reset Link Sent!</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                          We've sent a password reset link to <strong>{formData.email}</strong>.
+                          Check your email and click the link to reset your password.
+                        </p>
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                          <p>Didn't receive the email? Check your spam folder or</p>
+                          <button
+                            onClick={() => setStep('email')}
+                            className="text-primary hover:underline ml-1"
+                          >
+                            try again
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 

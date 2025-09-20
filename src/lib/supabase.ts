@@ -550,6 +550,43 @@ export const api = {
       .upsert({ user_id: user.id, ...updates })
       .select()
       .single()
+  },
+
+  // Password management
+  async resetPasswordForEmail(email: string, redirectTo?: string) {
+    const baseUrl = window.location.origin
+    const defaultRedirectTo = `${baseUrl}/reset-password`
+
+    return await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectTo || defaultRedirectTo,
+    })
+  },
+
+  async updatePassword(newPassword: string) {
+    return await supabase.auth.updateUser({
+      password: newPassword
+    })
+  },
+
+  async verifyPasswordResetToken(accessToken: string, refreshToken: string) {
+    return await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    })
+  },
+
+  // Get password reset info from URL parameters
+  getPasswordResetTokensFromUrl(): { accessToken: string; refreshToken: string; type: string } | null {
+    const urlParams = new URLSearchParams(window.location.search)
+    const accessToken = urlParams.get('access_token')
+    const refreshToken = urlParams.get('refresh_token')
+    const type = urlParams.get('type')
+
+    if (accessToken && refreshToken && type === 'recovery') {
+      return { accessToken, refreshToken, type }
+    }
+
+    return null
   }
 }
 

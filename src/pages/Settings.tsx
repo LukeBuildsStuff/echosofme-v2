@@ -3,9 +3,10 @@ import Layout from '../components/Layout/Layout';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useToast } from '../contexts/ToastContext';
+import { validatePassword, getPasswordStrengthColor } from '../utils/passwordValidator';
 
 const Settings: React.FC = () => {
-  const { user, logout, updateProfile } = useAuth();
+  const { user, logout, updateProfile, updatePassword } = useAuth();
   const { settings, updateSetting } = useSettings();
   const { showSuccess, showError, showInfo } = useToast();
 
@@ -76,6 +77,14 @@ const Settings: React.FC = () => {
   }, [user?.displayName, user?.profile?.introduction, profileInitialized]);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
   const handleProfileChange = (key: string, value: any) => {
     setProfileSettings(prev => ({
@@ -125,6 +134,64 @@ const Settings: React.FC = () => {
       logout();
       showInfo('Feature Coming Soon', 'Account deletion will be available in a future update.');
     }
+  };
+
+  const handlePasswordChange = (key: string, value: string) => {
+    setPasswordData(prev => ({
+      ...prev,
+      [key]: value
+    }));
+    // Clear errors when user starts typing
+    if (passwordErrors.length > 0) {
+      setPasswordErrors([]);
+    }
+  };
+
+  const handlePasswordSubmit = async () => {
+    try {
+      setPasswordLoading(true);
+      setPasswordErrors([]);
+
+      // Validate new password
+      const validation = validatePassword(passwordData.newPassword);
+      if (!validation.isValid) {
+        setPasswordErrors(validation.errors);
+        return;
+      }
+
+      // Check password confirmation
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        setPasswordErrors(['Passwords do not match']);
+        return;
+      }
+
+      // Update password
+      await updatePassword(passwordData.newPassword);
+
+      // Reset form and hide it
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+      setShowPasswordForm(false);
+
+      showSuccess('Password Updated', 'Your password has been changed successfully.');
+    } catch (error: any) {
+      console.error('Password update failed:', error);
+      setPasswordErrors([error.message || 'Failed to update password. Please try again.']);
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const getPasswordStrength = (password: string) => {
+    if (!password) return { strength: '', color: '' };
+    const validation = validatePassword(password);
+    return {
+      strength: validation.strength.charAt(0).toUpperCase() + validation.strength.slice(1),
+      color: getPasswordStrengthColor(validation.strength)
+    };
   };
 
   return (
@@ -317,24 +384,105 @@ const Settings: React.FC = () => {
             {/* Security Settings */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Security Settings</h2>
-              
-              <div className="space-y-4 mb-6 pb-6 border-b border-gray-100">
+
+              <div className="space-y-4">
                 <div className="flex items-center justify-between py-3">
                   <div>
                     <p className="font-medium text-gray-900">Change Password</p>
                     <p className="text-sm text-gray-500">Update your account password</p>
                   </div>
                   <button
-                    onClick={() => {
-                      if (window.confirm('This will redirect you to the password reset page. Continue?')) {
-                        window.open('/reset-password', '_blank');
-                      }
-                    }}
+                    onClick={() => setShowPasswordForm(!showPasswordForm)}
                     className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                   >
-                    Change
+                    {showPasswordForm ? 'Cancel' : 'Change'}
                   </button>
                 </div>
+
+                {showPasswordForm && (
+                  <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    {passwordErrors.length > 0 && (
+                      <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <ul className="text-red-700 text-sm">
+                          {passwordErrors.map((error, index) => (
+                            <li key={index} className="mb-1">{error}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                          New Password
+                        </label>
+                        <input
+                          type="password"
+                          id="newPassword"
+                          value={passwordData.newPassword}
+                          onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                          disabled={passwordLoading}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50"
+                          placeholder="Enter new password"
+                        />
+                        {passwordData.newPassword && (
+                          <div className="mt-2">
+                            <span className={`text-sm ${getPasswordStrength(passwordData.newPassword).color}`}>
+                              Password strength: {getPasswordStrength(passwordData.newPassword).strength}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                          Confirm New Password
+                        </label>
+                        <input
+                          type="password"
+                          id="confirmPassword"
+                          value={passwordData.confirmPassword}
+                          onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                          disabled={passwordLoading}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50"
+                          placeholder="Confirm new password"
+                        />
+                      </div>
+
+                      <div className="flex space-x-3 pt-4">
+                        <button
+                          onClick={handlePasswordSubmit}
+                          disabled={passwordLoading || !passwordData.newPassword || !passwordData.confirmPassword}
+                          className="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {passwordLoading ? (
+                            <div className="flex items-center">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Updating...
+                            </div>
+                          ) : (
+                            'Update Password'
+                          )}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowPasswordForm(false);
+                            setPasswordData({
+                              currentPassword: '',
+                              newPassword: '',
+                              confirmPassword: '',
+                            });
+                            setPasswordErrors([]);
+                          }}
+                          disabled={passwordLoading}
+                          className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

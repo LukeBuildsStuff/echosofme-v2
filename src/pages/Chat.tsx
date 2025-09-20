@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import { useEcho } from '../contexts/EchoContext';
+import { useAuth } from '../contexts/AuthContext';
 import AudioPlayer from '../components/AudioPlayer';
 import { Volume2, VolumeX } from 'lucide-react';
 import SparkleLoader from '../components/SparkleLoader';
@@ -25,6 +26,7 @@ interface Message {
 const Chat: React.FC = () => {
   const location = useLocation();
   const { isEchoReady, stats } = useEcho();
+  const { user } = useAuth();
   const [selectedEcho, setSelectedEcho] = useState<Echo | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -37,8 +39,8 @@ const Chat: React.FC = () => {
     }
   };
 
-  // Mock data for available Echos
-  const availableEchos: Echo[] = [
+  // All available Echos (base array)
+  const allEchos: Echo[] = [
     {
       id: 'eleanor',
       name: 'Eleanor Rodriguez',
@@ -56,6 +58,14 @@ const Chat: React.FC = () => {
       isOwn: true
     }
   ];
+
+  // Filter Echos based on admin status - only admins can see Eleanor
+  const availableEchos: Echo[] = allEchos.filter(echo => {
+    if (echo.id === 'eleanor' && !user?.isAdmin) {
+      return false; // Hide Eleanor from non-admin users
+    }
+    return true; // Show all other Echos
+  });
 
   // Dynamic greetings for Eleanor
   const eleanorGreetings = [
@@ -305,6 +315,56 @@ const Chat: React.FC = () => {
               <p className="text-gray-600">Choose an Echo to start your conversation</p>
             </div>
             
+            {/* Enhanced Progress Display for Non-Admin Users */}
+            {!user?.isAdmin && availableEchos.length === 1 && (
+              <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Reflection Journey</h2>
+                  <p className="text-gray-600">Track your progress as you build your digital Echo</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-white rounded-lg p-4 shadow-sm border">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-600">{stats.totalReflections}</div>
+                      <div className="text-sm text-gray-600">Total Reflections</div>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow-sm border">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600">{Math.round((stats.totalReflections / 2500) * 100)}%</div>
+                      <div className="text-sm text-gray-600">Echo Progress</div>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow-sm border">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-indigo-600">{2500 - stats.totalReflections}</div>
+                      <div className="text-sm text-gray-600">Reflections Remaining</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg p-4 border">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">Echo Training Progress</span>
+                    <span className="text-sm text-gray-500">{stats.totalReflections} / 2500</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min((stats.totalReflections / 2500) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    {isEchoReady()
+                      ? "🎉 Congratulations! Your Echo is fully trained and ready for conversations!"
+                      : `Keep reflecting to unlock your personalized Echo! You're ${Math.round((stats.totalReflections / 2500) * 100)}% of the way there.`
+                    }
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {availableEchos.map((echo) => {
                 const isDisabled = echo.isOwn && !isEchoReady();
@@ -313,8 +373,8 @@ const Chat: React.FC = () => {
                     key={echo.id}
                     onClick={() => !isDisabled && selectEcho(echo)}
                     className={`bg-white rounded-lg p-6 shadow-sm border transition-all ${
-                      isDisabled 
-                        ? 'opacity-60 cursor-not-allowed' 
+                      isDisabled
+                        ? 'opacity-60 cursor-not-allowed'
                         : 'hover:shadow-md hover:border-primary/20 cursor-pointer'
                     }`}
                   >
