@@ -419,7 +419,14 @@ export interface Database {
 export const api = {
   // Authentication helpers
   async signUp(email: string, password: string) {
-    return await supabase.auth.signUp({ email, password })
+    const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+    return await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${siteUrl}/dashboard`
+      }
+    })
   },
 
   async signIn(email: string, password: string) {
