@@ -306,7 +306,7 @@ const DatabaseAdmin: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/admin/responses/${id}`, {
+      const response = await fetch(`/api/admin/responses?id=${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,

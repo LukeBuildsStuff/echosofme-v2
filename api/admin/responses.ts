@@ -65,41 +65,65 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         user_filter
       } = req.query;
 
-      let query = supabase
+      // First, get user mapping if we need to filter by email
+      let userIdFilter: string | null = null;
+      if (user_filter && typeof user_filter === 'string' && user_filter !== 'all') {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('id')
+          .eq('email', user_filter)
+          .single();
+
+        if (userError) {
+          console.warn('User filter email not found:', user_filter);
+          // Return empty results if user email doesn't exist
+          return res.status(200).json({
+            responses: [],
+            total: 0,
+            limit: parseInt(limit as string, 10),
+            offset: parseInt(offset as string, 10)
+          });
+        }
+        userIdFilter = userData.id;
+      }
+
+      // Build the base query conditions
+      let countQuery = supabase.from('responses').select('*', { count: 'exact', head: true });
+      let mainQuery = supabase
         .from('responses')
         .select(`
           *,
-          users!responses_user_id_fkey(email)
+          users(email)
         `)
         .order('created_at', { ascending: false });
 
-      // Apply search filter
+      // Apply search filter to both queries
       if (search && typeof search === 'string') {
-        query = query.or(`response_text.ilike.%${search}%,id.eq.${search}`);
+        const searchCondition = `response_text.ilike.%${search}%,id.eq.${search}`;
+        countQuery = countQuery.or(searchCondition);
+        mainQuery = mainQuery.or(searchCondition);
       }
 
-      // Apply user filter
-      if (user_filter && typeof user_filter === 'string' && user_filter !== 'all') {
-        // Need to join with users table to filter by email
-        query = query.eq('users.email', user_filter);
+      // Apply user filter to both queries
+      if (userIdFilter) {
+        countQuery = countQuery.eq('user_id', userIdFilter);
+        mainQuery = mainQuery.eq('user_id', userIdFilter);
       }
 
-      // Get total count first
-      const { count, error: countError } = await supabase
-        .from('responses')
-        .select('*', { count: 'exact', head: true });
+      // Get total count with filters applied
+      const { count, error: countError } = await countQuery;
 
       if (countError) {
         throw countError;
       }
 
-      // Apply pagination
+      // Apply pagination to main query
       const limitNum = parseInt(limit as string, 10);
       const offsetNum = parseInt(offset as string, 10);
 
-      query = query.range(offsetNum, offsetNum + limitNum - 1);
+      mainQuery = mainQuery.range(offsetNum, offsetNum + limitNum - 1);
 
-      const { data: responses, error } = await query;
+      const { data: responses, error } = await mainQuery;
 
       if (error) {
         throw error;
@@ -126,11 +150,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
 
     } else if (req.method === 'DELETE') {
-      // Delete response
-      const responseId = req.url?.split('/').pop();
-      if (!responseId || isNaN(parseInt(responseId, 10))) {
+      // Delete response - get ID from query parameters
+      const { id } = req.query;
+
+      if (!id || Array.isArray(id) || isNaN(parseInt(id, 10))) {
         return res.status(400).json({ error: 'Invalid response ID' });
       }
+
+      const responseId = parseInt(id, 10);
 
       const { error } = await supabase
         .from('responses')
