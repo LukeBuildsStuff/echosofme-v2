@@ -108,9 +108,21 @@ const Chat: React.FC = () => {
   // Check Eleanor availability on component mount
   useEffect(() => {
     try {
+      // Force Eleanor to be unavailable in production
+      const hostname = window.location.hostname;
+      const isProduction = !['localhost', '127.0.0.1'].includes(hostname);
+
+      if (isProduction) {
+        console.log('💻 Production environment detected - Eleanor disabled');
+        setEleanorAvailable(false);
+        return;
+      }
+
       const available = isEleanorEnabled();
+      console.log('💻 Eleanor availability check:', available);
       setEleanorAvailable(available);
     } catch (error) {
+      console.log('💻 Eleanor availability error:', error.message);
       setEleanorAvailable(false);
     }
   }, []);
@@ -394,7 +406,7 @@ const Chat: React.FC = () => {
                     onClick={() => !isDisabled && selectEcho(echo)}
                     className={`bg-white rounded-lg p-6 shadow-sm border transition-all ${
                       isDisabled
-                        ? 'opacity-60 cursor-not-allowed'
+                        ? 'opacity-50 cursor-not-allowed grayscale'
                         : 'hover:shadow-md hover:border-primary/20 cursor-pointer'
                     }`}
                   >
