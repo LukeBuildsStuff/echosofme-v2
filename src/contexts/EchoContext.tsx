@@ -116,15 +116,42 @@ interface EchoProviderProps {
 export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
   const { user, session } = useAuth();
   const [reflections, setReflections] = useState<Reflection[]>([]);
-  const [isStatsLoading, setIsStatsLoading] = useState<boolean>(true);
-  const [stats, setStats] = useState<EchoStats>({
-    totalReflections: 0,
-    categoriesCovered: [],
-    averageWordCount: 0,
-    averageQualityScore: 0,
-    currentStreak: 0,
-    longestStreak: 0,
-    echoReadiness: 0
+  const [isStatsLoading, setIsStatsLoading] = useState<boolean>(() => {
+    // Check if cache exists immediately to avoid loading state for returning users
+    if (typeof window !== 'undefined') {
+      const lastUserEmail = localStorage.getItem('last_user_email');
+      if (lastUserEmail) {
+        const cached = localStorage.getItem(`echos_current_stats_${lastUserEmail}`);
+        return !cached; // Only show loading if no cache exists
+      }
+    }
+    return true; // Show loading for first-time users
+  });
+  const [stats, setStats] = useState<EchoStats>(() => {
+    // Try to load cached stats immediately
+    if (typeof window !== 'undefined') {
+      const lastUserEmail = localStorage.getItem('last_user_email');
+      if (lastUserEmail) {
+        const cached = localStorage.getItem(`echos_current_stats_${lastUserEmail}`);
+        if (cached) {
+          try {
+            return JSON.parse(cached);
+          } catch (error) {
+            console.error('Failed to parse cached stats:', error);
+          }
+        }
+      }
+    }
+    // Fallback to default values
+    return {
+      totalReflections: 0,
+      categoriesCovered: [],
+      averageWordCount: 0,
+      averageQualityScore: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      echoReadiness: 0
+    };
   });
   const [previousStats, setPreviousStats] = useState<EchoStats | null>(null);
   const [personality, setPersonality] = useState<EchoPersonality>({
@@ -137,6 +164,9 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
   useEffect(() => {
     if (user?.email) {
+      // Store current user as last user for future cache access
+      localStorage.setItem('last_user_email', user.email);
+
       // Load cached stats immediately for instant display
       loadCachedStats();
 
@@ -630,6 +660,8 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     if (user?.email) {
       const userSpecificKey = `echos_current_stats_${user.email}`;
       localStorage.setItem(userSpecificKey, JSON.stringify(newStats));
+      // Store last user email for early cache access
+      localStorage.setItem('last_user_email', user.email);
     }
   };
 
