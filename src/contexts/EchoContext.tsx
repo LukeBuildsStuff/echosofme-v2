@@ -137,6 +137,9 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
   useEffect(() => {
     if (user?.email) {
+      // Load cached stats immediately for instant display
+      loadCachedStats();
+
       // Clear existing reflections when user changes
       setReflections([]);
       loadReflections();
@@ -518,15 +521,38 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
   const loadPreviousStats = () => {
     if (!user?.email) return;
-    
+
     const userSpecificKey = `echos_stats_history_${user.email}`;
     const saved = localStorage.getItem(userSpecificKey);
-    
+
     if (saved) {
       const history: HistoricalStats[] = safeJSONParse(saved, []);
       if (history.length > 0) {
         setPreviousStats(history[history.length - 1].stats);
       }
+    }
+  };
+
+  const loadCachedStats = () => {
+    if (!user?.email) return;
+
+    const userSpecificKey = `echos_current_stats_${user.email}`;
+    const saved = localStorage.getItem(userSpecificKey);
+
+    if (saved) {
+      const cachedStats: EchoStats = safeJSONParse(saved, {
+        totalReflections: 0,
+        categoriesCovered: [],
+        averageWordCount: 0,
+        averageQualityScore: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        echoReadiness: 0
+      });
+
+      // Load cached stats immediately for instant display
+      setStats(cachedStats);
+      setIsStatsLoading(false);
     }
   };
 
@@ -594,6 +620,12 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     }
 
     setStats(newStats);
+
+    // Cache current stats for instant loading
+    if (user?.email) {
+      const userSpecificKey = `echos_current_stats_${user.email}`;
+      localStorage.setItem(userSpecificKey, JSON.stringify(newStats));
+    }
   };
 
   const calculateStreaks = (): { currentStreak: number; longestStreak: number } => {
