@@ -135,11 +135,8 @@ const Legacy: React.FC = () => {
                         <h3 className="font-semibold text-gray-900 mb-2">
                           {reflection.question}
                         </h3>
-                        <p className="text-gray-600 text-sm">
-                          {reflection.response.length > 200 
-                            ? `${reflection.response.substring(0, 200)}...` 
-                            : reflection.response
-                          }
+                        <p className="text-gray-600 text-sm whitespace-pre-wrap">
+                          {reflection.response}
                         </p>
                         <div className="mt-3 flex items-center justify-between">
                           <div className="flex items-center space-x-4 text-xs text-gray-500">
