@@ -3,8 +3,9 @@ import { useLocation } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import { useEcho } from '../contexts/EchoContext';
 import { useAuth } from '../contexts/SupabaseAuthContext';
+import { isEleanorEnabled } from '../utils/apiConfig';
 import AudioPlayer from '../components/AudioPlayer';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, AlertCircle } from 'lucide-react';
 import SparkleLoader from '../components/SparkleLoader';
 
 interface Echo {
@@ -29,6 +30,7 @@ const Chat: React.FC = () => {
   const { user } = useAuth();
   const [selectedEcho, setSelectedEcho] = useState<Echo | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [eleanorAvailable, setEleanorAvailable] = useState<boolean>(true);
 
   // Dynamic Echo description based on readiness
   const getEchoDescription = () => {
@@ -102,6 +104,16 @@ const Chat: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Check Eleanor availability on component mount
+  useEffect(() => {
+    try {
+      const available = isEleanorEnabled();
+      setEleanorAvailable(available);
+    } catch (error) {
+      setEleanorAvailable(false);
+    }
+  }, []);
 
   // Handle navigation state to auto-select Echo
   useEffect(() => {
@@ -183,6 +195,11 @@ const Chat: React.FC = () => {
         // For now, show placeholder message since full Echo isn't implemented yet
         throw new Error('Full Echo functionality coming soon! Complete 2500 reflections to unlock.');
       } else {
+        // Check if Eleanor is available before attempting connection
+        if (!eleanorAvailable) {
+          throw new Error('Eleanor is only available when running the application locally with your RTX 5090 GPU.');
+        }
+
         // Route to Eleanor endpoint
         const userProfile = JSON.parse(localStorage.getItem('echos_user_profile') || '{}');
         const contextualMessage = `${userProfile.displayName || 'User'} (${userProfile.profile?.relationship || 'Friend'}): ${inputMessage}`;
@@ -367,7 +384,10 @@ const Chat: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {availableEchos.map((echo) => {
-                const isDisabled = echo.isOwn && !isEchoReady();
+                const isEchoDisabled = echo.isOwn && !isEchoReady();
+                const isEleanorUnavailable = echo.id === 'eleanor' && !eleanorAvailable;
+                const isDisabled = isEchoDisabled || isEleanorUnavailable;
+
                 return (
                   <div
                     key={echo.id}
@@ -386,6 +406,24 @@ const Chat: React.FC = () => {
                     </div>
                   </div>
                   <p className="text-gray-600 mb-4">{echo.description}</p>
+
+                  {/* Eleanor unavailable message */}
+                  {echo.id === 'eleanor' && !eleanorAvailable && (
+                    <div className="rounded-lg p-3 bg-blue-50 border border-blue-200 mb-4">
+                      <div className="flex items-start">
+                        <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+                        <div>
+                          <p className="text-blue-800 text-sm font-medium mb-1">
+                            💻 Local Access Required
+                          </p>
+                          <p className="text-blue-700 text-xs">
+                            Eleanor requires your RTX 5090 GPU and runs locally. To chat with Eleanor, please run the application on your local machine.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {echo.isOwn && (
                     <div className={`rounded-lg p-3 ${
                       isEchoReady()
