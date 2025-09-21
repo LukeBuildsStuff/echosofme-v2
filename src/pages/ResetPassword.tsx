@@ -17,8 +17,30 @@ const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const { resetPassword, updatePassword, verifyPasswordReset } = useAuth();
 
-  // Check for password reset tokens in URL on component mount
+  // Check for password reset tokens or errors in URL on component mount
   useEffect(() => {
+    // Check for errors in hash fragment first
+    const hash = window.location.hash;
+    if (hash.includes('error=')) {
+      const urlParams = new URLSearchParams(hash.substring(1));
+      const error = urlParams.get('error');
+      const errorCode = urlParams.get('error_code');
+      const errorDescription = urlParams.get('error_description');
+
+      if (error === 'access_denied' && errorCode === 'otp_expired') {
+        setErrors(['Your password reset link has expired. Please request a new one below.']);
+      } else if (errorDescription) {
+        setErrors([decodeURIComponent(errorDescription)]);
+      } else {
+        setErrors(['Password reset failed. Please try requesting a new reset link.']);
+      }
+
+      // Clear the hash to clean up the URL
+      window.history.replaceState(null, '', window.location.pathname);
+      return;
+    }
+
+    // Check for valid tokens
     const tokens = api.getPasswordResetTokensFromUrl();
     if (tokens) {
       // User clicked reset link from email

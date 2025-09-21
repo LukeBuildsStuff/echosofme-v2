@@ -582,12 +582,21 @@ export const api = {
     })
   },
 
-  // Get password reset info from URL parameters
+  // Get password reset info from URL parameters (both query string and hash fragment)
   getPasswordResetTokensFromUrl(): { accessToken: string; refreshToken: string; type: string } | null {
-    const urlParams = new URLSearchParams(window.location.search)
-    const accessToken = urlParams.get('access_token')
-    const refreshToken = urlParams.get('refresh_token')
-    const type = urlParams.get('type')
+    // First try query parameters
+    let urlParams = new URLSearchParams(window.location.search)
+    let accessToken = urlParams.get('access_token')
+    let refreshToken = urlParams.get('refresh_token')
+    let type = urlParams.get('type')
+
+    // If not found in query params, try hash fragment (common with OAuth flows)
+    if (!accessToken && window.location.hash) {
+      urlParams = new URLSearchParams(window.location.hash.substring(1))
+      accessToken = urlParams.get('access_token')
+      refreshToken = urlParams.get('refresh_token')
+      type = urlParams.get('type')
+    }
 
     if (accessToken && refreshToken && type === 'recovery') {
       return { accessToken, refreshToken, type }
