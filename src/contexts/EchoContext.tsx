@@ -194,7 +194,10 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
   const loadReflections = async () => {
     try {
-      setIsStatsLoading(true);
+      // Only set loading if we don't already have cached stats
+      if (stats.totalReflections === 0) {
+        setIsStatsLoading(true);
+      }
       if (!user?.id) {
         console.log('⚠️ No user ID available, skipping reflection loading');
         setIsStatsLoading(false);
