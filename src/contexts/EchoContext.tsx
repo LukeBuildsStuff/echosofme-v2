@@ -63,20 +63,21 @@ interface EchoContextType {
   updateReflection: (id: string, updatedReflection: Partial<Reflection>) => Promise<void>;
   deleteReflection: (id: string, onSuccess?: (questionId: number, category: string) => void) => Promise<void>;
   getReflectionsByCategory: (category: string) => Reflection[];
-  
+
   // Statistics
   stats: EchoStats;
   updateStats: () => void;
   getStatsChanges: () => StatsChanges;
-  
+  isStatsLoading: boolean;
+
   // Personality
   personality: EchoPersonality;
   updatePersonality: (traits: Partial<EchoPersonality>) => void;
-  
+
   // Training
   isEchoReady: () => boolean;
   getNextMilestone: () => { target: number; description: string } | null;
-  
+
   // Progress
   getCompletionPercentage: () => number;
   getDailyStreak: () => number;
@@ -115,6 +116,7 @@ interface EchoProviderProps {
 export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
   const { user, session } = useAuth();
   const [reflections, setReflections] = useState<Reflection[]>([]);
+  const [isStatsLoading, setIsStatsLoading] = useState<boolean>(true);
   const [stats, setStats] = useState<EchoStats>({
     totalReflections: 0,
     categoriesCovered: [],
@@ -145,6 +147,9 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     if (reflections.length > 0) {
       updateStats();
       updatePersonalityFromReflections();
+    } else if (user && !isStatsLoading) {
+      // If we have a user but no reflections and not loading, ensure stats are at zero
+      setIsStatsLoading(false);
     }
   }, [reflections]);
 
@@ -156,8 +161,10 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
   const loadReflections = async () => {
     try {
+      setIsStatsLoading(true);
       if (!user?.id) {
         console.log('⚠️ No user ID available, skipping reflection loading');
+        setIsStatsLoading(false);
         return;
       }
 
@@ -221,6 +228,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
         }));
 
         setReflections(convertedReflections);
+        setIsStatsLoading(false);
       }
     } catch (error) {
       console.error('❌ Error loading reflections from database:', error);
@@ -243,6 +251,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
       } catch (localError) {
         console.error('❌ Error loading from localStorage:', localError);
       }
+      setIsStatsLoading(false);
     }
   };
 
@@ -761,6 +770,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     stats,
     updateStats,
     getStatsChanges,
+    isStatsLoading,
     personality,
     updatePersonality,
     isEchoReady,
