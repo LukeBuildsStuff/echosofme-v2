@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
-import { GoogleOAuthProvider } from '@react-oauth/google'
 import { AuthProvider, useAuth } from './contexts/SupabaseAuthContext'
 import { EchoProvider } from './contexts/EchoContext'
 import { SettingsProvider } from './contexts/SettingsContext'
@@ -129,26 +128,21 @@ function AppRoutes() {
 }
 
 function App() {
-  // For demo purposes - in production, this should be in environment variables
-  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "demo-client-id.apps.googleusercontent.com";
-  
   return (
     <ErrorBoundary>
-      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        <ToastProvider>
-          <AuthProvider>
-            <SettingsProvider>
-              <EchoProvider>
-                <EleanorNotificationProvider>
-                  <Router>
-                    <AppRoutesWithNotifications />
-                  </Router>
-                </EleanorNotificationProvider>
-              </EchoProvider>
-            </SettingsProvider>
-          </AuthProvider>
-        </ToastProvider>
-      </GoogleOAuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <SettingsProvider>
+            <EchoProvider>
+              <EleanorNotificationProvider>
+                <Router>
+                  <AppRoutesWithNotifications />
+                </Router>
+              </EleanorNotificationProvider>
+            </EchoProvider>
+          </SettingsProvider>
+        </AuthProvider>
+      </ToastProvider>
     </ErrorBoundary>
   )
 }

@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import type { CredentialResponse } from '@react-oauth/google';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../contexts/SupabaseAuthContext';
-import GoogleAuth from '../components/GoogleAuth';
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -27,33 +25,20 @@ const Login: React.FC = () => {
     });
   };
 
-  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+  const handleGoogleLogin = async () => {
     try {
       setError('');
       setLoading(true);
-      
-      // Decode the JWT token to get user information
-      if (credentialResponse.credential) {
-        const payload = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
-        
-        const { email, name, sub: googleId } = payload;
-        
-        console.log('🔍 Google login successful for:', email);
-        
-        await loginWithGoogle(email, name, googleId);
-        navigate('/dashboard');
-      }
+
+      console.log('🔍 Starting Google OAuth login');
+
+      await loginWithGoogle();
+      // Supabase will handle the redirect after successful authentication
     } catch (error) {
       console.error('Google login failed:', error);
       setError('Google login failed. Please try again.');
-    } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleError = () => {
-    console.error('Google login error');
-    setError('Google login failed. Please check your internet connection and try again.');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -243,10 +228,17 @@ const Login: React.FC = () => {
                     </div>
                     
                     <div className="flex justify-center">
-                      <GoogleAuth
-                        onSuccess={handleGoogleSuccess}
-                        onError={handleGoogleError}
-                      />
+                      <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        disabled={loading}
+                        className="w-full inline-flex justify-center items-center py-2.5 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                      >
+                        <svg className="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 19">
+                          <path fillRule="evenodd" d="M8.842 18.083a8.8 8.8 0 0 1-8.65-8.948 8.841 8.841 0 0 1 8.8-8.652h.153a8.464 8.464 0 0 1 5.7 2.257l-2.193 2.038A5.27 5.27 0 0 0 9.09 3.4a5.882 5.882 0 0 0-.2 11.76h.124a5.091 5.091 0 0 0 5.248-4.057L14.3 11H9V8h8.34c.066.543.095 1.09.088 1.636-.086 5.053-3.463 8.449-8.4 8.449l-.186-.002Z" clipRule="evenodd"/>
+                        </svg>
+                        Sign in with Google
+                      </button>
                     </div>
                   </div>
                 </form>
