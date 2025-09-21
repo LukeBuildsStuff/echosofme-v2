@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './SupabaseAuthContext';
+import { ApiService } from '../services/api';
+import { isEleanorEnabled, getEleanorApiUrl } from '../utils/apiConfig';
 
 // Safe JSON parser to prevent crashes on invalid data
 const safeJSONParse = <T,>(str: string | null, defaultValue: T): T => {
@@ -109,15 +111,6 @@ interface EchoProviderProps {
   children: ReactNode;
 }
 
-// Helper function to get the Eleanor API URL
-const getEleanorApiUrl = (): string => {
-  // Check if we're running the Supabase API locally
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:8001';
-  }
-  // For production, use your deployed Supabase API URL
-  return 'https://your-api-domain.com'; // TODO: Replace with actual production URL
-};
 
 export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
   const { user, session } = useAuth();
@@ -349,67 +342,71 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
         throw new Error('User email not available');
       }
 
-      if (!session?.access_token) {
-        throw new Error('Authentication session not available');
-      }
-
-      const userEmail = user.email;
-
       // Find the reflection to update
       const existingReflection = reflections.find(r => r.id === id);
       if (!existingReflection) {
         throw new Error('Reflection not found');
       }
 
-      let apiUrl;
-      try {
-        apiUrl = getEleanorApiUrl();
-      } catch (error) {
-        // Eleanor API disabled in production - fall back to localStorage only
-        console.log('Eleanor API disabled, updating localStorage only');
-        setReflections(prev => prev.map(r =>
-          r.id === id
-            ? { ...r, ...updatedReflection }
-            : r
-        ));
-        return;
-      }
+      console.log('🔄 Updating reflection in Supabase:', id);
 
-      const response = await fetch(`${apiUrl}/reflections/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          user_email: userEmail,
-          question_id: existingReflection.questionId,
+      // 1. First, always update in Supabase (the source of truth)
+      const updatedData = await ApiService.updateReflection(
+        parseInt(id),
+        {
           response_text: updatedReflection.response || existingReflection.response,
-          word_count: updatedReflection.wordCount || existingReflection.wordCount,
           is_draft: false
-        }),
-      });
+        }
+      );
 
-      if (response.ok) {
-        const updatedData = await response.json();
-        
-        // Update the reflection in local state
-        setReflections(prev => prev.map(r => 
-          r.id === id 
-            ? {
-                ...r,
-                response: updatedData.response_text,
-                wordCount: updatedData.word_count,
-                qualityScore: calculateQualityScore(updatedData.response_text, updatedData.word_count),
-                ...updatedReflection
-              }
-            : r
-        ));
-      } else {
-        throw new Error('Failed to update reflection');
+      if (!updatedData) {
+        throw new Error('Failed to update reflection in database');
       }
+
+      console.log('✅ Reflection updated in Supabase');
+
+      // 2. Update local state with the database response
+      setReflections(prev => prev.map(r =>
+        r.id === id
+          ? {
+              ...r,
+              response: updatedData.response_text,
+              wordCount: updatedData.word_count,
+              qualityScore: calculateQualityScore(updatedData.response_text, updatedData.word_count),
+              ...updatedReflection
+            }
+          : r
+      ));
+
+      // 3. Optionally try to sync with Eleanor API for AI processing (if available)
+      try {
+        if (isEleanorEnabled()) {
+          console.log('🤖 Syncing with Eleanor API...');
+          const apiUrl = getEleanorApiUrl();
+
+          await fetch(`${apiUrl}/reflections/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token}`
+            },
+            body: JSON.stringify({
+              user_email: user.email,
+              question_id: existingReflection.questionId,
+              response_text: updatedData.response_text,
+              word_count: updatedData.word_count,
+              is_draft: false
+            }),
+          });
+          console.log('✅ Eleanor sync completed');
+        }
+      } catch (eleanorError) {
+        // Eleanor sync failed, but Supabase update succeeded - this is okay
+        console.log('⚠️ Eleanor sync failed (but Supabase update succeeded):', eleanorError);
+      }
+
     } catch (error) {
-      console.error('Error updating reflection:', error);
+      console.error('❌ Error updating reflection:', error);
       throw error;
     }
   };
