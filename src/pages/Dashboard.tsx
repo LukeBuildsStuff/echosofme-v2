@@ -9,8 +9,7 @@ import useQuestionLoader from '../components/QuestionLoader'
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { stats, getStatsChanges } = useEcho()
-  const statsChanges = getStatsChanges()
+  const { stats } = useEcho()
   const { getMorningQuestion, getAfternoonQuestion, getCurrentReflectionPeriod } = useQuestionLoader()
   
   // Use the same time-aware logic as EnhancedReflections
@@ -49,22 +48,6 @@ export default function Dashboard() {
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
                 <p className="text-2xl font-semibold text-gray-900">{stats.totalReflections}</p>
-                {statsChanges.totalReflectionsChange !== 0 && (
-                  <p className={`ml-2 flex items-baseline text-sm font-semibold ${
-                    statsChanges.totalReflectionsChange > 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    <svg className={`h-3 w-3 flex-shrink-0 self-center ${
-                      statsChanges.totalReflectionsChange > 0 ? 'text-green-500' : 'text-red-500'
-                    }`} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d={statsChanges.totalReflectionsChange > 0 
-                        ? "M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                        : "M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z"
-                      } clipRule="evenodd" />
-                    </svg>
-                    <span className="sr-only">{statsChanges.totalReflectionsChange > 0 ? 'Increased' : 'Decreased'} by </span>
-                    {Math.abs(statsChanges.totalReflectionsChange)}%
-                  </p>
-                )}
               </dd>
             </div>
 
@@ -79,22 +62,6 @@ export default function Dashboard() {
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
                 <p className="text-2xl font-semibold text-gray-900">{stats.categoriesCovered.length}</p>
-                {statsChanges.categoriesCoveredChange !== 0 && (
-                  <p className={`ml-2 flex items-baseline text-sm font-semibold ${
-                    statsChanges.categoriesCoveredChange > 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    <svg className={`h-3 w-3 flex-shrink-0 self-center ${
-                      statsChanges.categoriesCoveredChange > 0 ? 'text-green-500' : 'text-red-500'
-                    }`} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d={statsChanges.categoriesCoveredChange > 0 
-                        ? "M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                        : "M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z"
-                      } clipRule="evenodd" />
-                    </svg>
-                    <span className="sr-only">{statsChanges.categoriesCoveredChange > 0 ? 'Increased' : 'Decreased'} by </span>
-                    {Math.abs(statsChanges.categoriesCoveredChange)}%
-                  </p>
-                )}
               </dd>
             </div>
 
@@ -109,22 +76,6 @@ export default function Dashboard() {
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
                 <p className="text-2xl font-semibold text-gray-900">{Math.round(stats.averageQualityScore * 100)}%</p>
-                {statsChanges.averageQualityScoreChange !== 0 && (
-                  <p className={`ml-2 flex items-baseline text-sm font-semibold ${
-                    statsChanges.averageQualityScoreChange > 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    <svg className={`h-3 w-3 flex-shrink-0 self-center ${
-                      statsChanges.averageQualityScoreChange > 0 ? 'text-green-500' : 'text-red-500'
-                    }`} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d={statsChanges.averageQualityScoreChange > 0 
-                        ? "M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                        : "M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z"
-                      } clipRule="evenodd" />
-                    </svg>
-                    <span className="sr-only">{statsChanges.averageQualityScoreChange > 0 ? 'Increased' : 'Decreased'} by </span>
-                    {Math.abs(statsChanges.averageQualityScoreChange)}%
-                  </p>
-                )}
               </dd>
             </div>
 
@@ -139,22 +90,6 @@ export default function Dashboard() {
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
                 <p className="text-2xl font-semibold text-gray-900">{stats.currentStreak}</p>
-                {statsChanges.currentStreakChange !== 0 && (
-                  <p className={`ml-2 flex items-baseline text-sm font-semibold ${
-                    statsChanges.currentStreakChange > 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    <svg className={`h-3 w-3 flex-shrink-0 self-center ${
-                      statsChanges.currentStreakChange > 0 ? 'text-green-500' : 'text-red-500'
-                    }`} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d={statsChanges.currentStreakChange > 0 
-                        ? "M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                        : "M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z"
-                      } clipRule="evenodd" />
-                    </svg>
-                    <span className="sr-only">{statsChanges.currentStreakChange > 0 ? 'Increased' : 'Decreased'} by </span>
-                    {Math.abs(statsChanges.currentStreakChange)}%
-                  </p>
-                )}
               </dd>
             </div>
           </dl>
