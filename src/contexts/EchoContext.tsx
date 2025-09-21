@@ -533,8 +533,8 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     }
   };
 
-  const loadCachedStats = () => {
-    if (!user?.email) return;
+  const loadCachedStats = (): boolean => {
+    if (!user?.email) return false;
 
     const userSpecificKey = `echos_current_stats_${user.email}`;
     const saved = localStorage.getItem(userSpecificKey);
@@ -553,7 +553,11 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
       // Load cached stats immediately for instant display
       setStats(cachedStats);
       setIsStatsLoading(false);
+      return true;
     }
+
+    // No cache found - keep loading state active
+    return false;
   };
 
   const saveStatsHistory = (newStats: EchoStats) => {
@@ -620,6 +624,7 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
     }
 
     setStats(newStats);
+    setIsStatsLoading(false);
 
     // Cache current stats for instant loading
     if (user?.email) {

@@ -9,7 +9,7 @@ import useQuestionLoader from '../components/QuestionLoader'
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { stats } = useEcho()
+  const { stats, isStatsLoading } = useEcho()
   const { getMorningQuestion, getAfternoonQuestion, getCurrentReflectionPeriod } = useQuestionLoader()
   
   // Use the same time-aware logic as EnhancedReflections
@@ -47,7 +47,11 @@ export default function Dashboard() {
                 <p className="ml-16 truncate text-sm font-medium text-gray-500">Echo Reflections</p>
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalReflections}</p>
+                {isStatsLoading ? (
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-semibold text-gray-900">{stats.totalReflections}</p>
+                )}
               </dd>
             </div>
 
@@ -61,7 +65,11 @@ export default function Dashboard() {
                 <p className="ml-16 truncate text-sm font-medium text-gray-500">Categories Covered</p>
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-                <p className="text-2xl font-semibold text-gray-900">{stats.categoriesCovered.length}</p>
+                {isStatsLoading ? (
+                  <div className="h-8 w-12 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-semibold text-gray-900">{stats.categoriesCovered.length}</p>
+                )}
               </dd>
             </div>
 
@@ -75,7 +83,11 @@ export default function Dashboard() {
                 <p className="ml-16 truncate text-sm font-medium text-gray-500">Avg Quality Score</p>
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-                <p className="text-2xl font-semibold text-gray-900">{Math.round(stats.averageQualityScore * 100)}%</p>
+                {isStatsLoading ? (
+                  <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-semibold text-gray-900">{Math.round(stats.averageQualityScore * 100)}%</p>
+                )}
               </dd>
             </div>
 
@@ -89,7 +101,11 @@ export default function Dashboard() {
                 <p className="ml-16 truncate text-sm font-medium text-gray-500">Current Streak</p>
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-                <p className="text-2xl font-semibold text-gray-900">{stats.currentStreak}</p>
+                {isStatsLoading ? (
+                  <div className="h-8 w-12 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-semibold text-gray-900">{stats.currentStreak}</p>
+                )}
               </dd>
             </div>
           </dl>
