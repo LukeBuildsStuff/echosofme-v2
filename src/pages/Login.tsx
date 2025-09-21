@@ -232,10 +232,13 @@ const Login: React.FC = () => {
                         type="button"
                         onClick={handleGoogleLogin}
                         disabled={loading}
-                        className="w-full inline-flex justify-center items-center py-2.5 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                        className="w-full inline-flex justify-center items-center py-2.5 px-4 text-sm font-medium text-dark dark:text-white focus:outline-none bg-white dark:bg-dark-2 rounded-lg border border-stroke dark:border-dark-3 hover:bg-gray-50 dark:hover:bg-dark hover:border-primary dark:hover:border-primary focus:ring-4 focus:ring-primary/20 transition-colors duration-200"
                       >
-                        <svg className="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 19">
-                          <path fillRule="evenodd" d="M8.842 18.083a8.8 8.8 0 0 1-8.65-8.948 8.841 8.841 0 0 1 8.8-8.652h.153a8.464 8.464 0 0 1 5.7 2.257l-2.193 2.038A5.27 5.27 0 0 0 9.09 3.4a5.882 5.882 0 0 0-.2 11.76h.124a5.091 5.091 0 0 0 5.248-4.057L14.3 11H9V8h8.34c.066.543.095 1.09.088 1.636-.086 5.053-3.463 8.449-8.4 8.449l-.186-.002Z" clipRule="evenodd"/>
+                        <svg className="w-4 h-4 me-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
                         Sign in with Google
                       </button>
@@ -248,7 +251,7 @@ const Login: React.FC = () => {
                   {!formData.isSignUp && (
                     <Link
                       to="/reset-password"
-                      className="inline-block mb-2 text-base text-dark dark:text-white hover:text-primary dark:hover:text-primary"
+                      className="inline-block mb-2 text-base text-primary hover:text-primary/80 dark:text-primary dark:hover:text-primary/80 transition-colors duration-200"
                     >
                       Forgot Password?
                     </Link>
