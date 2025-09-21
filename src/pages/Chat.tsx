@@ -405,8 +405,10 @@ const Chat: React.FC = () => {
                     key={echo.id}
                     onClick={() => !isDisabled && selectEcho(echo)}
                     className={`bg-white rounded-lg p-6 shadow-sm border transition-all ${
-                      isDisabled
+                      isEleanorUnavailable
                         ? 'opacity-50 cursor-not-allowed grayscale'
+                        : isEchoDisabled
+                        ? 'opacity-60 cursor-not-allowed'
                         : 'hover:shadow-md hover:border-primary/20 cursor-pointer'
                     }`}
                   >
