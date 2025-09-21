@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import { useEcho } from '../contexts/EchoContext';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import AudioPlayer from '../components/AudioPlayer';
 import { Volume2, VolumeX } from 'lucide-react';
 import SparkleLoader from '../components/SparkleLoader';
