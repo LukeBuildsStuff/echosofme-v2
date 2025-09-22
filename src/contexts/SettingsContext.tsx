@@ -135,11 +135,17 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
   const updateSetting = <K extends keyof SettingsData>(key: K, value: SettingsData[K]) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
-    
+
     // Save to localStorage with user-specific key
-    if (user?.email) {
+    // Try to get email from user OR from last_user_email as fallback
+    let emailToUse = user?.email;
+    if (!emailToUse) {
+      emailToUse = localStorage.getItem('last_user_email');
+    }
+
+    if (emailToUse) {
       // Normalize email for consistent key usage
-      const normalizedEmail = user.email.toLowerCase().trim();
+      const normalizedEmail = emailToUse.toLowerCase().trim();
       const userSpecificKey = `echos_settings_${normalizedEmail}`;
       localStorage.setItem(userSpecificKey, JSON.stringify(newSettings));
     }
@@ -147,15 +153,21 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
   const resetSettings = () => {
     setSettings(defaultSettings);
-    
+
     // Remove user-specific settings
-    if (user?.email) {
+    // Try to get email from user OR from last_user_email as fallback
+    let emailToUse = user?.email;
+    if (!emailToUse) {
+      emailToUse = localStorage.getItem('last_user_email');
+    }
+
+    if (emailToUse) {
       // Normalize email for consistent key usage
-      const normalizedEmail = user.email.toLowerCase().trim();
+      const normalizedEmail = emailToUse.toLowerCase().trim();
       const userSpecificKey = `echos_settings_${normalizedEmail}`;
       localStorage.removeItem(userSpecificKey);
     }
-    
+
     // Also remove old generic settings if they exist
     localStorage.removeItem('echos_settings');
   };
