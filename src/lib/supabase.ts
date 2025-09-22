@@ -640,39 +640,59 @@ export const api = {
     if (!user) throw new Error('User not authenticated')
 
     try {
-      // Split settings into appropriate categories
+      console.log('🔄 Saving settings to database:', settings)
+
+      // STEP 1: Fetch existing settings from database to merge (not overwrite!)
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('user_profiles')
+        .select('notification_settings, reflection_preferences')
+        .eq('user_id', user.id)
+        .single()
+
+      // Don't throw on fetch error - profile might not exist yet
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.warn('⚠️ Error fetching existing profile, proceeding with new profile:', fetchError)
+      }
+
+      console.log('📖 Existing profile data:', existingProfile)
+
+      // STEP 2: Split new settings into appropriate categories
       const { theme, ...notificationSettings } = settings
 
-      // Prepare the update object
-      const updateData: any = {}
-
-      // Theme goes into reflection_preferences
-      if (theme !== undefined) {
-        updateData.reflection_preferences = { theme }
+      // STEP 3: MERGE with existing settings (critical fix!)
+      const mergedReflectionPrefs = {
+        ...(existingProfile?.reflection_preferences || {}),
+        ...(theme !== undefined ? { theme } : {})
       }
 
-      // All other settings go into notification_settings
-      if (Object.keys(notificationSettings).length > 0) {
-        updateData.notification_settings = notificationSettings
+      const mergedNotificationSettings = {
+        ...(existingProfile?.notification_settings || {}),
+        ...notificationSettings
       }
 
+      console.log('🔧 Merged reflection preferences:', mergedReflectionPrefs)
+      console.log('🔧 Merged notification settings:', mergedNotificationSettings)
+
+      // STEP 4: Upsert the MERGED settings
       const { data, error } = await supabase
         .from('user_profiles')
         .upsert({
           user_id: user.id,
-          ...updateData
+          reflection_preferences: mergedReflectionPrefs,
+          notification_settings: mergedNotificationSettings
         })
         .select()
         .single()
 
       if (error) {
-        console.error('Settings save failed:', error)
+        console.error('❌ Settings save failed:', error)
         throw error
       }
 
+      console.log('✅ Settings successfully saved to database:', data)
       return data
     } catch (error) {
-      console.error('Error updating user settings:', error)
+      console.error('❌ Error updating user settings:', error)
       throw error
     }
   }
