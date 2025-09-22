@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useAuth } from './SupabaseAuthContext';
 import { api } from '../lib/supabase';
+import { useToast } from './ToastContext';
 
 // Safe JSON parser to prevent crashes on invalid data
 const safeJSONParse = <T,>(str: string | null, defaultValue: T): T => {
@@ -52,6 +53,7 @@ interface SettingsProviderProps {
 
 export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) => {
   const { user } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [settings, setSettings] = useState<SettingsData>(defaultSettings);
 
   // Load settings when user changes - try database first, then localStorage
@@ -220,10 +222,11 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         try {
           await api.updateUserSettings(newSettings);
           console.log('✅ Settings saved to database');
+          showSuccess('Settings Saved', 'Your preferences have been saved and will sync across devices.');
         } catch (error) {
-          console.warn('⚠️ Failed to save settings to database, localStorage backup available:', error);
+          console.error('❌ Failed to save settings to database:', error);
+          showError('Settings Save Failed', 'Settings saved locally but failed to sync to cloud. Please check your connection.');
           // Settings still saved to localStorage, so functionality continues
-          // Could show a toast here if needed, but don't block the user
         }
       }
     }

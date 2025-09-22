@@ -649,9 +649,15 @@ export const api = {
         .eq('user_id', user.id)
         .single()
 
-      // Don't throw on fetch error - profile might not exist yet
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.warn('⚠️ Error fetching existing profile, proceeding with new profile:', fetchError)
+      // Handle different error cases
+      if (fetchError) {
+        if (fetchError.code === 'PGRST116') {
+          // No rows returned - profile doesn't exist yet, that's fine
+          console.log('📝 No existing profile found, will create new one')
+        } else {
+          // Other error - log but continue
+          console.warn('⚠️ Error fetching existing profile:', fetchError)
+        }
       }
 
       console.log('📖 Existing profile data:', existingProfile)
