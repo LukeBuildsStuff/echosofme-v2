@@ -26,6 +26,7 @@ interface SettingsContextType {
   settings: SettingsData;
   updateSetting: <K extends keyof SettingsData>(key: K, value: SettingsData[K]) => Promise<void>;
   resetSettings: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const defaultSettings: SettingsData = {
@@ -55,10 +56,14 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
   const [settings, setSettings] = useState<SettingsData>(defaultSettings);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load settings when user changes - try database first, then localStorage
   useEffect(() => {
     const loadSettings = async () => {
+      if (isLoading) return; // Prevent concurrent executions
+      setIsLoading(true);
+
       let targetUserEmail = user?.email;
 
       if (!targetUserEmail) {
@@ -80,6 +85,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         } else {
           setSettings(defaultSettings);
         }
+        setIsLoading(false);
         return;
       }
 
@@ -88,6 +94,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
       localStorage.setItem('last_user_email', targetUserEmail);
 
       try {
+        // DEBUG: Check what's actually in the database
+        await api.debugUserProfile();
+
         // STEP 1: Try to load from database first (authenticated users)
         const databaseSettings = await api.getUserSettings();
 
@@ -100,7 +109,10 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
           // Cache in localStorage for offline access
           const userSpecificKey = `echos_settings_${targetUserEmail}`;
           localStorage.setItem(userSpecificKey, JSON.stringify(mergedSettings));
+          setIsLoading(false);
           return;
+        } else {
+          console.log('⚠️ No settings found in database, checking localStorage...');
         }
 
         // STEP 2: Database empty, check localStorage for migration
@@ -121,6 +133,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
             console.warn('⚠️ Settings migration to database failed:', migrationError);
             // Continue with localStorage settings - no error thrown
           }
+          setIsLoading(false);
           return;
         }
 
@@ -144,11 +157,13 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
           // Remove old generic settings
           localStorage.removeItem('echos_settings');
+          setIsLoading(false);
           return;
         }
 
         // STEP 4: No settings found anywhere, use defaults
         setSettings(defaultSettings);
+        setIsLoading(false);
 
       } catch (error) {
         console.warn('⚠️ Error loading settings from database, using localStorage fallback:', error);
@@ -163,6 +178,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         } else {
           setSettings(defaultSettings);
         }
+        setIsLoading(false);
       }
     };
 
@@ -202,6 +218,11 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
   }, [settings.theme]);
 
   const updateSetting = async <K extends keyof SettingsData>(key: K, value: SettingsData[K]) => {
+    if (isLoading) {
+      console.warn('⚠️ Settings update skipped - still loading');
+      return;
+    }
+
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
 
@@ -222,6 +243,13 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         try {
           await api.updateUserSettings(newSettings);
           console.log('✅ Settings saved to database');
+
+          // DEBUG: Verify what was actually saved
+          setTimeout(async () => {
+            console.log('🔍 VERIFICATION: Checking what was saved...');
+            await api.debugUserProfile();
+          }, 500);
+
           showSuccess('Settings Saved', 'Your preferences have been saved and will sync across devices.');
         } catch (error) {
           console.error('❌ Failed to save settings to database:', error);
@@ -264,7 +292,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
   };
 
   return (
-    <SettingsContext.Provider value={{ settings, updateSetting, resetSettings }}>
+    <SettingsContext.Provider value={{ settings, updateSetting, resetSettings, isLoading }}>
       {children}
     </SettingsContext.Provider>
   );
