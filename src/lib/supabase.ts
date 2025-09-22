@@ -603,6 +603,78 @@ export const api = {
     }
 
     return null
+  },
+
+  // Settings management
+  async getUserSettings() {
+    const user = await this.getCurrentUser()
+    if (!user) return null
+
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('notification_settings, reflection_preferences')
+        .eq('user_id', user.id)
+        .single()
+
+      if (error) {
+        console.warn('Settings fetch failed:', error)
+        return null
+      }
+
+      // Combine both settings objects into a single settings object
+      const settings = {
+        ...(data?.reflection_preferences || {}),
+        ...(data?.notification_settings || {})
+      }
+
+      return Object.keys(settings).length > 0 ? settings : null
+    } catch (error) {
+      console.warn('Error fetching user settings:', error)
+      return null
+    }
+  },
+
+  async updateUserSettings(settings: Record<string, any>) {
+    const user = await this.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    try {
+      // Split settings into appropriate categories
+      const { theme, ...notificationSettings } = settings
+
+      // Prepare the update object
+      const updateData: any = {}
+
+      // Theme goes into reflection_preferences
+      if (theme !== undefined) {
+        updateData.reflection_preferences = { theme }
+      }
+
+      // All other settings go into notification_settings
+      if (Object.keys(notificationSettings).length > 0) {
+        updateData.notification_settings = notificationSettings
+      }
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: user.id,
+          ...updateData
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Settings save failed:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error updating user settings:', error)
+      throw error
+    }
   }
 }
 
