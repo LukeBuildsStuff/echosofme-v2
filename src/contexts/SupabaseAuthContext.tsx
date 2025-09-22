@@ -98,14 +98,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (!userData) {
         console.warn('No user record found for authenticated user');
         // Create user record if it doesn't exist
+        console.log('🔄 Creating new user record for:', authUser.email);
         const newUser = await api.createUserRecord(
           authUser.id,
           authUser.email!,
           authUser.user_metadata?.full_name || authUser.email!.split('@')[0]
         );
 
+        if (newUser.error) {
+          console.error('❌ Failed to create user record:', newUser.error);
+          throw new Error('Failed to create user record: ' + newUser.error.message);
+        }
+
         if (newUser.data) {
+          console.log('✅ Created user record with ID:', newUser.data.id);
           await loadUserWithProfile(newUser.data);
+        } else {
+          throw new Error('User record creation returned no data');
         }
         return;
       }
@@ -128,6 +137,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.warn('Profile data not found, using defaults:', profileError);
       }
 
+      // Ensure we have a valid user ID before creating the user object
+      if (!userData.id) {
+        console.error('❌ User data missing ID, cannot create user object');
+        throw new Error('User data is incomplete - missing ID');
+      }
+
       const user: User = {
         id: userData.id.toString(),
         email: userData.email,
@@ -146,7 +161,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
 
       setUser(user);
-      console.log('✅ User profile loaded:', user.displayName);
+      console.log('✅ User profile loaded:', user.displayName, 'ID:', user.id);
     } catch (error) {
       console.error('Error loading user with profile:', error);
     }

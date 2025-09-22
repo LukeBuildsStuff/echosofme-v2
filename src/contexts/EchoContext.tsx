@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, api } from '../lib/supabase';
 import { useAuth } from './SupabaseAuthContext';
 import { ApiService } from '../services/api';
 import { isEleanorEnabled, getEleanorApiUrl } from '../utils/apiConfig';
@@ -318,11 +318,13 @@ export const EchoProvider: React.FC<EchoProviderProps> = ({ children }) => {
 
   const addReflection = async (reflectionData: Omit<Reflection, 'id' | 'createdAt'>) => {
     try {
-      if (!user?.id) {
-        throw new Error('User ID not available');
+      // Get fresh user data to ensure we have a valid user record (with auto-create if needed)
+      const currentUser = await api.getCurrentUser();
+      if (!currentUser?.id) {
+        throw new Error('Unable to authenticate user or create user record');
       }
 
-      const userId = parseInt(user.id);
+      const userId = currentUser.id;
 
       // Use standard supabase client for all operations
       const client = supabase;
