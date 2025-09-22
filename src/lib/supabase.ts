@@ -455,13 +455,44 @@ export const api = {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
 
-    const { data } = await supabase
+    // First try to get existing user record
+    const { data: existingUser } = await supabase
       .from('users')
       .select('*')
       .eq('auth_id', user.id)
       .single()
 
-    return data
+    if (existingUser) {
+      console.log('✅ Found existing user record:', existingUser.id)
+      return existingUser
+    }
+
+    // No user record exists - create one automatically
+    console.log('📝 No user record found, creating one for auth user:', user.id)
+    try {
+      const { data: newUser, error } = await supabase
+        .from('users')
+        .insert({
+          auth_id: user.id,
+          email: user.email || '',
+          name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+          role: 'user',
+          is_active: true
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ Failed to create user record:', error)
+        return null
+      }
+
+      console.log('✅ Created new user record:', newUser.id)
+      return newUser
+    } catch (error) {
+      console.error('❌ Error creating user record:', error)
+      return null
+    }
   },
 
   async createUserRecord(authId: string, email: string, name?: string) {
@@ -608,9 +639,19 @@ export const api = {
   // Settings management
   async getUserSettings() {
     const user = await this.getCurrentUser()
-    if (!user) return null
+    if (!user) {
+      console.warn('⚠️ No user found - cannot load settings')
+      return null
+    }
+
+    if (!user.id) {
+      console.error('❌ User has no ID - cannot load settings')
+      return null
+    }
 
     try {
+      console.log('🔄 Loading settings for user ID:', user.id)
+
       const { data, error } = await supabase
         .from('user_profiles')
         .select('notification_settings, reflection_preferences')
@@ -618,9 +659,15 @@ export const api = {
         .single()
 
       if (error) {
-        console.warn('Settings fetch failed:', error)
+        if (error.code === 'PGRST116') {
+          console.log('📝 No profile found for user - using defaults')
+        } else {
+          console.warn('⚠️ Settings fetch failed:', error)
+        }
         return null
       }
+
+      console.log('📖 Raw database settings:', data)
 
       // Combine both settings objects into a single settings object
       const settings = {
@@ -628,19 +675,29 @@ export const api = {
         ...(data?.notification_settings || {})
       }
 
+      console.log('✅ Combined settings loaded:', settings)
       return Object.keys(settings).length > 0 ? settings : null
     } catch (error) {
-      console.warn('Error fetching user settings:', error)
+      console.error('❌ Error fetching user settings:', error)
       return null
     }
   },
 
   async updateUserSettings(settings: Record<string, any>) {
     const user = await this.getCurrentUser()
-    if (!user) throw new Error('User not authenticated')
+    if (!user) {
+      console.error('❌ No user found - cannot save settings')
+      throw new Error('User not authenticated')
+    }
+
+    if (!user.id) {
+      console.error('❌ User has no ID - database record corrupted')
+      throw new Error('User record is invalid')
+    }
 
     try {
-      console.log('🔄 Saving settings to database:', settings)
+      console.log('🔄 Saving settings to database for user ID:', user.id)
+      console.log('🔄 Settings payload:', settings)
 
       // STEP 1: Fetch existing settings from database to merge (not overwrite!)
       const { data: existingProfile, error: fetchError } = await supabase
@@ -679,27 +736,66 @@ export const api = {
       console.log('🔧 Merged reflection preferences:', mergedReflectionPrefs)
       console.log('🔧 Merged notification settings:', mergedNotificationSettings)
 
-      // STEP 4: Upsert the MERGED settings
+      // STEP 4: Upsert the MERGED settings with proper conflict resolution (removed .single())
       const { data, error } = await supabase
         .from('user_profiles')
         .upsert({
           user_id: user.id,
           reflection_preferences: mergedReflectionPrefs,
           notification_settings: mergedNotificationSettings
+        }, {
+          onConflict: 'user_id',
+          ignoreDuplicates: false
         })
         .select()
-        .single()
 
       if (error) {
         console.error('❌ Settings save failed:', error)
+        console.error('❌ Failed payload:', {
+          user_id: user.id,
+          reflection_preferences: mergedReflectionPrefs,
+          notification_settings: mergedNotificationSettings
+        })
         throw error
       }
 
       console.log('✅ Settings successfully saved to database:', data)
-      return data
+
+      // Return the first element since we removed .single()
+      return data && data.length > 0 ? data[0] : data
     } catch (error) {
       console.error('❌ Error updating user settings:', error)
       throw error
+    }
+  },
+
+  // Debug function to check what's actually in the database
+  async debugUserProfile() {
+    const user = await this.getCurrentUser()
+    if (!user) {
+      console.log('🔍 DEBUG: No authenticated user')
+      return null
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (error) {
+        console.log('🔍 DEBUG: Profile fetch error:', error)
+        return null
+      }
+
+      console.log('🔍 DEBUG: Complete user profile:', data)
+      console.log('🔍 DEBUG: Reflection preferences:', data?.reflection_preferences)
+      console.log('🔍 DEBUG: Notification settings:', data?.notification_settings)
+      return data
+    } catch (error) {
+      console.error('🔍 DEBUG: Error in debugUserProfile:', error)
+      return null
     }
   }
 }
