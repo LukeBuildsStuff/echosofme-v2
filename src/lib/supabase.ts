@@ -612,22 +612,29 @@ export const api = {
 
     try {
       // Check if profile exists
-      const { data: existingProfile } = await supabase
+      const { data: existingProfile, error } = await supabase
         .from('user_profiles')
         .select('id')
         .eq('user_id', userId)
         .single()
 
-      if (existingProfile) {
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows found - profile doesn't exist, continue to create
+          console.log('📝 No profile found for user:', userId)
+        } else {
+          // Some other error occurred
+          console.error('❌ Error checking if profile exists:', error)
+          throw error
+        }
+      } else if (existingProfile) {
         console.log('✅ User profile already exists for user:', userId)
         return { exists: true }
       }
     } catch (error: any) {
-      if (error.code !== 'PGRST116') {
-        // Not a "no rows" error, something else went wrong
-        console.error('❌ Error checking if profile exists:', error)
-        throw error
-      }
+      // Handle any unexpected errors
+      console.error('❌ Unexpected error checking profile:', error)
+      throw error
     }
 
     // Profile doesn't exist, create it
@@ -857,10 +864,7 @@ export const api = {
       // STEP 5: Upsert with proper error handling
       const { data: upsertData, error: upsertError } = await supabase
         .from('user_profiles')
-        .upsert(payload, {
-          onConflict: 'user_id',
-          ignoreDuplicates: false
-        })
+        .upsert(payload)
         .select('reflection_preferences')
 
       if (upsertError) {

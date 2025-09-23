@@ -263,10 +263,18 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
           showSuccess('Settings Saved', 'Your preferences have been saved and will sync across devices.');
         } catch (error) {
-          console.error('❌ Failed to save settings to database:', error);
+          console.error('❌ DETAILED ERROR - Failed to save settings to database:');
+          console.error('❌ Error object:', error);
+          console.error('❌ Error type:', typeof error);
+          console.error('❌ Error constructor:', error?.constructor?.name);
+          if (error instanceof Error) {
+            console.error('❌ Error message:', error.message);
+            console.error('❌ Error stack:', error.stack);
+          }
+          console.error('❌ Full error details:', JSON.stringify(error, null, 2));
 
           // Show specific error message based on error type
-          let errorMessage = 'Settings saved locally but failed to sync to cloud.';
+          let errorMessage = `Settings save failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
           if (error instanceof Error) {
             if (error.message.includes('User not authenticated')) {
               errorMessage = 'Please log in again to sync your settings.';
@@ -274,6 +282,8 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
               errorMessage = 'Settings may not have saved correctly. Please refresh and try again.';
             } else if (error.message.includes('Invalid user ID')) {
               errorMessage = 'Account error detected. Please log out and log back in.';
+            } else if (error.message.includes('upsert failed')) {
+              errorMessage = `Database error: ${error.message}`;
             }
           }
 
