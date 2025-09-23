@@ -324,18 +324,17 @@ const useQuestionLoader = () => {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
     // CHECK LOCALSTORAGE FIRST - prevent question from changing mid-day
-    if (user?.email) {
-      const storageKey = `morning_question_${today}_${user.email}`;
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        const parsed = safeJSONParse(stored, { questionId: null });
-        if (parsed.questionId) {
-          // Find the stored question by ID
-          const storedQuestion = questions.find(q => q.id === parsed.questionId);
-          if (storedQuestion) {
-            console.log('🔒 Using stored morning question:', storedQuestion.question.substring(0, 50) + '...');
-            return storedQuestion;
-          }
+    const userKey = user?.email || 'anonymous';
+    const storageKey = `morning_question_${today}_${userKey}`;
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      const parsed = safeJSONParse(stored, { questionId: null });
+      if (parsed.questionId) {
+        // Find the stored question by ID
+        const storedQuestion = questions.find(q => q.id === parsed.questionId);
+        if (storedQuestion) {
+          console.log('🔒 Using stored morning question:', storedQuestion.question.substring(0, 50) + '...');
+          return storedQuestion;
         }
       }
     }
@@ -385,8 +384,9 @@ const useQuestionLoader = () => {
     }
 
     // STORE THE SELECTED QUESTION - lock it for the day
-    if (selectedQuestion && user?.email) {
-      const storageKey = `morning_question_${today}_${user.email}`;
+    if (selectedQuestion) {
+      const userKey = user?.email || 'anonymous';
+      const storageKey = `morning_question_${today}_${userKey}`;
       const toStore = {
         questionId: selectedQuestion.id,
         questionText: selectedQuestion.question,
@@ -411,18 +411,17 @@ const useQuestionLoader = () => {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
     // CHECK LOCALSTORAGE FIRST - prevent question from changing mid-day
-    if (user?.email) {
-      const storageKey = `afternoon_question_${today}_${user.email}`;
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        const parsed = safeJSONParse(stored, { questionId: null });
-        if (parsed.questionId) {
-          // Find the stored question by ID
-          const storedQuestion = questions.find(q => q.id === parsed.questionId);
-          if (storedQuestion) {
-            console.log('🔒 Using stored afternoon question:', storedQuestion.question.substring(0, 50) + '...');
-            return storedQuestion;
-          }
+    const userKey = user?.email || 'anonymous';
+    const storageKey = `afternoon_question_${today}_${userKey}`;
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      const parsed = safeJSONParse(stored, { questionId: null });
+      if (parsed.questionId) {
+        // Find the stored question by ID
+        const storedQuestion = questions.find(q => q.id === parsed.questionId);
+        if (storedQuestion) {
+          console.log('🔒 Using stored afternoon question:', storedQuestion.question.substring(0, 50) + '...');
+          return storedQuestion;
         }
       }
     }
@@ -472,8 +471,9 @@ const useQuestionLoader = () => {
     }
 
     // STORE THE SELECTED QUESTION - lock it for the day
-    if (selectedQuestion && user?.email) {
-      const storageKey = `afternoon_question_${today}_${user.email}`;
+    if (selectedQuestion) {
+      const userKey = user?.email || 'anonymous';
+      const storageKey = `afternoon_question_${today}_${userKey}`;
       const toStore = {
         questionId: selectedQuestion.id,
         questionText: selectedQuestion.question,

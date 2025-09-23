@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Layout from '../components/Layout/Layout';
 import TrainingProgress from '../components/TrainingProgress';
 import ConversationTrainer from '../components/ConversationTrainer';
@@ -115,17 +115,6 @@ const EnhancedReflections: React.FC = () => {
     }
   };
 
-  // Memoize questions to prevent flickering (same pattern as Dashboard)
-  const morningQuestion = useMemo(() => {
-    if (user === undefined) return null;
-    return getMorningQuestion();
-  }, [user, getMorningQuestion]);
-
-  const afternoonQuestion = useMemo(() => {
-    if (user === undefined) return null;
-    return getAfternoonQuestion();
-  }, [user, getAfternoonQuestion]);
-
   useEffect(() => {
     // Don't initialize questions until auth state is fully loaded (user !== undefined)
     if (user === undefined) {
@@ -139,10 +128,10 @@ const EnhancedReflections: React.FC = () => {
     if (viewMode === 'daily') {
       // Check reflection availability and load appropriate question
       if (period === 'morning' && !hasCompletedMorningReflection()) {
-        setCurrentQuestion(morningQuestion);
+        setCurrentQuestion(getMorningQuestion());
         setReflectionState('available');
       } else if (period === 'afternoon' && !hasCompletedAfternoonReflection()) {
-        setCurrentQuestion(afternoonQuestion);
+        setCurrentQuestion(getAfternoonQuestion());
         setReflectionState('available');
       } else if (
         (period === 'morning' && hasCompletedMorningReflection()) ||
@@ -160,7 +149,7 @@ const EnhancedReflections: React.FC = () => {
         setReflectionState('waiting');
       }
     }
-  }, [user, viewMode, getCurrentReflectionPeriod, hasCompletedMorningReflection, hasCompletedAfternoonReflection, morningQuestion, afternoonQuestion]);
+  }, [user, viewMode, getCurrentReflectionPeriod, hasCompletedMorningReflection, hasCompletedAfternoonReflection, getMorningQuestion, getAfternoonQuestion]);
 
   // Draft recovery on component mount
   useEffect(() => {

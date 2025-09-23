@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import { useEcho } from '../contexts/EchoContext';
@@ -32,14 +32,14 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [eleanorAvailable, setEleanorAvailable] = useState<boolean>(true);
 
-  // Memoized Echo description to prevent flickering
-  const echoDescription = useMemo(() => {
+  // Dynamic Echo description based on readiness
+  const getEchoDescription = () => {
     if (isEchoReady()) {
       return 'Your complete digital reflection, trained from all your memories';
     } else {
       return `Your future digital self (${2500 - stats.totalReflections} more reflections to unlock)`;
     }
-  }, [isEchoReady, stats.totalReflections]);
+  };
 
   // All available Echos (base array)
   const allEchos: Echo[] = [
@@ -55,7 +55,7 @@ const Chat: React.FC = () => {
       id: 'my-echo',
       name: 'Your Echo',
       relationship: 'Self',
-      description: echoDescription,
+      description: getEchoDescription(),
       avatar: '🪞',
       isOwn: true
     }
