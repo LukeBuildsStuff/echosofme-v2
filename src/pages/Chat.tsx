@@ -27,7 +27,7 @@ interface Message {
 const Chat: React.FC = () => {
   const location = useLocation();
   const { isEchoReady, stats } = useEcho();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [selectedEcho, setSelectedEcho] = useState<Echo | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [eleanorAvailable, setEleanorAvailable] = useState<boolean>(true);
@@ -35,19 +35,19 @@ const Chat: React.FC = () => {
   // Memoize Echo description to prevent recalculation with stale data
   const echoDescription = useMemo(() => {
     // Don't generate description until auth state is fully loaded and stats are available
-    if (user === undefined || !stats) return 'Loading...';
+    if (loading || !stats) return 'Loading...';
 
     if (isEchoReady()) {
       return 'Your complete digital reflection, trained from all your memories';
     } else {
       return `Your future digital self (${2500 - stats.totalReflections} more reflections to unlock)`;
     }
-  }, [user, stats, isEchoReady]);
+  }, [loading, stats, isEchoReady]);
 
   // Memoize available Echos to prevent recreation on every render
   const availableEchos = useMemo(() => {
     // Don't create Echo array until auth state is fully loaded
-    if (user === undefined) return [];
+    if (loading) return [];
 
     const allEchos: Echo[] = [
       {
@@ -75,7 +75,7 @@ const Chat: React.FC = () => {
       }
       return true; // Show all other Echos
     });
-  }, [user, echoDescription]);
+  }, [loading, user, echoDescription]);
 
   // Dynamic greetings for Eleanor
   const eleanorGreetings = [
@@ -343,6 +343,39 @@ const Chat: React.FC = () => {
 
   // Show Echo selector if no Echo is selected
   if (!selectedEcho) {
+    // Show loading state if auth is not ready
+    if (loading) {
+      return (
+        <Layout hideFooter={true}>
+          <div className="pt-20 min-h-screen bg-gray-50">
+            <div className="max-w-4xl mx-auto px-6 py-8">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-4">Loading Echoes...</h1>
+                <p className="text-gray-600">Preparing your digital companions</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg p-6 shadow-sm border animate-pulse">
+                    <div className="flex items-center mb-4">
+                      <div className="w-16 h-16 bg-gray-200 rounded-full mr-4"></div>
+                      <div>
+                        <div className="h-6 bg-gray-200 rounded mb-2 w-32"></div>
+                        <div className="h-4 bg-gray-200 rounded w-24"></div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-full"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Layout>
+      );
+    }
+
     return (
       <Layout hideFooter={true}>
         <div className="pt-20 min-h-screen bg-gray-50">

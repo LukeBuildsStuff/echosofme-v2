@@ -7,7 +7,7 @@ import { useEcho } from '../contexts/EchoContext';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 
 const EnhancedReflections: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const {
     categories,
     getDailyQuestion,
@@ -50,8 +50,8 @@ const EnhancedReflections: React.FC = () => {
 
   // Memoize question loading to prevent re-calculation on every render
   const memoizedQuestionData = useMemo(() => {
-    // Don't generate questions until auth state is fully loaded (user !== undefined)
-    if (user === undefined) return null;
+    // Don't generate questions until auth state is fully loaded
+    if (loading) return null;
 
     const period = getCurrentReflectionPeriod();
 
@@ -90,7 +90,7 @@ const EnhancedReflections: React.FC = () => {
     }
 
     return null;
-  }, [user, viewMode, getCurrentReflectionPeriod, hasCompletedMorningReflection, hasCompletedAfternoonReflection, getMorningQuestion, getAfternoonQuestion]);
+  }, [loading, viewMode, getCurrentReflectionPeriod, hasCompletedMorningReflection, hasCompletedAfternoonReflection, getMorningQuestion, getAfternoonQuestion]);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -165,10 +165,10 @@ const EnhancedReflections: React.FC = () => {
       setCurrentQuestion(memoizedQuestionData.question);
       setReflectionState(memoizedQuestionData.state as 'available' | 'completed' | 'waiting');
       setCurrentPeriod(memoizedQuestionData.period);
-    } else if (user === undefined) {
+    } else if (loading) {
       console.log('⏳ Waiting for auth state to load before initializing questions...');
     }
-  }, [memoizedQuestionData, user]);
+  }, [memoizedQuestionData, loading]);
 
   // Draft recovery on component mount
   useEffect(() => {

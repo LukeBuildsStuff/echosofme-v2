@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/SupabaseAuthContext';
 import useQuestionLoader from '../components/QuestionLoader';
 
 const Legacy: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { reflections, stats, updateReflection, deleteReflection } = useEcho();
   const { unmarkQuestionAsAnswered } = useQuestionLoader();
   const [editingReflection, setEditingReflection] = useState<Reflection | null>(null);
@@ -15,11 +15,11 @@ const Legacy: React.FC = () => {
   // Memoize reflections processing to prevent recalculation with stale data
   const processedReflections = useMemo(() => {
     // Don't process reflections until auth state is fully loaded
-    if (user === undefined || !reflections) return [];
+    if (loading || !reflections) return [];
 
     // Sort reflections by date (newest first)
-    return [...reflections].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [user, reflections]);
+    return [...reflections].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [loading, reflections]);
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -61,7 +61,7 @@ const Legacy: React.FC = () => {
   };
 
   // Show loading state if auth is not ready or reflections are loading
-  if (user === undefined) {
+  if (loading) {
     return (
       <Layout hideFooter={true}>
         <div className="pt-20 min-h-screen bg-gray-50">
