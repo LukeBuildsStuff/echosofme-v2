@@ -356,6 +356,20 @@ const EnhancedReflections: React.FC = () => {
     return categories[category]?.color || 'bg-gray-500';
   };
 
+  // Show loading spinner while auth state is loading
+  if (user === undefined) {
+    return (
+      <Layout hideFooter={true}>
+        <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout hideFooter={true}>
       <div className="min-h-screen bg-gray-50 pt-20">
