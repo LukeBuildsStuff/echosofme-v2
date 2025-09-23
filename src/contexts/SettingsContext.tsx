@@ -103,146 +103,62 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
       localStorage.setItem('last_user_email', targetUserEmail);
       console.log('👤 Authenticated user detected:', targetUserEmail);
 
-      // Add retry logic for race conditions
-      let retryCount = 0;
-      const maxRetries = 3;
+      // Try to load settings from database (simplified - no retries)
+      try {
+        console.log('🔄 Loading settings from database...');
 
-      while (retryCount < maxRetries) {
-        try {
-          console.log(`🔄 Settings load attempt ${retryCount + 1}/${maxRetries}`);
+        const databaseSettings = await api.getUserSettings();
 
-          // DEBUG: Check what's actually in the database
-          await api.debugUserProfile();
+        if (databaseSettings !== null) {
+          // Database returned settings (could be empty object for new user)
+          console.log('✅ Loaded settings from database:', databaseSettings);
+          const mergedSettings = { ...defaultSettings, ...databaseSettings };
+          setSettings(mergedSettings);
 
-          // STEP 1: Try to load from database first (authenticated users)
-          const databaseSettings = await api.getUserSettings();
-
-          // Check if we got valid settings (not null and not an error)
-          if (databaseSettings !== null) {
-            if (Object.keys(databaseSettings).length > 0) {
-              // Database has settings, use them
-              console.log('✅ Loaded settings from database:', databaseSettings);
-              const mergedSettings = { ...defaultSettings, ...databaseSettings };
-              setSettings(mergedSettings);
-
-              // Cache in localStorage for offline access
-              const userSpecificKey = `echos_settings_${targetUserEmail}`;
-              localStorage.setItem(userSpecificKey, JSON.stringify(mergedSettings));
-              setIsLoading(false);
-              return;
-            } else {
-              console.log('📝 Database returned empty settings object (new user)');
-              // Empty settings object means new user - use defaults and save them
-              setSettings(defaultSettings);
-
-              // Save defaults to database for new user
-              try {
-                await api.updateUserSettings(defaultSettings);
-                console.log('✅ Default settings saved for new user');
-              } catch (saveError) {
-                console.warn('⚠️ Failed to save default settings:', saveError);
-              }
-
-              // Cache in localStorage
-              const userSpecificKey = `echos_settings_${targetUserEmail}`;
-              localStorage.setItem(userSpecificKey, JSON.stringify(defaultSettings));
-              setIsLoading(false);
-              return;
-            }
-          } else {
-            console.log('⚠️ Database returned null, checking localStorage for migration...');
-          }
-
-          // STEP 2: Database returned null (error or no profile), check localStorage for migration
+          // Cache in localStorage for offline access
           const userSpecificKey = `echos_settings_${targetUserEmail}`;
-          const savedSettings = localStorage.getItem(userSpecificKey);
-
-          if (savedSettings) {
-            const parsedSettings = safeJSONParse(savedSettings, {});
-            const mergedSettings = { ...defaultSettings, ...parsedSettings };
-            setSettings(mergedSettings);
-            console.log('📱 Loaded settings from localStorage:', parsedSettings);
-
-            // Try to migrate localStorage settings to database
-            console.log('🔄 Migrating settings from localStorage to database');
-            try {
-              await api.updateUserSettings(mergedSettings);
-              console.log('✅ Settings migrated to database successfully');
-            } catch (migrationError) {
-              console.warn('⚠️ Settings migration to database failed:', migrationError);
-              // Continue with localStorage settings - no error thrown
-            }
-            setIsLoading(false);
-            return;
-          }
-
-          // STEP 3: Check for old generic settings and migrate them
-          const oldSettings = localStorage.getItem('echos_settings');
-          if (oldSettings) {
-            const parsedOldSettings = safeJSONParse(oldSettings, {});
-            const migratedSettings = { ...defaultSettings, ...parsedOldSettings };
-            setSettings(migratedSettings);
-            console.log('🔄 Migrating old generic settings:', parsedOldSettings);
-
-            // Save migrated settings with user-specific key
-            localStorage.setItem(userSpecificKey, JSON.stringify(migratedSettings));
-
-            // Try to save to database too
-            try {
-              await api.updateUserSettings(migratedSettings);
-              console.log('✅ Old settings migrated to database');
-            } catch (migrationError) {
-              console.warn('⚠️ Old settings migration to database failed:', migrationError);
-            }
-
-            // Remove old generic settings
-            localStorage.removeItem('echos_settings');
-            setIsLoading(false);
-            return;
-          }
-
-          // STEP 4: No settings found anywhere, use defaults
-          console.log('🆕 No existing settings found, initializing with defaults');
-          setSettings(defaultSettings);
-
-          // Try to save defaults to database for consistency
-          try {
-            await api.updateUserSettings(defaultSettings);
-            console.log('✅ Default settings saved to database');
-          } catch (saveError) {
-            console.warn('⚠️ Failed to save default settings to database:', saveError);
-          }
-
+          localStorage.setItem(userSpecificKey, JSON.stringify(mergedSettings));
           setIsLoading(false);
           return;
-
-        } catch (error) {
-          retryCount++;
-          console.warn(`⚠️ Settings load attempt ${retryCount} failed:`, error);
-
-          if (retryCount >= maxRetries) {
-            // All retries exhausted, use localStorage fallback
-            console.warn('⚠️ All database attempts failed, using localStorage fallback');
-
-            const userSpecificKey = `echos_settings_${targetUserEmail}`;
-            const savedSettings = localStorage.getItem(userSpecificKey);
-
-            if (savedSettings) {
-              const parsedSettings = safeJSONParse(savedSettings, {});
-              setSettings({ ...defaultSettings, ...parsedSettings });
-              console.log('📱 Fallback: Loaded settings from localStorage');
-            } else {
-              setSettings(defaultSettings);
-              console.log('📝 Fallback: No localStorage settings, using defaults');
-            }
-            setIsLoading(false);
-            return;
-          } else {
-            // Wait a bit before retrying to handle race conditions
-            console.log(`⏳ Retrying in ${500 * retryCount}ms...`);
-            await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
-          }
+        } else {
+          console.log('⚠️ Database returned null, using localStorage fallback...');
         }
+
+        // Database error - check localStorage for fallback
+        const userSpecificKey = `echos_settings_${targetUserEmail}`;
+        const savedSettings = localStorage.getItem(userSpecificKey);
+
+        if (savedSettings) {
+          const parsedSettings = safeJSONParse(savedSettings, {});
+          const mergedSettings = { ...defaultSettings, ...parsedSettings };
+          setSettings(mergedSettings);
+          console.log('📱 Loaded settings from localStorage fallback');
+          setIsLoading(false);
+          return;
+        }
+
+        // No localStorage either - use defaults
+        console.log('🆕 No existing settings found, using defaults');
+        setSettings(defaultSettings);
+        setIsLoading(false);
+        return;
+
+      } catch (error) {
+        console.warn('⚠️ Database settings load failed:', error);
+
+        // Error loading from database - use localStorage fallback
+        const userSpecificKey = `echos_settings_${targetUserEmail}`;
+        const savedSettings = localStorage.getItem(userSpecificKey);
+
+        if (savedSettings) {
+          const parsedSettings = safeJSONParse(savedSettings, {});
+          setSettings({ ...defaultSettings, ...parsedSettings });
+          console.log('📱 Error fallback: Loaded settings from localStorage');
+        } else {
+          setSettings(defaultSettings);
+          console.log('📝 Error fallback: No localStorage settings, using defaults');
+        }
+        setIsLoading(false);
       }
     };
 
