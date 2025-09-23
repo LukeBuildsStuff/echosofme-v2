@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
+import chatWindowImage from '../assets/images/chat-window.png';
 
 const Home: React.FC = () => {
   return (
@@ -255,23 +256,12 @@ const Home: React.FC = () => {
             <div className="w-full px-4 lg:w-1/2">
               <div className="relative mx-auto mb-12 max-w-[500px] text-center lg:m-0">
                 <div className="mx-auto mb-8 max-w-[350px]">
-                  <div className="h-[250px] bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl flex items-center justify-center">
-                    <svg
-                      width="120"
-                      height="120"
-                      viewBox="0 0 120 120"
-                      className="text-primary"
-                      fill="currentColor"
-                    >
-                      <rect x="57" y="50" width="6" height="35" fill="currentColor" opacity="0.8"/>
-                      <path d="M60 105C50 105 40 100 30 95C25 93 25 87 30 87C40 87 50 90 60 90C70 90 80 87 90 87C95 87 95 93 90 95C80 100 70 105 60 105Z" opacity="0.4"/>
-                      <path d="M60 50C50 35 35 25 25 20C20 18 22 12 27 14C37 19 52 29 60 44C68 29 83 19 93 14C98 12 100 18 95 20C85 25 70 35 60 50Z"/>
-                      <circle cx="25" cy="20" r="8" opacity="0.7"/>
-                      <circle cx="40" cy="30" r="6" opacity="0.6"/>
-                      <circle cx="60" cy="25" r="7" opacity="0.8"/>
-                      <circle cx="80" cy="30" r="6" opacity="0.6"/>
-                      <circle cx="95" cy="20" r="8" opacity="0.7"/>
-                    </svg>
+                  <div className="h-[250px] bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl flex items-center justify-center p-6">
+                    <img
+                      src={chatWindowImage}
+                      alt="Chat conversation interface"
+                      className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                    />
                   </div>
                 </div>
               </div>
