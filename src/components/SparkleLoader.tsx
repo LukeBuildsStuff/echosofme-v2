@@ -30,4 +30,4 @@ export default function SparkleLoader({ className = '', size = 'medium' }: Spark
       <div className="pulse-ring pulse-ring-3"></div>
     </div>
   )
-}
+}// Force deployment trigger Tue Sep 23 14:06:08 EDT 2025
