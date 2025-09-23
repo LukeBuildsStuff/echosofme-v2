@@ -1,14 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Layout from '../components/Layout/Layout';
 import { useEcho, type Reflection } from '../contexts/EchoContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import useQuestionLoader from '../components/QuestionLoader';
 
 const Legacy: React.FC = () => {
+  const { user } = useAuth();
   const { reflections, stats, updateReflection, deleteReflection } = useEcho();
   const { unmarkQuestionAsAnswered } = useQuestionLoader();
   const [editingReflection, setEditingReflection] = useState<Reflection | null>(null);
   const [editText, setEditText] = useState('');
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  // Memoize reflections processing to prevent recalculation with stale data
+  const processedReflections = useMemo(() => {
+    // Don't process reflections until auth state is fully loaded
+    if (user === undefined || !reflections) return [];
+
+    // Sort reflections by date (newest first)
+    return [...reflections].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [user, reflections]);
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -49,10 +60,33 @@ const Legacy: React.FC = () => {
     return colors[category] || 'gray-500';
   };
 
-  // Sort reflections by date (newest first)
-  const sortedReflections = [...reflections].sort((a, b) => 
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  // Show loading state if auth is not ready or reflections are loading
+  if (user === undefined) {
+    return (
+      <Layout hideFooter={true}>
+        <div className="pt-20 min-h-screen bg-gray-50">
+          <div className="max-w-6xl mx-auto px-4 py-8">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded mb-4 w-1/3"></div>
+              <div className="h-4 bg-gray-200 rounded mb-8 w-2/3"></div>
+              <div className="space-y-6">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg p-6 shadow-sm">
+                    <div className="h-4 bg-gray-200 rounded mb-2 w-1/4"></div>
+                    <div className="h-6 bg-gray-200 rounded mb-4 w-3/4"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-full"></div>
+                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   // Handle edit reflection
   const handleEditClick = (reflection: Reflection) => {
@@ -110,13 +144,13 @@ const Legacy: React.FC = () => {
             </p>
           </div>
 
-          {reflections.length > 0 ? (
+          {processedReflections.length > 0 ? (
             <div className="relative">
               <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200"></div>
               
               {/* Real Timeline Items */}
               <div className="space-y-8">
-                {sortedReflections.map((reflection) => {
+                {processedReflections.map((reflection) => {
                   const categoryColor = getCategoryColor(reflection.category);
                   const displayCategory = reflection.category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                   

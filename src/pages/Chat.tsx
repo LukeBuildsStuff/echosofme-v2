@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import { useEcho } from '../contexts/EchoContext';
@@ -32,42 +32,50 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [eleanorAvailable, setEleanorAvailable] = useState<boolean>(true);
 
-  // Dynamic Echo description based on readiness
-  const getEchoDescription = () => {
+  // Memoize Echo description to prevent recalculation with stale data
+  const echoDescription = useMemo(() => {
+    // Don't generate description until auth state is fully loaded and stats are available
+    if (user === undefined || !stats) return 'Loading...';
+
     if (isEchoReady()) {
       return 'Your complete digital reflection, trained from all your memories';
     } else {
       return `Your future digital self (${2500 - stats.totalReflections} more reflections to unlock)`;
     }
-  };
+  }, [user, stats, isEchoReady]);
 
-  // All available Echos (base array)
-  const allEchos: Echo[] = [
-    {
-      id: 'eleanor',
-      name: 'Eleanor Rodriguez',
-      relationship: 'Grandmother',
-      description: 'Warm, caring grandmother with decades of life wisdom',
-      avatar: '👵',
-      isOwn: false
-    },
-    {
-      id: 'my-echo',
-      name: 'Your Echo',
-      relationship: 'Self',
-      description: getEchoDescription(),
-      avatar: '🪞',
-      isOwn: true
-    }
-  ];
+  // Memoize available Echos to prevent recreation on every render
+  const availableEchos = useMemo(() => {
+    // Don't create Echo array until auth state is fully loaded
+    if (user === undefined) return [];
 
-  // Filter Echos based on admin status - only admins can see Eleanor
-  const availableEchos: Echo[] = allEchos.filter(echo => {
-    if (echo.id === 'eleanor' && !user?.isAdmin) {
-      return false; // Hide Eleanor from non-admin users
-    }
-    return true; // Show all other Echos
-  });
+    const allEchos: Echo[] = [
+      {
+        id: 'eleanor',
+        name: 'Eleanor Rodriguez',
+        relationship: 'Grandmother',
+        description: 'Warm, caring grandmother with decades of life wisdom',
+        avatar: '👵',
+        isOwn: false
+      },
+      {
+        id: 'my-echo',
+        name: 'Your Echo',
+        relationship: 'Self',
+        description: echoDescription,
+        avatar: '🪞',
+        isOwn: true
+      }
+    ];
+
+    // Filter Echos based on admin status - only admins can see Eleanor
+    return allEchos.filter(echo => {
+      if (echo.id === 'eleanor' && !user?.isAdmin) {
+        return false; // Hide Eleanor from non-admin users
+      }
+      return true; // Show all other Echos
+    });
+  }, [user, echoDescription]);
 
   // Dynamic greetings for Eleanor
   const eleanorGreetings = [

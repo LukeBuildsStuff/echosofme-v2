@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Layout from '../components/Layout/Layout';
 import TrainingProgress from '../components/TrainingProgress';
 import ConversationTrainer from '../components/ConversationTrainer';
@@ -47,6 +47,50 @@ const EnhancedReflections: React.FC = () => {
   
   // Ref to track current response value for auto-save
   const responseRef = useRef(response);
+
+  // Memoize question loading to prevent re-calculation on every render
+  const memoizedQuestionData = useMemo(() => {
+    // Don't generate questions until auth state is fully loaded (user !== undefined)
+    if (user === undefined) return null;
+
+    const period = getCurrentReflectionPeriod();
+
+    if (viewMode === 'daily') {
+      if (period === 'morning' && !hasCompletedMorningReflection()) {
+        return {
+          question: getMorningQuestion(),
+          state: 'available',
+          period
+        };
+      } else if (period === 'afternoon' && !hasCompletedAfternoonReflection()) {
+        return {
+          question: getAfternoonQuestion(),
+          state: 'available',
+          period
+        };
+      } else if (
+        (period === 'morning' && hasCompletedMorningReflection()) ||
+        (period === 'afternoon' && hasCompletedAfternoonReflection() && hasCompletedMorningReflection()) ||
+        period === 'none'
+      ) {
+        return {
+          question: null,
+          state: (hasCompletedMorningReflection() && hasCompletedAfternoonReflection()) ||
+            (period === 'morning' && hasCompletedMorningReflection() && !hasCompletedAfternoonReflection() && getCurrentReflectionPeriod() !== 'afternoon')
+            ? 'completed' : 'waiting',
+          period
+        };
+      } else {
+        return {
+          question: null,
+          state: 'waiting',
+          period
+        };
+      }
+    }
+
+    return null;
+  }, [user, viewMode, getCurrentReflectionPeriod, hasCompletedMorningReflection, hasCompletedAfternoonReflection, getMorningQuestion, getAfternoonQuestion]);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -116,40 +160,15 @@ const EnhancedReflections: React.FC = () => {
   };
 
   useEffect(() => {
-    // Don't initialize questions until auth state is fully loaded (user !== undefined)
-    if (user === undefined) {
+    // Use memoized question data to prevent flickering
+    if (memoizedQuestionData) {
+      setCurrentQuestion(memoizedQuestionData.question);
+      setReflectionState(memoizedQuestionData.state as 'available' | 'completed' | 'waiting');
+      setCurrentPeriod(memoizedQuestionData.period);
+    } else if (user === undefined) {
       console.log('⏳ Waiting for auth state to load before initializing questions...');
-      return;
     }
-
-    const period = getCurrentReflectionPeriod();
-    setCurrentPeriod(period);
-
-    if (viewMode === 'daily') {
-      // Check reflection availability and load appropriate question
-      if (period === 'morning' && !hasCompletedMorningReflection()) {
-        setCurrentQuestion(getMorningQuestion());
-        setReflectionState('available');
-      } else if (period === 'afternoon' && !hasCompletedAfternoonReflection()) {
-        setCurrentQuestion(getAfternoonQuestion());
-        setReflectionState('available');
-      } else if (
-        (period === 'morning' && hasCompletedMorningReflection()) ||
-        (period === 'afternoon' && hasCompletedAfternoonReflection() && hasCompletedMorningReflection()) ||
-        period === 'none'
-      ) {
-        setCurrentQuestion(null);
-        setReflectionState(
-          (hasCompletedMorningReflection() && hasCompletedAfternoonReflection()) ||
-          (period === 'morning' && hasCompletedMorningReflection() && !hasCompletedAfternoonReflection() && getCurrentReflectionPeriod() !== 'afternoon')
-          ? 'completed' : 'waiting'
-        );
-      } else {
-        setCurrentQuestion(null);
-        setReflectionState('waiting');
-      }
-    }
-  }, [user, viewMode, getCurrentReflectionPeriod, hasCompletedMorningReflection, hasCompletedAfternoonReflection, getMorningQuestion, getAfternoonQuestion]);
+  }, [memoizedQuestionData, user]);
 
   // Draft recovery on component mount
   useEffect(() => {
