@@ -572,11 +572,32 @@ export const api = {
     const user = await this.getCurrentUser()
     if (!user) return null
 
-    return await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single()
+    const userId = Number(user.id)
+    if (isNaN(userId)) {
+      throw new Error('Invalid user ID format')
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows found - user_profiles row doesn't exist yet
+          console.log('📝 No user_profiles row found for user:', userId)
+          return { data: null, error: null }
+        }
+        throw error
+      }
+
+      return { data, error: null }
+    } catch (error) {
+      console.error('❌ getUserProfile error:', error)
+      throw error
+    }
   },
 
   async updateUserProfile(updates: Partial<Database['public']['Tables']['user_profiles']['Insert']>) {

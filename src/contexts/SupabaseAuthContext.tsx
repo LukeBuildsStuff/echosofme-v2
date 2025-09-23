@@ -255,16 +255,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (data) {
         console.log('📦 Database save response:', data);
 
-        // CRITICAL: Reload the complete profile from database to verify what was actually saved
-        console.log('🔄 Reloading profile from database to verify save...');
-
-        // Get fresh user data and reload profile
-        const freshUserData = await api.getCurrentUser();
-        if (freshUserData) {
-          await loadUserWithProfile(freshUserData);
-          console.log('✅ Profile updated and reloaded from database');
-        } else {
-          console.error('❌ Failed to reload user data after profile update');
+        // OPTIONAL: Try to reload the profile from database to verify save
+        // Don't fail the entire save if this fails
+        try {
+          console.log('🔄 Reloading profile from database to verify save...');
+          const freshUserData = await api.getCurrentUser();
+          if (freshUserData) {
+            await loadUserWithProfile(freshUserData);
+            console.log('✅ Profile updated and reloaded from database');
+          } else {
+            console.warn('⚠️ Could not get fresh user data for reload');
+          }
+        } catch (reloadError) {
+          console.warn('⚠️ Profile reload failed (non-critical):', reloadError);
+          // Don't throw - the save itself was successful
         }
       }
     } catch (error) {
