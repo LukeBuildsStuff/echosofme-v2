@@ -315,6 +315,12 @@ const useQuestionLoader = () => {
   };
 
   const getMorningQuestion = (): Question | null => {
+    // Don't generate any question until auth state is known
+    if (user === undefined) {
+      console.log('⏳ Waiting for auth state to load before generating morning question...');
+      return null;
+    }
+
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
     // CHECK LOCALSTORAGE FIRST - prevent question from changing mid-day
@@ -396,6 +402,12 @@ const useQuestionLoader = () => {
   };
 
   const getAfternoonQuestion = (): Question | null => {
+    // Don't generate any question until auth state is known
+    if (user === undefined) {
+      console.log('⏳ Waiting for auth state to load before generating afternoon question...');
+      return null;
+    }
+
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
     // CHECK LOCALSTORAGE FIRST - prevent question from changing mid-day
