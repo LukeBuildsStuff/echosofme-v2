@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../contexts/SupabaseAuthContext';
+import SparkleLoader from '../components/SparkleLoader';
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -211,7 +212,7 @@ const Login: React.FC = () => {
                     >
                       {loading ? (
                         <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          <SparkleLoader size="small" className="mr-2" />
                           {formData.isSignUp ? 'Creating Account...' : 'Signing In...'}
                         </div>
                       ) : (

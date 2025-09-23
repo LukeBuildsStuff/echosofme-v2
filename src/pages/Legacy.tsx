@@ -3,6 +3,7 @@ import Layout from '../components/Layout/Layout';
 import { useEcho, type Reflection } from '../contexts/EchoContext';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import useQuestionLoader from '../components/QuestionLoader';
+import SparkleLoader from '../components/SparkleLoader';
 
 const Legacy: React.FC = () => {
   const { user, loading } = useAuth();
@@ -66,21 +67,10 @@ const Legacy: React.FC = () => {
       <Layout hideFooter={true}>
         <div className="pt-20 min-h-screen bg-gray-50">
           <div className="max-w-6xl mx-auto px-4 py-8">
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded mb-4 w-1/3"></div>
-              <div className="h-4 bg-gray-200 rounded mb-8 w-2/3"></div>
-              <div className="space-y-6">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-lg p-6 shadow-sm">
-                    <div className="h-4 bg-gray-200 rounded mb-2 w-1/4"></div>
-                    <div className="h-6 bg-gray-200 rounded mb-4 w-3/4"></div>
-                    <div className="space-y-2">
-                      <div className="h-4 bg-gray-200 rounded w-full"></div>
-                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="text-center">
+              <SparkleLoader />
+              <h1 className="text-3xl font-bold text-gray-900 mb-4 mt-6">Loading Reflections...</h1>
+              <p className="text-gray-600">Gathering your thoughts and memories</p>
             </div>
           </div>
         </div>

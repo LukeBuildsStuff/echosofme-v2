@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout/Layout';
 import { useAuth } from '../../contexts/SupabaseAuthContext';
 import { getEleanorApiUrl } from '../../utils/apiConfig';
+import SparkleLoader from '../../components/SparkleLoader';
 
 interface Question {
   id: number;
@@ -360,7 +361,7 @@ const DatabaseAdmin: React.FC = () => {
         <div className="min-h-screen bg-gray-50 pt-20">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <SparkleLoader />
             </div>
           </div>
         </div>
@@ -464,7 +465,7 @@ const DatabaseAdmin: React.FC = () => {
               {/* Questions Table */}
               {loading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <SparkleLoader />
                 </div>
               ) : questionsData && questionsData.questions ? (
                 <>
@@ -588,7 +589,7 @@ const DatabaseAdmin: React.FC = () => {
 
               {loading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <SparkleLoader />
                 </div>
               ) : responsesData && responsesData.responses ? (
                 <>
@@ -672,7 +673,7 @@ const DatabaseAdmin: React.FC = () => {
 
               {loading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <SparkleLoader />
                 </div>
               ) : duplicatesLoaded && (
                 <div>

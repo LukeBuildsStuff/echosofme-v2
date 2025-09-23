@@ -4,6 +4,7 @@ import Layout from '../components/Layout/Layout';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import { validatePassword, getPasswordStrengthColor } from '../utils/passwordValidator';
 import { api } from '../lib/supabase';
+import SparkleLoader from '../components/SparkleLoader';
 
 const ResetPassword: React.FC = () => {
   const [step, setStep] = useState<'email' | 'newPassword' | 'success'>('email');
@@ -230,7 +231,7 @@ const ResetPassword: React.FC = () => {
                       >
                         {loading ? (
                           <div className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            <SparkleLoader size="small" className="mr-2" />
                             Sending Reset Link...
                           </div>
                         ) : (
@@ -285,7 +286,7 @@ const ResetPassword: React.FC = () => {
                       >
                         {loading ? (
                           <div className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            <SparkleLoader size="small" className="mr-2" />
                             Updating Password...
                           </div>
                         ) : (

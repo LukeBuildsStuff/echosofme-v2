@@ -3,13 +3,26 @@ import { Sparkles } from 'lucide-react'
 
 interface SparkleLoaderProps {
   className?: string
+  size?: 'small' | 'medium' | 'large'
 }
 
-export default function SparkleLoader({ className = '' }: SparkleLoaderProps) {
+export default function SparkleLoader({ className = '', size = 'medium' }: SparkleLoaderProps) {
+  const sizeClasses = {
+    small: 'w-6 h-6',
+    medium: 'w-20 h-20',
+    large: 'w-32 h-32'
+  }
+
+  const sparkleSize = {
+    small: 'w-3 h-3',
+    medium: 'w-6 h-6',
+    large: 'w-8 h-8'
+  }
+
   return (
-    <div className={`pulse-container ${className}`}>
+    <div className={`pulse-container ${sizeClasses[size]} ${className}`}>
       {/* Central sparkle */}
-      <Sparkles className="text-primary central-sparkle" />
+      <Sparkles className={`text-primary central-sparkle ${sparkleSize[size]}`} />
 
       {/* Concentric pulse rings */}
       <div className="pulse-ring pulse-ring-1"></div>
