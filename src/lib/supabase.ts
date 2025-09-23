@@ -655,28 +655,36 @@ export const api = {
       const { data, error } = await supabase
         .from('user_profiles')
         .select('notification_settings, reflection_preferences')
-        .eq('user_id', user.id)
+        .eq('user_id', Number(user.id))  // Ensure INTEGER type consistency
         .single()
 
       if (error) {
         if (error.code === 'PGRST116') {
           console.log('📝 No profile found for user - using defaults')
+          return {} // Return empty object instead of null to distinguish from error
         } else {
           console.warn('⚠️ Settings fetch failed:', error)
+          return null
         }
-        return null
       }
 
       console.log('📖 Raw database settings:', data)
 
-      // Combine both settings objects into a single settings object
-      const settings = {
-        ...(data?.reflection_preferences || {}),
-        ...(data?.notification_settings || {})
+      // MIGRATION: Combine settings from both columns, prioritizing reflection_preferences
+      // Eventually we'll consolidate everything into reflection_preferences only
+      const legacyNotificationSettings = data?.notification_settings || {}
+      const currentSettings = data?.reflection_preferences || {}
+
+      // Merge with current settings taking priority (newer format)
+      const combinedSettings = {
+        ...legacyNotificationSettings,
+        ...currentSettings
       }
 
-      console.log('✅ Combined settings loaded:', settings)
-      return Object.keys(settings).length > 0 ? settings : null
+      console.log('✅ Combined settings loaded:', combinedSettings)
+
+      // Return settings object even if empty - don't return null unless there's an error
+      return combinedSettings
     } catch (error) {
       console.error('❌ Error fetching user settings:', error)
       return null
@@ -695,74 +703,116 @@ export const api = {
       throw new Error('User record is invalid')
     }
 
+    // Ensure user ID is a number for INTEGER foreign key consistency
+    const userId = Number(user.id)
+    if (isNaN(userId)) {
+      console.error('❌ Invalid user ID - cannot convert to number:', user.id)
+      throw new Error('Invalid user ID format')
+    }
+
     try {
-      console.log('🔄 Saving settings to database for user ID:', user.id)
+      console.log('🔄 Saving settings to database for user ID:', userId)
       console.log('🔄 Settings payload:', settings)
 
-      // STEP 1: Fetch existing settings from database to merge (not overwrite!)
+      // STEP 1: Start transaction and fetch existing settings to merge
       const { data: existingProfile, error: fetchError } = await supabase
         .from('user_profiles')
         .select('notification_settings, reflection_preferences')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single()
 
       // Handle different error cases
+      let existingSettings = {}
       if (fetchError) {
         if (fetchError.code === 'PGRST116') {
-          // No rows returned - profile doesn't exist yet, that's fine
           console.log('📝 No existing profile found, will create new one')
+          existingSettings = {}
         } else {
-          // Other error - log but continue
           console.warn('⚠️ Error fetching existing profile:', fetchError)
+          // Continue with empty settings on error
+          existingSettings = {}
+        }
+      } else {
+        // MIGRATION: Merge existing data from both columns
+        existingSettings = {
+          ...(existingProfile?.notification_settings || {}),
+          ...(existingProfile?.reflection_preferences || {})
         }
       }
 
-      console.log('📖 Existing profile data:', existingProfile)
+      console.log('📖 Existing combined settings:', existingSettings)
 
-      // STEP 2: Split new settings into appropriate categories
-      const { theme, ...notificationSettings } = settings
-
-      // STEP 3: MERGE with existing settings (critical fix!)
-      const mergedReflectionPrefs = {
-        ...(existingProfile?.reflection_preferences || {}),
-        ...(theme !== undefined ? { theme } : {})
+      // STEP 2: Merge new settings with existing (new settings take priority)
+      const mergedSettings = {
+        ...existingSettings,
+        ...settings
       }
 
-      const mergedNotificationSettings = {
-        ...(existingProfile?.notification_settings || {}),
-        ...notificationSettings
+      console.log('🔧 Final merged settings:', mergedSettings)
+
+      // STEP 3: Store ALL settings in reflection_preferences (consolidation strategy)
+      // Keep notification_settings empty for now to maintain backward compatibility
+      const payload = {
+        user_id: userId,
+        reflection_preferences: mergedSettings,
+        notification_settings: {} // Empty - all settings now in reflection_preferences
       }
 
-      console.log('🔧 Merged reflection preferences:', mergedReflectionPrefs)
-      console.log('🔧 Merged notification settings:', mergedNotificationSettings)
+      console.log('💾 Upsert payload:', payload)
 
-      // STEP 4: Upsert the MERGED settings with proper conflict resolution (removed .single())
-      const { data, error } = await supabase
+      // STEP 4: Upsert with proper error handling
+      const { data: upsertData, error: upsertError } = await supabase
         .from('user_profiles')
-        .upsert({
-          user_id: user.id,
-          reflection_preferences: mergedReflectionPrefs,
-          notification_settings: mergedNotificationSettings
-        }, {
+        .upsert(payload, {
           onConflict: 'user_id',
           ignoreDuplicates: false
         })
-        .select()
+        .select('reflection_preferences, notification_settings')
 
-      if (error) {
-        console.error('❌ Settings save failed:', error)
-        console.error('❌ Failed payload:', {
-          user_id: user.id,
-          reflection_preferences: mergedReflectionPrefs,
-          notification_settings: mergedNotificationSettings
-        })
-        throw error
+      if (upsertError) {
+        console.error('❌ Settings upsert failed:', upsertError)
+        console.error('❌ Failed payload:', payload)
+        throw new Error(`Database upsert failed: ${upsertError.message}`)
       }
 
-      console.log('✅ Settings successfully saved to database:', data)
+      // STEP 5: Verify the upsert actually worked
+      if (!upsertData || upsertData.length === 0) {
+        console.error('❌ Upsert returned empty result - save may have failed silently')
+        throw new Error('Settings save verification failed - no data returned')
+      }
 
-      // Return the first element since we removed .single()
-      return data && data.length > 0 ? data[0] : data
+      console.log('✅ Settings upsert successful:', upsertData)
+
+      // STEP 6: Read-after-write verification
+      const { data: verificationData, error: verificationError } = await supabase
+        .from('user_profiles')
+        .select('reflection_preferences')
+        .eq('user_id', userId)
+        .single()
+
+      if (verificationError) {
+        console.error('❌ Settings verification read failed:', verificationError)
+        throw new Error('Settings save verification failed')
+      }
+
+      const savedSettings = verificationData?.reflection_preferences || {}
+      console.log('🔍 Verification: saved settings:', savedSettings)
+
+      // Compare key settings to ensure they were saved correctly
+      const criticalKeys = ['theme', 'dailyReminders', 'reminderTime']
+      for (const key of criticalKeys) {
+        if (settings[key] !== undefined && savedSettings[key] !== settings[key]) {
+          console.error(`❌ Verification failed: ${key} mismatch`, {
+            expected: settings[key],
+            actual: savedSettings[key]
+          })
+          throw new Error(`Settings verification failed: ${key} was not saved correctly`)
+        }
+      }
+
+      console.log('✅ Settings successfully saved and verified')
+      return verificationData
+
     } catch (error) {
       console.error('❌ Error updating user settings:', error)
       throw error
