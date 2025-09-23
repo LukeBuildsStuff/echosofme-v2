@@ -128,24 +128,20 @@ const CATEGORIES: Record<string, QuestionCategory> = {
 
 const useQuestionLoader = () => {
   const { user } = useAuth();
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<Question[]>(questionsData as Question[]);
   const [categories, setCategories] = useState<Record<string, QuestionCategory>>(CATEGORIES);
   const [selectedQuestionsByCategory, setSelectedQuestionsByCategory] = useState<Record<string, Set<number>>>({});
 
   useEffect(() => {
-    // Load questions and update category counts
-    const loadedQuestions = questionsData as Question[];
-    setQuestions(loadedQuestions);
-    
-    // Reset and update category counts
+    // Update category counts (questions are now initialized synchronously)
     const updatedCategories = { ...CATEGORIES };
     // Reset all counts to 0 first
     Object.keys(updatedCategories).forEach(cat => {
       updatedCategories[cat].count = 0;
     });
-    
+
     // Count questions in each category
-    loadedQuestions.forEach(q => {
+    questions.forEach(q => {
       if (updatedCategories[q.category]) {
         updatedCategories[q.category].count++;
       }
