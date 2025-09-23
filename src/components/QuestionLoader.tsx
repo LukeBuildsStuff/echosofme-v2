@@ -317,7 +317,7 @@ const useQuestionLoader = () => {
   const getMorningQuestion = (): Question | null => {
     // Don't generate any question until auth state is known
     if (user === undefined) {
-      console.log('⏳ Waiting for auth state to load before generating morning question...');
+      console.log('⏳ getMorningQuestion: Waiting for auth state to load...');
       return null;
     }
 
@@ -404,7 +404,7 @@ const useQuestionLoader = () => {
   const getAfternoonQuestion = (): Question | null => {
     // Don't generate any question until auth state is known
     if (user === undefined) {
-      console.log('⏳ Waiting for auth state to load before generating afternoon question...');
+      console.log('⏳ getAfternoonQuestion: Waiting for auth state to load...');
       return null;
     }
 

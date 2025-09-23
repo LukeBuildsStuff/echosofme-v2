@@ -116,9 +116,15 @@ const EnhancedReflections: React.FC = () => {
   };
 
   useEffect(() => {
+    // Don't initialize questions until auth state is fully loaded (user !== undefined)
+    if (user === undefined) {
+      console.log('⏳ Waiting for auth state to load before initializing questions...');
+      return;
+    }
+
     const period = getCurrentReflectionPeriod();
     setCurrentPeriod(period);
-    
+
     if (viewMode === 'daily') {
       // Check reflection availability and load appropriate question
       if (period === 'morning' && !hasCompletedMorningReflection()) {
@@ -143,7 +149,7 @@ const EnhancedReflections: React.FC = () => {
         setReflectionState('waiting');
       }
     }
-  }, [viewMode, getCurrentReflectionPeriod, hasCompletedMorningReflection, hasCompletedAfternoonReflection, getMorningQuestion, getAfternoonQuestion]);
+  }, [user, viewMode, getCurrentReflectionPeriod, hasCompletedMorningReflection, hasCompletedAfternoonReflection, getMorningQuestion, getAfternoonQuestion]);
 
   // Draft recovery on component mount
   useEffect(() => {

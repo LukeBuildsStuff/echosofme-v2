@@ -20,9 +20,10 @@ export default function Dashboard() {
 
   // Memoize daily question to prevent re-calculation on every render
   const dailyQuestion = useMemo(() => {
-    if (!user) return null; // Wait for user to load to prevent seed changes
+    // Don't generate questions until auth state is fully loaded (user !== undefined)
+    if (user === undefined) return null; // Still loading auth state
     return period === 'afternoon' ? getAfternoonQuestion() : getMorningQuestion();
-  }, [period, user?.email, getMorningQuestion, getAfternoonQuestion])
+  }, [period, user, getMorningQuestion, getAfternoonQuestion])
 
   return (
     <Layout hideFooter={true}>
