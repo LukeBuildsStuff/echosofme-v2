@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
@@ -5,16 +6,23 @@ import Layout from '../components/Layout/Layout'
 import TrainingProgress from '../components/TrainingProgress'
 import RecentReflections from '../components/RecentReflections'
 import { useEcho } from '../contexts/EchoContext'
+import { useAuth } from '../contexts/SupabaseAuthContext'
 import useQuestionLoader from '../components/QuestionLoader'
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { stats, isStatsLoading } = useEcho()
   const { getMorningQuestion, getAfternoonQuestion, getCurrentReflectionPeriod } = useQuestionLoader()
-  
+
   // Use the same time-aware logic as EnhancedReflections
   const period = getCurrentReflectionPeriod()
-  const dailyQuestion = period === 'afternoon' ? getAfternoonQuestion() : getMorningQuestion()
+
+  // Memoize daily question to prevent re-calculation on every render
+  const dailyQuestion = useMemo(() => {
+    if (!user) return null; // Wait for user to load to prevent seed changes
+    return period === 'afternoon' ? getAfternoonQuestion() : getMorningQuestion();
+  }, [period, user?.email, getMorningQuestion, getAfternoonQuestion])
 
   return (
     <Layout hideFooter={true}>
