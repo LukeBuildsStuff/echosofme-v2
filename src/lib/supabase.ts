@@ -600,6 +600,64 @@ export const api = {
     }
   },
 
+  // Ensure user_profiles row exists for the user
+  async ensureUserProfileExists() {
+    const user = await this.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const userId = Number(user.id)
+    if (isNaN(userId)) {
+      throw new Error('Invalid user ID format')
+    }
+
+    try {
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('user_id', userId)
+        .single()
+
+      if (existingProfile) {
+        console.log('✅ User profile already exists for user:', userId)
+        return { exists: true }
+      }
+    } catch (error: any) {
+      if (error.code !== 'PGRST116') {
+        // Not a "no rows" error, something else went wrong
+        console.error('❌ Error checking if profile exists:', error)
+        throw error
+      }
+    }
+
+    // Profile doesn't exist, create it
+    console.log('📝 Creating user profile for user:', userId)
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: userId,
+          display_name: user.name || user.email?.split('@')[0] || '',
+          relationship: 'Friendly',
+          meeting_status: 'First time meeting',
+          introduction: '',
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ Failed to create user profile:', error)
+        throw error
+      }
+
+      console.log('✅ User profile created:', data)
+      return { exists: false, created: data }
+    } catch (error) {
+      console.error('❌ Error creating user profile:', error)
+      throw error
+    }
+  },
+
   async updateUserProfile(updates: Partial<Database['public']['Tables']['user_profiles']['Insert']>) {
     const user = await this.getCurrentUser()
     if (!user) throw new Error('User not authenticated')
@@ -613,6 +671,9 @@ export const api = {
     console.log('💾 Profile update payload:', updates)
 
     try {
+      // CRITICAL: Ensure user_profiles row exists before update
+      await this.ensureUserProfileExists()
+
       const payload = { user_id: userId, ...updates }
       console.log('💾 Final database payload:', payload)
 
