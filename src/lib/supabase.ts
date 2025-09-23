@@ -583,11 +583,35 @@ export const api = {
     const user = await this.getCurrentUser()
     if (!user) throw new Error('User not authenticated')
 
-    return await supabase
-      .from('user_profiles')
-      .upsert({ user_id: user.id, ...updates })
-      .select()
-      .single()
+    const userId = Number(user.id)
+    if (isNaN(userId)) {
+      throw new Error('Invalid user ID format')
+    }
+
+    console.log('🔄 Updating user profile for user ID:', userId)
+    console.log('💾 Profile update payload:', updates)
+
+    try {
+      const payload = { user_id: userId, ...updates }
+      console.log('💾 Final database payload:', payload)
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .upsert(payload)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ Profile update failed:', error)
+        throw error
+      }
+
+      console.log('✅ Profile update successful:', data)
+      return { data, error: null }
+    } catch (error) {
+      console.error('❌ Profile update error:', error)
+      throw error
+    }
   },
 
   // Password management

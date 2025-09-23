@@ -34,24 +34,24 @@ const Settings: React.FC = () => {
           // After sync, the user object should be updated, but we need to wait for the next render
           // So we'll set a small delay to ensure the user object has been updated
           setTimeout(() => {
-            setProfileSettings({
+            const loadedProfile = {
               displayName: user.displayName || '',
               bio: user.profile?.introduction || '',
-            });
+            };
+            setProfileSettings(loadedProfile);
             setProfileInitialized(true);
-            console.log('✅ Settings: Profile data loaded:', { 
-              displayName: user.displayName, 
-              bio: user.profile?.introduction 
-            });
+            console.log('✅ Settings: Profile data loaded:', loadedProfile);
           }, 100);
         } catch (error) {
           console.error('⚠️ Settings: Profile sync failed, using cached data:', error);
           // Fallback to cached user data if sync fails
-          setProfileSettings({
+          const fallbackProfile = {
             displayName: user.displayName || '',
             bio: user.profile?.introduction || '',
-          });
+          };
+          setProfileSettings(fallbackProfile);
           setProfileInitialized(true);
+          console.log('📋 Settings: Using fallback profile data:', fallbackProfile);
         }
       }
     };
@@ -65,14 +65,12 @@ const Settings: React.FC = () => {
   // Update profile settings when user object changes after sync
   useEffect(() => {
     if (user && profileInitialized) {
-      setProfileSettings({
+      const updatedProfile = {
         displayName: user.displayName || '',
         bio: user.profile?.introduction || '',
-      });
-      console.log('📱 Settings: Updated profile settings from user context:', { 
-        displayName: user.displayName, 
-        bio: user.profile?.introduction 
-      });
+      };
+      setProfileSettings(updatedProfile);
+      console.log('📱 Settings: Updated profile settings from user context:', updatedProfile);
     }
   }, [user?.displayName, user?.profile?.introduction, profileInitialized]);
 
@@ -95,15 +93,21 @@ const Settings: React.FC = () => {
 
   const handleSaveProfile = async () => {
     try {
-      // Use the new updateProfile method that handles database sync
+      console.log('🔄 Settings: Saving profile data:', {
+        displayName: profileSettings.displayName,
+        introduction: profileSettings.bio
+      });
+
+      // Use the updateProfile method with proper field mapping
       await updateProfile({
         displayName: profileSettings.displayName,
         introduction: profileSettings.bio,
       });
-      
+
       showSuccess('Profile Updated', 'Your profile settings have been saved and synced across devices.');
+      console.log('✅ Settings: Profile save successful');
     } catch (error) {
-      console.error('Profile update failed:', error);
+      console.error('❌ Settings: Profile update failed:', error);
       showError('Save Failed', 'There was an error saving your profile. Please try again.');
     }
   };

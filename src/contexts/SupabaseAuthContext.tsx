@@ -5,11 +5,11 @@ import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 interface User {
   id: string;
   email: string;
-  displayName: string;
+  displayName: string; // Keep at root level for backward compatibility
   provider?: 'email' | 'google';
   isAdmin?: boolean;
   profile: {
-    displayName: string;
+    displayName: string; // Also in profile for database sync
     relationship: string;
     meetingStatus: string;
     purpose: string;
@@ -161,7 +161,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
 
       setUser(user);
-      console.log('✅ User profile loaded:', user.displayName, 'ID:', user.id);
+      console.log('✅ User profile loaded:', {
+        displayName: user.displayName,
+        introduction: user.profile.introduction,
+        id: user.id
+      });
     } catch (error) {
       console.error('Error loading user with profile:', error);
     }
@@ -217,21 +221,51 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
+      console.log('🔄 Updating profile with data:', profileData);
+
+      // Transform field names for database (camelCase to snake_case)
+      const dbProfileData: any = {};
+
+      // Handle displayName mapping
+      if (profileData.displayName !== undefined) {
+        dbProfileData.display_name = profileData.displayName;
+      }
+
+      // Handle introduction field
+      if (profileData.introduction !== undefined) {
+        dbProfileData.introduction = profileData.introduction;
+      }
+
+      // Handle other profile fields
+      if (profileData.relationship !== undefined) {
+        dbProfileData.relationship = profileData.relationship;
+      }
+      if (profileData.meetingStatus !== undefined) {
+        dbProfileData.meeting_status = profileData.meetingStatus;
+      }
+      if (profileData.voiceId !== undefined) {
+        dbProfileData.voice_id = profileData.voiceId;
+      }
+
+      console.log('🔧 Transformed data for database:', dbProfileData);
+
       // Update user_profiles table
-      const { data } = await api.updateUserProfile(profileData);
+      const { data } = await api.updateUserProfile(dbProfileData);
 
       if (data) {
-        // Update local user state
-        const updatedUser: User = {
-          ...user,
-          profile: {
-            ...user.profile,
-            ...profileData,
-          }
-        };
+        console.log('📦 Database save response:', data);
 
-        setUser(updatedUser);
-        console.log('✅ Profile updated successfully');
+        // CRITICAL: Reload the complete profile from database to verify what was actually saved
+        console.log('🔄 Reloading profile from database to verify save...');
+
+        // Get fresh user data and reload profile
+        const freshUserData = await api.getCurrentUser();
+        if (freshUserData) {
+          await loadUserWithProfile(freshUserData);
+          console.log('✅ Profile updated and reloaded from database');
+        } else {
+          console.error('❌ Failed to reload user data after profile update');
+        }
       }
     } catch (error) {
       console.error('❌ Profile update failed:', error);
