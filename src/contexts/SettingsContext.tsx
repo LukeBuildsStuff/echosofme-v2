@@ -1,17 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { useAuth } from './SupabaseAuthContext';
 import { api } from '../lib/supabase';
 import { useToast } from './ToastContext';
-
-// Safe JSON parser to prevent crashes on invalid data
-const safeJSONParse = <T,>(str: string | null, defaultValue: T): T => {
-  if (!str) return defaultValue;
-  try {
-    return JSON.parse(str);
-  } catch {
-    return defaultValue;
-  }
-};
 
 export interface SettingsData {
   theme: 'light' | 'dark' | 'auto';
@@ -20,12 +10,13 @@ export interface SettingsData {
   streakNotifications: boolean;
   emailUpdates: boolean;
   eleanorInitiates: boolean;
+  updated_at?: number;
 }
 
 interface SettingsContextType {
   settings: SettingsData;
-  updateSetting: <K extends keyof SettingsData>(key: K, value: SettingsData[K]) => Promise<void>;
-  resetSettings: () => Promise<void>;
+  updateSetting: <K extends keyof SettingsData>(key: K, value: SettingsData[K]) => void;
+  resetSettings: () => void;
   isLoading: boolean;
 }
 
@@ -36,6 +27,7 @@ const defaultSettings: SettingsData = {
   streakNotifications: true,
   emailUpdates: true,
   eleanorInitiates: true,
+  updated_at: Date.now(),
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -57,293 +49,174 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
   const { showSuccess, showError } = useToast();
   const [settings, setSettings] = useState<SettingsData>(defaultSettings);
   const [isLoading, setIsLoading] = useState(false);
+  const syncTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Load settings when user changes - try database first, then localStorage
-  useEffect(() => {
-    const loadSettings = async () => {
-      if (isLoading) {
-        console.log('⏳ Settings already loading, skipping duplicate request');
-        return; // Prevent concurrent executions
-      }
+  // Get user-specific localStorage key
+  const getStorageKey = () => {
+    const email = user?.email || localStorage.getItem('last_user_email');
+    return email ? `echos_settings_${email.toLowerCase().trim()}` : 'echos_settings_default';
+  };
 
-      setIsLoading(true);
-      console.log('🔄 Starting settings load process...');
-
-      let targetUserEmail = user?.email;
-
-      if (!targetUserEmail) {
-        // No user logged in, try to get last logged-in user's settings from localStorage
-        const lastUser = localStorage.getItem('last_user_email');
-        if (lastUser) {
-          targetUserEmail = lastUser;
-          console.log('📱 Loading offline settings for:', targetUserEmail);
-
-          // For non-authenticated users, only use localStorage
-          const userSpecificKey = `echos_settings_${targetUserEmail}`;
-          const savedSettings = localStorage.getItem(userSpecificKey);
-
-          if (savedSettings) {
-            const parsedSettings = safeJSONParse(savedSettings, {});
-            setSettings({ ...defaultSettings, ...parsedSettings });
-            console.log('✅ Loaded offline settings:', parsedSettings);
-          } else {
-            setSettings(defaultSettings);
-            console.log('📝 No offline settings found, using defaults');
-          }
-        } else {
-          setSettings(defaultSettings);
-          console.log('🆕 No previous user found, using defaults');
-        }
-        setIsLoading(false);
-        return;
-      }
-
-      // User is logged in, normalize email and remember them
-      targetUserEmail = targetUserEmail.toLowerCase().trim();
-      localStorage.setItem('last_user_email', targetUserEmail);
-      console.log('👤 Authenticated user detected:', targetUserEmail);
-
-      // Try to load settings from database (simplified - no retries)
-      try {
-        console.log('🔄 Loading settings from database...');
-
-        const databaseSettings = await api.getUserSettings();
-
-        if (databaseSettings !== null) {
-          // Database returned settings (could be empty object for new user)
-          console.log('✅ Loaded settings from database:', databaseSettings);
-          const mergedSettings = { ...defaultSettings, ...databaseSettings };
-          setSettings(mergedSettings);
-
-          // Cache in localStorage for offline access
-          const userSpecificKey = `echos_settings_${targetUserEmail}`;
-          localStorage.setItem(userSpecificKey, JSON.stringify(mergedSettings));
-          setIsLoading(false);
-          return;
-        } else {
-          console.log('⚠️ Database returned null, using localStorage fallback...');
-        }
-
-        // Database error - check localStorage for fallback
-        const userSpecificKey = `echos_settings_${targetUserEmail}`;
-        const savedSettings = localStorage.getItem(userSpecificKey);
-
-        if (savedSettings) {
-          const parsedSettings = safeJSONParse(savedSettings, {});
-          const mergedSettings = { ...defaultSettings, ...parsedSettings };
-          setSettings(mergedSettings);
-          console.log('📱 Loaded settings from localStorage fallback');
-          setIsLoading(false);
-          return;
-        }
-
-        // No localStorage either - use defaults
-        console.log('🆕 No existing settings found, using defaults');
-        setSettings(defaultSettings);
-        setIsLoading(false);
-        return;
-
-      } catch (error) {
-        console.warn('⚠️ Database settings load failed:', error);
-
-        // Error loading from database - use localStorage fallback
-        const userSpecificKey = `echos_settings_${targetUserEmail}`;
-        const savedSettings = localStorage.getItem(userSpecificKey);
-
-        if (savedSettings) {
-          const parsedSettings = safeJSONParse(savedSettings, {});
-          setSettings({ ...defaultSettings, ...parsedSettings });
-          console.log('📱 Error fallback: Loaded settings from localStorage');
-        } else {
-          setSettings(defaultSettings);
-          console.log('📝 Error fallback: No localStorage settings, using defaults');
-        }
-        setIsLoading(false);
-      }
-    };
-
-    // Add a small delay to ensure auth context has stabilized
-    const timeoutId = setTimeout(loadSettings, 100);
-    return () => clearTimeout(timeoutId);
-  }, [user?.email, isLoading]);
-
-  // Apply theme to document
-  useEffect(() => {
-    const applyTheme = () => {
-      const root = document.documentElement;
-      
-      if (settings.theme === 'dark') {
-        root.classList.add('dark');
-      } else if (settings.theme === 'light') {
-        root.classList.remove('dark');
-      } else {
-        // Auto mode - follow system preference
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (systemDark) {
-          root.classList.add('dark');
-        } else {
-          root.classList.remove('dark');
-        }
-      }
-    };
-
-    applyTheme();
-
-    // Listen for system theme changes if auto mode is selected
-    if (settings.theme === 'auto') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = () => applyTheme();
-      mediaQuery.addEventListener('change', handleChange);
-      
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
-  }, [settings.theme]);
-
-  const updateSetting = async <K extends keyof SettingsData>(key: K, value: SettingsData[K]) => {
-    if (isLoading) {
-      console.warn('⚠️ Settings update skipped - still loading');
-      return;
-    }
-
-    console.log(`🔄 Updating setting: ${String(key)} = ${value}`);
-
-    const newSettings = { ...settings, [key]: value };
+  // Apply settings to UI immediately
+  const applySettings = (newSettings: SettingsData) => {
     setSettings(newSettings);
 
-    // Get fresh user data to ensure we have a valid user record
-    let currentUser;
-    try {
-      currentUser = await api.getCurrentUser();
-    } catch (userError) {
-      console.warn('⚠️ Could not get current user, falling back to cached user:', userError);
-      currentUser = user;
-    }
-
-    // Save to localStorage with user-specific key (immediate backup)
-    let emailToUse = currentUser?.email || user?.email;
-    if (!emailToUse) {
-      emailToUse = localStorage.getItem('last_user_email') || undefined;
-    }
-
-    if (emailToUse) {
-      // Normalize email for consistent key usage
-      const normalizedEmail = emailToUse.toLowerCase().trim();
-      const userSpecificKey = `echos_settings_${normalizedEmail}`;
-      localStorage.setItem(userSpecificKey, JSON.stringify(newSettings));
-      console.log('💾 Settings backed up to localStorage');
-
-      // If user is authenticated, also save to database
-      if (currentUser?.email) {
-        try {
-          console.log('💾 Saving settings to database...');
-          await api.updateUserSettings(newSettings);
-          console.log('✅ Settings saved to database successfully');
-
-          // Immediate verification - don't use setTimeout
-          try {
-            console.log('🔍 VERIFICATION: Checking what was saved...');
-            const verificationData = await api.getUserSettings();
-            console.log('🔍 VERIFICATION: Retrieved settings:', verificationData);
-
-            // Check if the key we just saved is actually there
-            if (verificationData && verificationData[key] === value) {
-              console.log(`✅ VERIFICATION: Setting ${String(key)} correctly saved as ${value}`);
-            } else {
-              console.error(`❌ VERIFICATION: Setting ${String(key)} not found or incorrect:`, {
-                expected: value,
-                actual: verificationData?.[key],
-                allSettings: verificationData
-              });
-              throw new Error(`Settings verification failed for ${String(key)}`);
-            }
-          } catch (verificationError) {
-            console.error('❌ Settings verification failed:', verificationError);
-            // Don't show error to user for verification failures - the save might have worked
-          }
-
-          showSuccess('Settings Saved', 'Your preferences have been saved and will sync across devices.');
-        } catch (error) {
-          console.error('❌ DETAILED ERROR - Failed to save settings to database:');
-          console.error('❌ Error object:', error);
-          console.error('❌ Error type:', typeof error);
-          console.error('❌ Error constructor:', error?.constructor?.name);
-          if (error instanceof Error) {
-            console.error('❌ Error message:', error.message);
-            console.error('❌ Error stack:', error.stack);
-          }
-          console.error('❌ Full error details:', JSON.stringify(error, null, 2));
-
-          // Show specific error message based on error type
-          let errorMessage = `Settings save failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
-          if (error instanceof Error) {
-            if (error.message.includes('User not authenticated')) {
-              errorMessage = 'Please log in again to sync your settings.';
-            } else if (error.message.includes('verification failed')) {
-              errorMessage = 'Settings may not have saved correctly. Please refresh and try again.';
-            } else if (error.message.includes('Invalid user ID')) {
-              errorMessage = 'Account error detected. Please log out and log back in.';
-            } else if (error.message.includes('upsert failed')) {
-              errorMessage = `Database error: ${error.message}`;
-            }
-          }
-
-          showError('Settings Save Failed', errorMessage);
-          // Settings still saved to localStorage, so functionality continues
-        }
-      } else {
-        console.log('📋 User not authenticated, settings only saved locally');
-      }
+    // Apply theme to document immediately
+    const root = document.documentElement;
+    if (newSettings.theme === 'dark') {
+      root.classList.add('dark');
+    } else if (newSettings.theme === 'light') {
+      root.classList.remove('dark');
     } else {
-      console.warn('⚠️ No email found for settings key - settings may not persist');
+      // Auto mode - follow system preference
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.toggle('dark', systemDark);
     }
   };
 
-  const resetSettings = async () => {
-    console.log('🔄 Resetting all settings to defaults');
-    setSettings(defaultSettings);
+  // Debounced sync to Supabase
+  const debouncedSync = (settingsToSync: SettingsData) => {
+    if (!user?.email) return; // Only sync for authenticated users
 
-    // Get fresh user data
-    let currentUser;
-    try {
-      currentUser = await api.getCurrentUser();
-    } catch (userError) {
-      console.warn('⚠️ Could not get current user for reset, using cached user:', userError);
-      currentUser = user;
+    // Clear existing timeout
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
     }
 
-    // Remove user-specific settings from localStorage
-    let emailToUse = currentUser?.email || user?.email;
-    if (!emailToUse) {
-      emailToUse = localStorage.getItem('last_user_email') || undefined;
-    }
+    // Set new timeout for background sync
+    syncTimeoutRef.current = setTimeout(async () => {
+      try {
+        await api.updateUserSettings(settingsToSync);
+        console.log('✅ Settings synced to cloud');
+      } catch (error) {
+        console.warn('⚠️ Background sync failed:', error);
+        // Silent fail - localStorage is source of truth
+      }
+    }, 1000);
+  };
 
-    if (emailToUse) {
-      // Normalize email for consistent key usage
-      const normalizedEmail = emailToUse.toLowerCase().trim();
-      const userSpecificKey = `echos_settings_${normalizedEmail}`;
-      localStorage.removeItem(userSpecificKey);
-      console.log('📱 Removed settings from localStorage');
+  // Load settings on app start
+  useEffect(() => {
+    const loadSettings = async () => {
+      setIsLoading(true);
 
-      // If user is authenticated, also reset database settings
-      if (currentUser?.email) {
+      // 1. Load local settings immediately for instant UI
+      const storageKey = getStorageKey();
+      const localSettingsStr = localStorage.getItem(storageKey);
+
+      if (localSettingsStr) {
         try {
-          await api.updateUserSettings(defaultSettings);
-          console.log('✅ Settings reset in database');
-          showSuccess('Settings Reset', 'All settings have been reset to their default values.');
+          const localSettings = JSON.parse(localSettingsStr);
+          const mergedLocal = { ...defaultSettings, ...localSettings };
+          applySettings(mergedLocal);
+          console.log('⚡ Local settings applied instantly');
         } catch (error) {
-          console.warn('⚠️ Failed to reset settings in database:', error);
-          showError('Reset Incomplete', 'Settings reset locally but may not have synced to cloud.');
+          console.warn('⚠️ Invalid local settings, using defaults');
+          applySettings(defaultSettings);
+        }
+      } else {
+        applySettings(defaultSettings);
+      }
+
+      // 2. Sync from cloud in background (non-blocking)
+      if (user?.email) {
+        try {
+          const cloudSettings = await api.getUserSettings();
+          if (cloudSettings) {
+            const mergedCloud = { ...defaultSettings, ...cloudSettings, updated_at: Date.now() };
+
+            // Only update if cloud settings are newer (simple conflict resolution)
+            const localTimestamp = localSettingsStr ?
+              JSON.parse(localSettingsStr).updated_at || 0 : 0;
+            const cloudTimestamp = cloudSettings.updated_at || 0;
+
+            if (cloudTimestamp > localTimestamp) {
+              applySettings(mergedCloud);
+              localStorage.setItem(storageKey, JSON.stringify(mergedCloud));
+              console.log('☁️ Cloud settings applied (newer than local)');
+            } else {
+              console.log('📱 Local settings kept (newer than cloud)');
+            }
+          }
+        } catch (error) {
+          console.warn('⚠️ Cloud sync failed, using local settings:', error);
+          // Silent fail - local settings already loaded
         }
       }
+
+      setIsLoading(false);
+    };
+
+    // Remember last user for offline access
+    if (user?.email) {
+      localStorage.setItem('last_user_email', user.email);
     }
 
-    // Also remove old generic settings if they exist
-    localStorage.removeItem('echos_settings');
-    console.log('📝 Cleanup: Removed old generic settings');
+    loadSettings();
+  }, [user?.email]);
+
+  // Listen for system theme changes in auto mode
+  useEffect(() => {
+    if (settings.theme !== 'auto') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      const root = document.documentElement;
+      root.classList.toggle('dark', mediaQuery.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [settings.theme]);
+
+  // Update setting - instant local, eventual cloud
+  const updateSetting = <K extends keyof SettingsData>(key: K, value: SettingsData[K]) => {
+    const newSettings = {
+      ...settings,
+      [key]: value,
+      updated_at: Date.now()
+    };
+
+    // 1. Instant UI update
+    applySettings(newSettings);
+
+    // 2. Save to localStorage immediately
+    const storageKey = getStorageKey();
+    localStorage.setItem(storageKey, JSON.stringify(newSettings));
+
+    // 3. Background sync to cloud (debounced)
+    debouncedSync(newSettings);
+
+    console.log(`⚡ Setting ${String(key)} updated instantly`);
+  };
+
+  // Reset settings
+  const resetSettings = () => {
+    const resetData = { ...defaultSettings, updated_at: Date.now() };
+
+    // 1. Instant UI update
+    applySettings(resetData);
+
+    // 2. Clear localStorage
+    const storageKey = getStorageKey();
+    localStorage.removeItem(storageKey);
+
+    // 3. Background sync to cloud
+    if (user?.email) {
+      debouncedSync(resetData);
+      showSuccess('Settings Reset', 'All settings reset to defaults');
+    }
+
+    console.log('🔄 Settings reset to defaults');
   };
 
   return (
-    <SettingsContext.Provider value={{ settings, updateSetting, resetSettings, isLoading }}>
+    <SettingsContext.Provider value={{
+      settings,
+      updateSetting,
+      resetSettings,
+      isLoading
+    }}>
       {children}
     </SettingsContext.Provider>
   );
