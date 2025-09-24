@@ -688,7 +688,10 @@ export const api = {
 
       const { data, error } = await supabase
         .from('user_profiles')
-        .upsert(payload)
+        .upsert(payload, {
+          onConflict: 'user_id',
+          ignoreDuplicates: false
+        })
         .select()
         .single()
 
