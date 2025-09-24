@@ -1,0 +1,1636 @@
+id,question,category,source
+1,"What's your earliest vivid memory, and why do you think it stuck with you?",personal_history,database_export
+2,Describe a childhood tradition that was special to your family.,personal_history,database_export
+3,"What did you want to be when you grew up, and how has that changed?",personal_history,database_export
+4,Tell me about a teacher who had a significant impact on you.,personal_history,database_export
+5,What was your favorite hiding spot as a child?,personal_history,database_export
+6,Describe the house or place where you felt most at home growing up.,personal_history,database_export
+7,What childhood fear did you have that seems silly now?,personal_history,database_export
+8,What's a lesson you learned the hard way as a kid?,personal_history,database_export
+9,Describe your relationship with your siblings or lack thereof.,personal_history,database_export
+10,What was your favorite family vacation or trip?,personal_history,database_export
+11,Describe a moment when you realized you had grown up.,personal_history,database_export
+12,"What's the biggest risk you've ever taken, and how did it turn out?",personal_history,database_export
+13,Tell me about a time when you were completely wrong about someone.,personal_history,database_export
+14,What's a mistake you made that you're actually grateful for?,personal_history,database_export
+15,Describe a moment when you felt truly proud of yourself.,personal_history,database_export
+16,What's the hardest decision you've ever had to make?,personal_history,database_export
+17,Tell me about a time when you stood up for something you believed in.,personal_history,database_export
+18,What's an experience that completely changed your perspective?,personal_history,database_export
+19,Describe a moment when you felt like giving up but didn't.,personal_history,database_export
+20,What's the most important thing someone has ever said to you?,personal_history,database_export
+21,What do you believe is the purpose of human existence?,philosophy_values,database_export
+22,"How do you define success, and has that definition changed over time?",philosophy_values,database_export
+23,What role does spirituality or religion play in your life?,philosophy_values,database_export
+24,What do you think happens after we die?,philosophy_values,database_export
+25,Is it more important to be liked or respected? Why?,philosophy_values,database_export
+26,Do you believe people are fundamentally good or bad?,philosophy_values,database_export
+27,What's your philosophy on forgiveness?,philosophy_values,database_export
+28,How do you determine what's right and wrong?,philosophy_values,database_export
+29,What do you think is humanity's greatest strength and weakness?,philosophy_values,database_export
+30,"If you could only pass down one piece of wisdom, what would it be?",philosophy_values,database_export
+31,Is it ever okay to lie? Under what circumstances?,philosophy_values,database_export
+32,How do you handle moral dilemmas where there's no clear right answer?,philosophy_values,database_export
+33,What's more important: individual freedom or collective good?,philosophy_values,database_export
+34,Do you believe in karma or that the universe is inherently fair?,philosophy_values,database_export
+35,How do you deal with people whose values fundamentally oppose yours?,philosophy_values,database_export
+36,What's a moral stance you've changed your mind about?,philosophy_values,database_export
+37,Is it possible to separate the art from the artist?,philosophy_values,database_export
+38,How do you balance being true to yourself with fitting into society?,philosophy_values,database_export
+39,What responsibility do wealthy people have to help others?,philosophy_values,database_export
+40,Should we judge historical figures by today's moral standards?,philosophy_values,database_export
+41,Describe your ideal morning routine.,daily_life,database_export
+42,What's a daily habit you have that others might find odd?,daily_life,database_export
+43,How do you typically spend your Sunday afternoons?,daily_life,database_export
+44,What's your go-to comfort food and when do you eat it?,daily_life,database_export
+45,Describe your workspace and why you've set it up that way.,daily_life,database_export
+46,What's your bedtime routine like?,daily_life,database_export
+47,How do you prefer to exercise or stay active?,daily_life,database_export
+48,What's your typical approach to grocery shopping?,daily_life,database_export
+49,How do you organize your living space?,daily_life,database_export
+50,What's a small daily ritual that brings you joy?,daily_life,database_export
+51,How do you make decisions when you're feeling overwhelmed?,daily_life,database_export
+52,What's your process for choosing what to wear each day?,daily_life,database_export
+53,How do you decide what to watch on TV or streaming services?,daily_life,database_export
+54,What factors do you consider when choosing where to eat?,daily_life,database_export
+55,How do you prioritize your tasks when everything feels urgent?,daily_life,database_export
+56,What's your approach to spending money on non-essentials?,daily_life,database_export
+57,How do you choose which social events or invitations to accept?,daily_life,database_export
+58,What's your strategy for dealing with interruptions?,daily_life,database_export
+59,How do you decide when to help others versus focusing on yourself?,daily_life,database_export
+60,What's your approach to trying new things?,daily_life,database_export
+61,What motivates you most in your work?,career,database_export
+62,Describe your ideal work environment.,career,database_export
+63,How do you handle workplace conflict?,career,database_export
+64,What's the best career advice you've ever received?,career,database_export
+65,How do you balance ambition with contentment?,professional,database_export
+67,How do you handle feedback and criticism at work?,professional,database_export
+68,What skills do you think will be most important in the future?,professional,database_export
+70,What's your philosophy on work-life balance?,professional,database_export
+71,"What's your leadership style, and how has it evolved?",professional,database_export
+72,How do you motivate team members who are struggling?,career,database_export
+74,How do you make difficult decisions that affect others?,career,database_export
+75,What's your approach to giving constructive feedback?,professional,database_export
+76,How do you handle disagreements with your boss or authority figures?,professional,database_export
+77,What qualities do you look for when hiring someone?,professional,database_export
+79,What's your strategy for managing up?,career,database_export
+81,How do you maintain long-distance friendships?,relationships,database_export
+88,What's the most important thing you've learned about friendship?,relationships,database_export
+89,How do you handle jealousy in relationships?,relationships,database_export
+90,What role do you typically play in your friend group?,relationships,database_export
+91,What does love mean to you?,relationships,database_export
+92,How do you handle disagreements in romantic relationships?,relationships,database_export
+93,What's your approach to compromise in partnerships?,relationships,database_export
+94,How do you maintain your individuality while in a relationship?,relationships,database_export
+95,What are your non-negotiables in a romantic partner?,relationships,database_export
+96,"How do you show affection, and how do you like to receive it?",relationships,database_export
+98,How do you handle attraction to others while in a relationship?,relationships,database_export
+100,How do you know when a relationship isn't working?,relationships,database_export
+101,What form of creative expression speaks to you most?,hobbies,database_export
+105,"If you could master any artistic skill, what would it be?",creative_expression,database_export
+106,How do you express yourself when words aren't enough?,hobbies,database_export
+107,What's a creative project you've always wanted to try?,hobbies,database_export
+111,"How do you prefer to tell stories - verbally, in writing, or through other means?",hobbies,database_export
+113,How do you adapt your communication style for different audiences?,hobbies,database_export
+114,What's your approach to difficult conversations?,creative_expression,database_export
+119,How do you express disagreement respectfully?,hobbies,database_export
+121,"If you could save five lives by sacrificing one, would you do it?",hypotheticals,database_export
+122,"Would you rather be feared or loved, and why?",hypotheticals,database_export
+123,"If you found a wallet with $500 and no ID, what would you do?",hypotheticals,database_export
+124,Would you take a job you hate for twice your current salary?,hypotheticals,database_export
+125,"If you could know the date of your death, would you want to?",hypotheticals,database_export
+126,Would you report a friend for doing something illegal but harmless?,hypotheticals,database_export
+127,"If you could eliminate one human emotion, which would it be?",hypotheticals,database_export
+128,Would you rather live in a world without music or without books?,hypotheticals,database_export
+129,"If everyone's thoughts were public, how would the world change?",hypotheticals,database_export
+130,Would you sacrifice your happiness for your family's wellbeing?,hypotheticals,database_export
+131,"If you could live in any time period, when would you choose?",hypotheticals,database_export
+132,What superpower would you choose and how would you use it?,hypotheticals,database_export
+133,"If you could have dinner with any three people, living or dead, who would they be?",hypotheticals,database_export
+134,What would you do if money was no object?,hypotheticals,database_export
+135,"If you could change one thing about the world, what would it be?",hypotheticals,database_export
+136,How do you think technology will change human relationships in 50 years?,hypotheticals,database_export
+137,"If you could master any skill instantly, what would it be?",hypotheticals,database_export
+138,What do you think your life would be like if you'd made one different major decision?,hypotheticals,database_export
+139,"If you had to choose one sense to lose, which would it be?",hypotheticals,database_export
+140,What legacy do you want to leave behind?,hypotheticals,database_export
+141,How has your cultural background shaped who you are?,personal_history,database_export
+142,What traditions from your family do you want to continue or change?,personal_history,database_export
+143,How do you navigate between different cultural expectations?,personal_history,database_export
+144,What aspects of your identity are most important to you?,personal_history,database_export
+145,How do you handle situations where you feel like an outsider?,personal_history,database_export
+146,What cultural foods or customs make you feel most at home?,personal_history,database_export
+147,How has your sense of identity evolved over time?,personal_history,database_export
+148,What stereotypes about your background frustrate you most?,personal_history,database_export
+149,How do you celebrate your heritage?,personal_history,database_export
+150,What's something about your culture you wish others understood better?,personal_history,database_export
+151,How has technology changed the way you live your daily life?,daily_life,database_export
+152,What's your relationship with social media?,daily_life,database_export
+153,How do you manage information overload in the digital age?,daily_life,database_export
+154,What's your approach to digital privacy?,daily_life,database_export
+155,How do you disconnect from technology when you need to?,daily_life,database_export
+156,What technology do you wish had never been invented?,daily_life,database_export
+157,How do you stay informed about current events?,daily_life,database_export
+158,What's your philosophy on screen time and digital wellness?,daily_life,database_export
+159,How has remote work or digital communication affected you?,daily_life,database_export
+160,What aspects of pre-internet life do you miss?,daily_life,database_export
+161,How do you handle change and uncertainty?,philosophy_values,database_export
+162,What's something you believed strongly when you were younger that you don't believe now?,philosophy_values,database_export
+163,How do you push yourself out of your comfort zone?,philosophy_values,database_export
+164,What's your approach to personal growth and self-improvement?,philosophy_values,database_export
+165,How do you handle failure and setbacks?,philosophy_values,database_export
+166,What patterns in your life would you like to break?,philosophy_values,database_export
+167,How do you measure personal progress?,philosophy_values,database_export
+168,What's the difference between who you are and who you want to be?,philosophy_values,database_export
+169,How do you stay curious and keep learning?,philosophy_values,database_export
+170,What advice would you give your younger self?,philosophy_values,database_export
+171,What is your most cherished childhood memory?,personal_history,database_export
+172,What life advice would you give to future generations?,philosophy_values,database_export
+173,Tell me about a time when you faced a significant challenge.,personal,database_export
+174,What traditions are most important to your family?,relationships,database_export
+175,What are you most proud of in your life?,personal_history,database_export
+248,What's the hardest part about managing people?,career,database_export
+255,How do you build trust within a team?,career,database_export
+260,How do you deal with family gatherings when there's tension?,relationships,database_export
+261,What's your philosophy on lending money to friends or family?,relationships,database_export
+272,What's your philosophy on marriage and long-term commitment?,relationships,database_export
+274,What's the best relationship advice you'd give to someone?,relationships,database_export
+278,How do you deal with creative blocks or lack of inspiration?,hobbies,database_export
+284,What's your opinion on separating art from the artist?,hobbies,database_export
+290,How do you use humor in your daily interactions?,hobbies,database_export
+295,What's your philosophy on social media and digital communication?,hobbies,database_export
+346,What was the most significant moment of transition in your adult life?,personal_history,database_export
+347,"How did you feel on your 18th birthday, and what did it represent to you?",personal_history,database_export
+348,"What was your biggest fear about growing up, and did it come true?",personal_history,database_export
+349,Describe a time when you felt like you had truly become an adult.,personal_history,database_export
+350,What milestone are you most proud of achieving in your life?,personal_history,database_export
+351,How has your definition of success changed over the years?,personal_history,database_export
+352,What was the hardest transition you have ever made?,personal_history,database_export
+353,"When did you first feel financially independent, and what did that mean to you?",personal_history,database_export
+354,What life event made you realize you were getting older?,personal_history,database_export
+355,How did you celebrate or mark important milestones in your life?,personal_history,database_export
+356,What transition in your life took longer than you expected?,personal_history,database_export
+357,When did you first feel like you had your life figured out?,personal_history,database_export
+358,What milestone do you wish you had celebrated more fully?,personal_history,database_export
+359,How did moving out of your childhood home change you?,personal_history,database_export
+360,What was the most unexpected turn your life has taken?,personal_history,database_export
+361,"When did you first feel like you were living your own life, not someone else''s vision?",personal_history,database_export
+362,What life phase do you miss most and why?,personal_history,database_export
+363,How did your first job change your perspective on life?,personal_history,database_export
+364,What milestone felt anticlimactic when you reached it?,personal_history,database_export
+365,When did you first feel like you belonged somewhere?,personal_history,database_export
+366,What life transition taught you the most about yourself?,personal_history,database_export
+367,How has your relationship with your parents changed as you''ve aged?,personal_history,database_export
+368,What was the first major decision you made entirely on your own?,personal_history,database_export
+369,When did you realize your childhood was truly over?,personal_history,database_export
+370,What life stage are you most looking forward to?,personal_history,database_export
+371,How did your first heartbreak change your view of love?,personal_history,database_export
+372,What was the most liberating moment of your adult life?,personal_history,database_export
+373,When did you first feel truly responsible for another person?,personal_history,database_export
+374,What milestone took more courage than you expected?,personal_history,database_export
+375,How did your first experience of independence feel?,personal_history,database_export
+376,What life transition made you appreciate what you had left behind?,personal_history,database_export
+377,When did you first feel like you were making a difference in the world?,personal_history,database_export
+378,What was the most significant birthday you''ve had and why?,personal_history,database_export
+379,How has your perspective on aging changed as you''ve gotten older?,personal_history,database_export
+380,What milestone are you still working toward?,personal_history,database_export
+381,When did you first feel like you had wisdom to share with others?,personal_history,database_export
+382,What life phase brought you the most personal growth?,personal_history,database_export
+383,How did your first major loss change your perspective on life?,personal_history,database_export
+384,What transition forced you to discover strength you didn''t know you had?,personal_history,database_export
+385,When did you first feel like you were exactly where you were supposed to be?,personal_history,database_export
+386,What life change initially scared you but ended up being wonderful?,personal_history,database_export
+387,How has your definition of home changed throughout your life?,personal_history,database_export
+388,What milestone made you feel most connected to previous generations?,personal_history,database_export
+389,When did you first feel like you were becoming the person you wanted to be?,personal_history,database_export
+390,What life transition taught you the most about resilience?,personal_history,database_export
+391,How did your priorities change after a major life event?,personal_history,database_export
+392,What milestone brought you closer to your true self?,personal_history,database_export
+393,When did you first feel like you had overcome a major challenge?,personal_history,database_export
+394,What life phase taught you the most about patience?,personal_history,database_export
+395,How has your relationship with time changed as you''ve experienced more of life?,personal_history,database_export
+398,What was the most romantic gesture you''ve ever experienced or witnessed?,relationships,database_export
+400,"What was your most significant relationship, and what did it teach you?",relationships,database_export
+401,How do you know when you''re in love versus just infatuated?,romantic_love,database_export
+402,What was the hardest part about your first serious breakup?,romantic_love,database_export
+403,What qualities do you value most in a romantic partner?,relationships,database_export
+404,How has your approach to relationships evolved with experience?,relationships,database_export
+405,What was the most important lesson you learned from a past relationship?,romantic_love,database_export
+406,Describe a time when love surprised you.,romantic_love,database_export
+411,How has your definition of soulmate changed over time?,relationships,database_export
+412,What was the most difficult conversation you''ve had in a relationship?,romantic_love,database_export
+413,How do you balance independence and togetherness in love?,romantic_love,database_export
+414,"What was your experience of love at first sight, if you''ve had one?",romantic_love,database_export
+415,How has technology changed the way people date and find love?,relationships,database_export
+416,What was the most meaningful gift you''ve given or received from a partner?,romantic_love,database_export
+418,What was your experience of long-distance love?,relationships,database_export
+421,How do you maintain individual identity while being part of a couple?,romantic_love,database_export
+422,What was your experience of loving someone who couldn''t love you back?,relationships,database_export
+423,How has your family background influenced your approach to love?,relationships,database_export
+424,What was the most passionate period of your life?,relationships,database_export
+425,How do you rebuild trust after it''s been broken in a relationship?,romantic_love,database_export
+426,What was your experience of falling out of love?,romantic_love,database_export
+427,How has your understanding of attraction evolved over time?,relationships,database_export
+433,How do you know when it''s time to let go of a relationship?,relationships,database_export
+434,What was your experience of second-chance love?,relationships,database_export
+437,How do you maintain romance in everyday life?,relationships,database_export
+438,What was your experience of unrequited love?,relationships,database_export
+439,How has your communication style in relationships evolved?,romantic_love,database_export
+440,What was the most unexpected way you''ve expressed love?,relationships,database_export
+442,What was your experience of love during difficult times?,relationships,database_export
+443,How has your understanding of intimacy deepened over time?,relationships,database_export
+444,What was the most healing relationship you''ve ever had?,romantic_love,database_export
+446,What was your experience of loving someone through their struggles?,relationships,database_export
+447,How has your definition of loyalty in relationships evolved?,romantic_love,database_export
+448,What was the most spontaneous romantic thing you''ve ever done?,romantic_love,database_export
+449,How do you maintain hope in love after heartbreak?,romantic_love,database_export
+451,How has your understanding of emotional intimacy grown?,romantic_love,database_export
+453,How do you show love to someone whose love language is different from yours?,romantic_love,database_export
+454,What was your experience of loving someone who was afraid of commitment?,romantic_love,database_export
+455,How has your capacity for forgiveness in love been tested?,romantic_love,database_export
+456,What was the most patient you''ve ever been for love?,romantic_love,database_export
+457,How do you maintain your sense of self while deeply in love?,romantic_love,database_export
+458,What was your experience of loving someone who challenged you to grow?,romantic_love,database_export
+459,How has your understanding of what makes a relationship last changed?,romantic_love,database_export
+460,What was the most courageous thing you''ve done for love?,romantic_love,database_export
+461,How do you handle the fear of losing someone you love?,romantic_love,database_export
+462,What was your experience of finding love later in life?,romantic_love,database_export
+463,How has your understanding of sexual intimacy evolved in relationships?,romantic_love,database_export
+464,What was the most unexpected place or way you found love?,romantic_love,database_export
+465,How do you nurture love during busy or stressful periods?,romantic_love,database_export
+466,What was your experience of loving someone your family didn''t approve of?,romantic_love,database_export
+467,How has your relationship with boundaries in love evolved?,romantic_love,database_export
+468,What was the most important thing you learned about yourself through love?,romantic_love,database_export
+469,How do you maintain individual dreams while building a life with someone?,romantic_love,database_export
+470,What was your experience of loving someone through addiction or illness?,romantic_love,database_export
+471,How has your understanding of what constitutes a healthy relationship changed?,romantic_love,database_export
+472,What was the most beautiful way you''ve seen love expressed?,romantic_love,database_export
+473,How do you handle loving someone who loves differently than you do?,romantic_love,database_export
+474,What was your experience of loving someone from your past who came back into your life?,romantic_love,database_export
+475,How has your understanding of commitment deepened over time?,romantic_love,database_export
+476,What was the most profound moment of connection you''ve experienced in love?,romantic_love,database_export
+477,How do you love someone who has been hurt badly in the past?,romantic_love,database_export
+478,What was your experience of falling in love with your best friend?,romantic_love,database_export
+479,How has your understanding of what you need in love changed?,romantic_love,database_export
+480,What was the most difficult truth you''ve had to accept about love?,romantic_love,database_export
+481,How do you maintain hope for love when you''ve been disappointed?,romantic_love,database_export
+482,What was your experience of loving someone who lived very differently than you?,romantic_love,database_export
+483,How has your capacity for emotional vulnerability grown in relationships?,romantic_love,database_export
+484,What was the most important lesson love has taught you about yourself?,romantic_love,database_export
+485,How do you love someone while maintaining your own emotional health?,romantic_love,database_export
+486,What was your experience of loving someone who wasn''t ready for the kind of love you offered?,romantic_love,database_export
+487,How has your understanding of the role of friendship in romantic love evolved?,romantic_love,database_export
+488,What was the most generous act of love you''ve witnessed or experienced?,romantic_love,database_export
+489,How do you handle the evolution and changes that naturally occur in long-term love?,romantic_love,database_export
+490,What was your experience of loving someone who helped you heal from past wounds?,romantic_love,database_export
+491,"How has your relationship with the concept of ""forever"" in love changed?",romantic_love,database_export
+492,What was the most profound way love has changed your perspective on life?,romantic_love,database_export
+493,How do you continue growing together while honoring individual growth in love?,romantic_love,database_export
+494,What was your experience of loving someone who loved you exactly as you are?,romantic_love,database_export
+495,How has love taught you about the depth of human connection and understanding?,romantic_love,database_export
+497,How has your relationship with your parents evolved as you''ve gotten older?,relationships,database_export
+498,What was your experience of becoming a parent for the first time?,relationships,database_export
+500,What family tradition means the most to you and why?,relationships,database_export
+501,How do you balance being an individual with being part of a family?,relationships,database_export
+502,What was the most challenging aspect of raising children?,family_parenting,database_export
+503,How has your definition of family changed throughout your life?,relationships,database_export
+504,What was your experience of caring for aging parents?,relationships,database_export
+505,How do you handle conflict within your family?,relationships,database_export
+506,What was the proudest moment you''ve had as a parent?,relationships,database_export
+507,How has your parenting style differed from your parents''?,family_parenting,database_export
+508,What was your experience of sibling relationships growing up?,relationships,database_export
+509,How do you maintain close family relationships across distance or time?,relationships,database_export
+510,What was the most difficult conversation you''ve had with a family member?,relationships,database_export
+511,How has becoming a parent changed your relationship with your own parents?,family_parenting,database_export
+512,What family pattern or cycle did you consciously choose to break?,relationships,database_export
+515,How has your understanding of unconditional love been shaped by family?,relationships,database_export
+516,What was the most important value you wanted to pass on to your children?,relationships,database_export
+518,What was your experience of being the primary caregiver in your family?,relationships,database_export
+520,What was the most meaningful family moment you''ve experienced?,relationships,database_export
+521,How do you maintain family connections while respecting everyone''s autonomy?,relationships,database_export
+522,What was your experience of having children at different stages of your life?,family_parenting,database_export
+523,How has your family helped shape your values and beliefs?,relationships,database_export
+524,What was the most challenging family decision you''ve had to make?,relationships,database_export
+526,What was your experience of watching your children become independent adults?,relationships,database_export
+530,What was your experience of being a single parent?,relationships,database_export
+531,How has your family''s cultural background influenced your parenting?,family_parenting,database_export
+532,What was the most difficult phase of your child''s development to navigate?,relationships,database_export
+533,How do you balance your needs with your family''s needs?,relationships,database_export
+535,How has your understanding of what makes a healthy family evolved?,relationships,database_export
+536,What was the most rewarding aspect of raising children?,relationships,database_export
+537,How do you help your children develop their own identity while staying connected?,family_parenting,database_export
+539,How has your family taught you about forgiveness and second chances?,relationships,database_export
+540,What was the most important thing you learned from a family mistake?,relationships,database_export
+541,How do you handle the changing dynamics as your family grows and evolves?,family_parenting,database_export
+542,What was your experience of family loyalty and its limits?,relationships,database_export
+543,How has your family influenced your approach to relationships outside the family?,relationships,database_export
+544,What was the most profound lesson your child taught you?,relationships,database_export
+546,What was your experience of family during major life transitions?,relationships,database_export
+548,What was the most difficult family secret or truth you''ve had to handle?,relationships,database_export
+549,How do you help your family members through their individual struggles?,relationships,database_export
+550,What was your experience of creating chosen family or non-traditional family structures?,family_parenting,database_export
+551,How has your family shaped your understanding of love and commitment?,relationships,database_export
+555,How has your family taught you about communication and emotional expression?,relationships,database_export
+556,What was the most healing family experience you''ve had?,family_parenting,database_export
+558,What was your experience of family celebrations and gatherings?,relationships,database_export
+559,How has your family influenced your career and life choices?,relationships,database_export
+560,What was the most important family conversation you''ve ever had?,relationships,database_export
+563,How has your family taught you about strength and vulnerability?,relationships,database_export
+565,How do you create emotional safety within your family?,relationships,database_export
+566,What was your experience of family during economic hardship?,family_parenting,database_export
+568,What was the most joyful family surprise or unexpected moment?,relationships,database_export
+569,How do you help family members pursue their dreams while staying connected?,relationships,database_export
+570,What was your experience of family dynamics during your young adult years?,relationships,database_export
+571,How has your family taught you about the importance of presence and attention?,family_parenting,database_export
+572,What was the most important family ritual or routine in your household?,relationships,database_export
+574,What was your experience of family conflict and resolution?,family_parenting,database_export
+575,How has your family influenced your spiritual or philosophical beliefs?,relationships,database_export
+576,What was the most profound way your family has supported you through difficulty?,relationships,database_export
+578,What was your experience of family during major holidays or special occasions?,relationships,database_export
+579,How has your family taught you about the balance between togetherness and independence?,relationships,database_export
+580,What was the most important promise you''ve made to your family?,relationships,database_export
+581,How do you handle family expectations about your life choices?,relationships,database_export
+583,How has your family shaped your understanding of what home means?,family_parenting,database_export
+584,What was the most challenging family dynamic you''ve had to navigate?,relationships,database_export
+585,How do you create lasting memories with your family?,relationships,database_export
+587,How has your family taught you about the importance of history and legacy?,relationships,database_export
+588,What was the most unexpected lesson you learned from a family experience?,relationships,database_export
+589,How do you help your family grow and evolve together over time?,relationships,database_export
+590,What was your experience of family during times of celebration and joy?,relationships,database_export
+591,How has your family influenced your understanding of commitment and loyalty?,relationships,database_export
+592,What was the most important family decision that involved everyone''s input?,family_parenting,database_export
+594,What was your experience of family love during times of disagreement or conflict?,relationships,database_export
+597,How has your understanding of friendship evolved as you''ve gotten older?,relationships,database_export
+599,How do you maintain long-distance friendships over time?,relationships,database_export
+601,How has social media changed the nature of friendship in your experience?,relationships,database_export
+602,What qualities do you value most in a close friend?,relationships,database_export
+603,How do you balance multiple friendships without neglecting any?,relationships,database_export
+605,How has your social circle changed throughout different life phases?,relationships,database_export
+606,What was the most meaningful act of friendship you''ve witnessed or experienced?,relationships,database_export
+607,How do you handle conflict within your friend group?,friendships_social,database_export
+611,How do you maintain friendships while going through major life changes?,relationships,database_export
+612,What was your experience of friendship during your teenage years?,relationships,database_export
+613,How has your definition of loyalty in friendship evolved?,friendships_social,database_export
+614,What was the most challenging period for your social relationships?,relationships,database_export
+617,How has your approach to making new friends changed over the years?,relationships,database_export
+618,What was the most profound conversation you''ve had with a friend?,friendships_social,database_export
+619,How do you balance being a good friend while maintaining your own boundaries?,relationships,database_export
+620,What was your experience of reconnecting with old friends after years apart?,relationships,database_export
+622,What was the most generous thing you''ve done for a friend?,relationships,database_export
+623,How do you handle jealousy or competition within friendships?,relationships,database_export
+625,How has your social anxiety or confidence affected your friendships?,friendships_social,database_export
+627,How do you maintain authenticity in your friendships?,relationships,database_export
+628,What was your experience of group dynamics and friend circles?,relationships,database_export
+630,What was the most difficult truth a friend ever told you?,relationships,database_export
+632,What was your experience of friendship during major life transitions?,relationships,database_export
+635,How do you show up for friends during their celebrations and successes?,friendships_social,database_export
+638,What was the most adventurous or spontaneous thing you''ve done with friends?,relationships,database_export
+640,What was your experience of friendship during times of personal crisis?,relationships,database_export
+641,How has your capacity for vulnerable sharing in friendship grown?,friendships_social,database_export
+642,What was the most important lesson you learned from losing a friend?,relationships,database_export
+643,How do you balance your romantic relationships with your friendships?,relationships,database_export
+644,What was your experience of friendship within hobby or interest-based communities?,friendships_social,database_export
+645,How has your understanding of what it means to be a good friend evolved?,relationships,database_export
+647,How do you handle the natural ebb and flow of friendship intensity?,relationships,database_export
+648,What was your experience of mentorship within friendship relationships?,relationships,database_export
+649,How has your approach to conflict resolution in friendship changed?,relationships,database_export
+651,How do you maintain connection with friends who have very different lifestyles?,relationships,database_export
+653,How has your understanding of trust in friendship been tested and strengthened?,relationships,database_export
+654,What was the most patient you''ve ever been with a friend?,relationships,database_export
+655,How do you create and maintain meaningful traditions with your friends?,relationships,database_export
+656,What was your experience of friendship jealousy and how did you handle it?,relationships,database_export
+657,How has your social energy and capacity for friendship changed over time?,friendships_social,database_export
+658,What was the most profound way a friend has influenced your life perspective?,friendships_social,database_export
+659,How do you handle friends who consistently make choices you disagree with?,relationships,database_export
+660,What was your experience of friendship during your college or young adult years?,relationships,database_export
+661,How has your relationship with social comparison affected your friendships?,relationships,database_export
+663,How do you balance honesty and kindness when friends ask for your opinion?,relationships,database_export
+664,What was your experience of friendship during times of celebration and joy?,relationships,database_export
+665,How has your understanding of personal space and boundaries in friendship evolved?,relationships,database_export
+667,How do you handle the disappointment of unmet expectations in friendship?,friendships_social,database_export
+668,What was your experience of friendship across significant age differences?,relationships,database_export
+669,How has your capacity for forgiveness been tested and developed through friendship?,relationships,database_export
+671,How do you maintain your individual identity within close friendship groups?,relationships,database_export
+673,How has your understanding of emotional intimacy in platonic relationships grown?,relationships,database_export
+676,What was your experience of friendship during your parenting years?,friendships_social,database_export
+677,How has your relationship with vulnerability and openness in friendship changed?,relationships,database_export
+678,What was the most important boundary you''ve had to establish with a friend?,relationships,database_export
+679,How do you handle the evolution of friendship roles and dynamics over time?,relationships,database_export
+681,How has your understanding of what it means to be present for friends evolved?,relationships,database_export
+682,What was the most creative or unique way you''ve maintained a friendship?,relationships,database_export
+683,How do you balance giving advice with simply listening in your friendships?,relationships,database_export
+684,What was your experience of friendship during your career development years?,relationships,database_export
+685,How has your capacity for celebrating friends'' successes grown over time?,friendships_social,database_export
+687,How do you create space for new friendships while honoring existing ones?,relationships,database_export
+688,What was your experience of friendship within spiritual or philosophical communities?,relationships,database_export
+689,How has your understanding of the role of fun and play in friendship evolved?,friendships_social,database_export
+690,What was the most important lesson about human nature you''ve learned through friendship?,relationships,database_export
+691,How do you handle friends who are going through major life crises?,relationships,database_export
+692,What was your experience of friendship during times of personal uncertainty?,relationships,database_export
+693,How has your relationship with commitment and consistency in friendship developed?,friendships_social,database_export
+694,What was the most unexpected source of friendship support you''ve experienced?,friendships_social,database_export
+695,How has friendship taught you about the complexity and beauty of human connection?,friendships_social,database_export
+698,What was the most challenging period in your marriage and how did you navigate it?,marriage_partnerships,database_export
+699,How do you maintain intimacy and connection in a long-term partnership?,relationships,database_export
+700,What was your wedding day like and what did it represent to you?,marriage_partnerships,database_export
+701,How has your understanding of commitment deepened through marriage?,marriage_partnerships,database_export
+702,What was the most important compromise you''ve made in your partnership?,relationships,database_export
+703,How do you handle financial decisions and money management as a couple?,marriage_partnerships,database_export
+704,What was your experience of the transition from dating to marriage?,relationships,database_export
+705,How has your partnership changed after having children?,marriage_partnerships,database_export
+706,What was the most romantic period in your marriage or partnership?,marriage_partnerships,database_export
+707,How do you maintain individual identity while being part of a committed couple?,relationships,database_export
+708,What was your experience of marriage counseling or relationship therapy?,marriage_partnerships,database_export
+710,What was the biggest surprise about married life that you didn''t expect?,marriage_partnerships,database_export
+711,How do you handle conflict and disagreement in your partnership?,marriage_partnerships,database_export
+712,What was your experience of renewing your vows or recommitting to your partner?,marriage_partnerships,database_export
+713,How has your partnership weathered major life changes and transitions?,marriage_partnerships,database_export
+714,What was the most meaningful tradition you''ve created as a couple?,marriage_partnerships,database_export
+715,How do you balance time together with time apart in your relationship?,marriage_partnerships,database_export
+716,What was your experience of long-term partnership without marriage?,marriage_partnerships,database_export
+717,How has your partnership influenced your personal growth and development?,marriage_partnerships,database_export
+718,What was the most difficult conversation you''ve had with your partner?,marriage_partnerships,database_export
+719,How do you maintain romance and passion in a long-term relationship?,marriage_partnerships,database_export
+720,What was your experience of marriage later in life or as a second marriage?,marriage_partnerships,database_export
+721,How has your partnership handled external pressures and challenges?,marriage_partnerships,database_export
+722,What was the most supportive thing your partner has done during a difficult time?,marriage_partnerships,database_export
+723,How do you handle different life goals and dreams within your partnership?,marriage_partnerships,database_export
+724,What was your experience of the empty nest phase in your marriage?,marriage_partnerships,database_export
+725,How has your physical and emotional intimacy evolved over the years?,marriage_partnerships,database_export
+726,What was the most unexpected way your partner has changed or grown?,marriage_partnerships,database_export
+727,"How do you handle the balance of work, family, and relationship time?",marriage_partnerships,database_export
+729,"How has your partnership dealt with illness, health challenges, or aging?",relationships,database_export
+731,How do you maintain friendship and companionship within your romantic partnership?,relationships,database_export
+732,What was your experience of partnership during career changes or professional challenges?,marriage_partnerships,database_export
+733,How has your partnership influenced your relationship with both sets of families?,relationships,database_export
+734,What was the most healing aspect of your marriage or partnership?,relationships,database_export
+735,How do you celebrate milestones and anniversaries in your relationship?,relationships,database_export
+738,What was the most profound moment of connection you''ve shared with your partner?,relationships,database_export
+739,How do you handle different approaches to parenting within your partnership?,relationships,database_export
+740,What was your experience of rekindling romance after a difficult period?,marriage_partnerships,database_export
+741,How has your partnership taught you about forgiveness and second chances?,relationships,database_export
+744,What was your experience of growing old together with your partner?,relationships,database_export
+745,How has your partnership demonstrated the depth and complexity of human love?,relationships,database_export
+747,How has the dating landscape changed since you first started dating?,relationships,database_export
+748,What was your most memorable first date and why?,relationships,database_export
+749,How has online dating affected your approach to meeting people?,relationships,database_export
+750,What was the most awkward dating situation you''ve experienced?,relationships,database_export
+751,How has your confidence in dating evolved over the years?,relationships,database_export
+753,How do you handle rejection in dating and relationships?,relationships,database_export
+754,What was your most surprising dating experience?,relationships,database_export
+755,How has your approach to physical intimacy in dating changed?,dating_experiences,database_export
+756,What was your experience of dating someone from a different cultural background?,dating_experiences,database_export
+757,How do you balance authenticity with making a good impression while dating?,relationships,database_export
+759,How has your understanding of what you want in a partner evolved through dating?,relationships,database_export
+761,How do you handle the vulnerability that comes with dating?,relationships,database_export
+764,What was your experience of long-distance dating?,relationships,database_export
+765,How do you navigate the transition from casual dating to a committed relationship?,relationships,database_export
+766,What was your most challenging dating period and how did you get through it?,relationships,database_export
+767,How has your communication style in dating relationships evolved?,dating_experiences,database_export
+768,What was your experience of dating someone who had children?,relationships,database_export
+770,What was your experience of dating after divorce or becoming widowed?,relationships,database_export
+775,How has your relationship with physical appearance and attraction evolved through dating?,relationships,database_export
+776,What was your experience of dating someone who wasn''t emotionally available?,dating_experiences,database_export
+778,What was your experience of being set up by friends or family?,relationships,database_export
+779,How has your understanding of compatibility in relationships developed through dating?,relationships,database_export
+780,What was your experience of dating during a particularly busy or stressful life period?,relationships,database_export
+782,What was your experience of dating someone significantly older or younger?,dating_experiences,database_export
+783,How has your ability to read people and situations improved through dating experience?,relationships,database_export
+784,What was your experience of dating within your professional or social circles?,relationships,database_export
+785,How do you balance being selective with being open-minded in dating?,relationships,database_export
+786,What was your experience of speed dating or other structured dating events?,relationships,database_export
+787,How has your relationship with timing and pacing in relationships evolved?,relationships,database_export
+789,How do you handle introducing dating partners to friends and family?,dating_experiences,database_export
+790,What was your experience of dating during or after major personal growth periods?,relationships,database_export
+791,How has your understanding of red flags and deal-breakers developed through experience?,relationships,database_export
+792,What was your experience of dating someone who challenged you to grow?,relationships,database_export
+793,How do you maintain your standards while remaining realistic about dating?,relationships,database_export
+794,What was your experience of the transition from dating to living together?,relationships,database_export
+795,How has dating taught you about yourself and what you bring to relationships?,relationships,database_export
+797,How has your understanding of grief evolved through different losses?,personal_history,database_export
+798,What was your experience of losing a parent and how did it change your perspective?,personal_history,database_export
+799,How have you found meaning or purpose through experiences of loss?,personal_history,database_export
+800,What was your experience of supporting someone else through their grief?,personal_history,database_export
+801,How has your relationship with mortality changed as you''ve experienced more loss?,personal_history,database_export
+802,What was your experience of losing a close friend and how did you honor their memory?,personal_history,database_export
+803,How do you balance grief and healing with continuing to live fully?,personal_history,database_export
+804,What was your experience of anticipatory grief before losing someone close?,personal_history,database_export
+805,How has your faith or spiritual beliefs been affected by experiences of loss?,personal_history,database_export
+806,What was your experience of losing a pet and the unique grief that brings?,personal_history,database_export
+807,How have you learned to accept help and support during times of grief?,personal_history,database_export
+808,What was your experience of losing someone suddenly versus after a long illness?,personal_history,database_export
+809,How has grief taught you about the depth of your capacity to love?,personal_history,database_export
+810,What was your experience of losing someone with whom you had unresolved issues?,personal_history,database_export
+811,How do you handle anniversaries and special dates after losing someone important?,personal_history,database_export
+812,What was your experience of losing a sibling and how it affected family dynamics?,personal_history,database_export
+813,How has your understanding of what helps in grief changed over time?,personal_history,database_export
+814,"What was your experience of miscarriage, infant loss, or the loss of a child?",personal_history,database_export
+815,How have you found ways to continue relationships with those you''ve lost?,personal_history,database_export
+816,What was your experience of losing someone to suicide and the complex grief that follows?,personal_history,database_export
+817,How has experiencing loss changed your priorities and values in life?,personal_history,database_export
+818,What was your experience of losing your childhood home or a significant place?,personal_history,database_export
+819,How do you handle the loneliness that can come with grief?,personal_history,database_export
+820,What was your experience of losing someone who was your primary source of support?,personal_history,database_export
+821,How has your relationship with memories and keepsakes evolved through grief?,personal_history,database_export
+822,What was your experience of losing multiple important people within a short time period?,personal_history,database_export
+823,How have you learned to live with the permanent absence of someone you loved?,personal_history,database_export
+824,What was your experience of complicated or disenfranchised grief?,personal_history,database_export
+825,How has experiencing loss affected your ability to form new attachments?,personal_history,database_export
+826,What was your experience of losing someone to a long battle with dementia or Alzheimer''s?,personal_history,database_export
+827,How do you balance honoring the past while remaining open to future relationships?,personal_history,database_export
+828,What was your experience of losing your sense of identity or role after a major loss?,personal_history,database_export
+829,How has grief taught you about resilience and your own strength?,personal_history,database_export
+830,What was your experience of finding unexpected sources of comfort during grief?,personal_history,database_export
+831,How do you handle well-meaning but unhelpful responses from others during grief?,personal_history,database_export
+832,What was your experience of losing someone who was also struggling with mental illness?,personal_history,database_export
+833,How has your understanding of the grief process and its timeline evolved?,personal_history,database_export
+834,What was your experience of creating new traditions or rituals to honor someone''s memory?,personal_history,database_export
+835,How have you learned to carry love forward while letting go of pain?,personal_history,database_export
+836,What was your experience of losing someone who shaped your fundamental worldview?,personal_history,database_export
+837,How has experiencing profound loss affected your capacity for joy and celebration?,personal_history,database_export
+838,What was your experience of finding community or connection through shared grief?,personal_history,database_export
+839,How do you honor both the sadness of loss and the gratitude for having loved?,personal_history,database_export
+840,What was your experience of how grief affected your physical health and daily functioning?,personal_history,database_export
+841,How has loss taught you about the preciousness and fragility of life?,personal_history,database_export
+842,What was your experience of professional grief counseling or therapy?,personal_history,database_export
+843,How have you found ways to help others through their experiences of loss and grief?,personal_history,database_export
+844,What was the most profound lesson loss has taught you about love and connection?,personal_history,database_export
+845,How has experiencing loss and healing shaped your understanding of what it means to be human?,personal_history,database_export
+850,How has your definition of career success evolved over the years?,career,database_export
+851,What advice would you give to someone feeling stuck in their current career?,career,database_export
+853,"What role has mentorship played in your career development, both as a mentee and mentor?",career,database_export
+855,What's the most important lesson you've learned about choosing the right company culture for you?,career,database_export
+858,Describe a period when your work-life balance was completely off. How did you correct it?,career,database_export
+868,How do you handle conflict resolution within your team or organization?,career,database_export
+869,What's the most difficult personnel decision you've had to make as a leader?,career,database_export
+870,How do you motivate team members who seem disengaged or underperforming?,career,database_export
+873,Describe a time when you had to lead through a major organizational change.,career,database_export
+874,What's your philosophy on delegation and empowering your team members?,career,database_export
+883,"What role does networking play in business success, and how do you approach it authentically?",career,database_export
+884,How do you balance innovation with practical business operations?,career,database_export
+887,How do you approach continuous learning and skill development in your field?,career,database_export
+890,What's your philosophy on certifications and formal credentials versus practical experience?,career,database_export
+891,How do you stay current with technology and tools relevant to your profession?,career,database_export
+893,What role does reading and research play in your professional development?,career,database_export
+894,How do you teach others and share knowledge within your organization?,career,database_export
+897,Describe a challenging workplace relationship and how you navigated it.,career,database_export
+900,What role do workplace friendships play in your career satisfaction?,career,database_export
+901,How do you give and receive feedback in professional relationships?,career,database_export
+902,What's your strategy for working effectively with difficult personalities?,career,database_export
+904,What's the most important aspect of being a good colleague or team member?,career,database_export
+912,What's your strategy for managing multiple competing priorities and deadlines?,career,database_export
+914,Describe a time when you had to take responsibility for a major mistake.,career,database_export
+925,How do you balance current financial needs with long-term wealth building?,career,database_export
+927,Describe your biggest professional failure and what it taught you.,career,database_export
+929,How do you celebrate professional achievements and milestones?,career,database_export
+932,What's the most valuable lesson you've learned from a successful project or initiative?,career,database_export
+933,How do you handle success without becoming complacent or overconfident?,career,database_export
+937,What's your approach to keeping up with rapidly evolving tech trends and tools?,career,database_export
+938,Describe a time when you had to explain complex technical concepts to non-technical stakeholders.,career,database_export
+939,How do you balance technical debt with new feature development?,career,database_export
+941,How do you approach debugging and problem-solving when facing complex technical issues?,career,database_export
+942,What role does documentation play in your development process and team collaboration?,career,database_export
+947,What's your approach to making life-and-death decisions under pressure?,career,database_export
+949,Describe a time when you had to deliver difficult news to a patient or family.,career,database_export
+950,How do you balance empathy with professional boundaries in patient care?,career,database_export
+951,What's your experience with healthcare technology and electronic medical records?,career,database_export
+953,"What role does teamwork play in healthcare delivery, in your experience?",career,database_export
+954,How do you cope with the physical and mental demands of healthcare work?,career,database_export
+955,What's your philosophy on patient advocacy and healthcare ethics?,career,database_export
+957,How do you adapt your teaching methods to different learning styles and needs?,career,database_export
+960,What's your approach to maintaining classroom discipline while fostering creativity?,career,database_export
+962,What's the most rewarding aspect of seeing students succeed and grow?,career,database_export
+964,What role does continuous learning play in your effectiveness as an educator?,career,database_export
+965,How do you measure success in education beyond test scores and grades?,career,database_export
+967,What's your approach to managing risk in investment decisions?,career,database_export
+969,Describe a time when you had to navigate a major market downturn with clients.,career,database_export
+971,How do you stay current with changing financial regulations and compliance requirements?,career,database_export
+972,What role does technology play in modern financial services and client relationships?,career,database_export
+975,How do you approach financial goal setting and progress tracking with clients?,career,database_export
+977,How do you handle rejection and maintain motivation in sales?,career,database_export
+985,What's the relationship between sales and marketing in your organization?,career,database_export
+987,What strategies do you use to maintain team cohesion in a distributed workforce?,career,database_export
+991,What's your approach to virtual meetings and avoiding video call fatigue?,career,database_export
+997,How do you handle situations where company values conflict with personal values?,career,database_export
+998,What's your approach to corporate social responsibility and giving back through work?,career,database_export
+999,How do you navigate whistleblowing or reporting unethical behavior?,career,database_export
+1001,How do you ensure fair treatment and opportunities for all team members?,career,database_export
+1004,What ethical considerations guide your decision-making in professional situations?,career,database_export
+1005,How do you handle conflicts of interest in your professional relationships?,career,database_export
+1007,What's your experience with changing roles within the same company?,career,database_export
+1010,How do you leverage transferable skills when moving between industries?,career,database_export
+1011,What role does personal branding play in career transitions?,career,database_export
+1013,What's your strategy for building credibility in a new field or role?,career,database_export
+1015,What support systems help you navigate major career changes?,career,database_export
+1021,What's your experience with cross-functional collaboration on innovative projects?,career,database_export
+1023,What's the most innovative solution you've developed for a work problem?,career,database_export
+1025,What role does customer feedback play in driving innovation?,career,database_export
+1027,How do you prioritize competing demands on your time and attention?,career,database_export
+1030,What's your approach to email management and communication efficiency?,career,database_export
+1033,How do you track and measure your productivity and performance?,career,database_export
+1035,How do you handle procrastination and motivation challenges?,career,database_export
+1037,How do you adapt your communication style for different cultural contexts?,career,database_export
+1041,How do language barriers affect your international business relationships?,career,database_export
+1045,How do you build trust across cultural and geographical boundaries?,career,database_export
+1048,How do you balance automation with human judgment in your work?,career,database_export
+1049,What role does data analysis play in your decision-making process?,career,database_export
+1055,What's the future impact of technology on your profession?,career,database_export
+1060,How do you differentiate yourself in a competitive professional market?,career,database_export
+1063,What's the most effective way you've built credibility in your field?,career,database_export
+1065,What legacy do you want to leave in your professional field?,career,database_export
+1068,What role does intuition play in your professional decision-making?,career,database_export
+1069,How do you handle decisions when you don't have all the information you need?,career,database_export
+1074,What's your process for learning from poor decisions and course-correcting?,career,database_export
+1081,What role does active listening play in your professional interactions?,career,database_export
+1085,What's the most important aspect of building rapport in professional relationships?,career,database_export
+1087,How do you prepare for high-stakes negotiations or deals?,career,database_export
+1092,What's your approach to mediating conflicts between team members?,career,database_export
+1097,What's your approach to self-evaluation and professional self-awareness?,career,database_export
+1099,What metrics do you use to measure success in your role?,career,database_export
+1100,How do you identify and address your professional weaknesses?,career,database_export
+1105,What's your approach to continuous improvement and skill refinement?,career,database_export
+1108,How do you develop deep expertise while maintaining breadth of knowledge?,career,database_export
+1109,What's your approach to sharing knowledge and expertise with others?,career,database_export
+1113,What's your strategy for building thought leadership and industry influence?,career,database_export
+1114,How do you balance specialization with adaptability?,career,database_export
+1118,How do you maintain perspective during high-pressure situations?,career,database_export
+1120,How do you create support systems for managing professional stress?,career,database_export
+1121,What role does physical wellness play in your professional performance?,career,database_export
+1122,How do you bounce back from professional disappointments or setbacks?,career,database_export
+1128,What's your approach to building long-term client relationships?,career,database_export
+1129,How do you gather and act on customer feedback effectively?,career,database_export
+1132,What role does empathy play in your customer interactions?,career,database_export
+1133,How do you balance customer needs with company policies and limitations?,career,database_export
+1135,How do you maintain professionalism with difficult or hostile clients?,career,database_export
+1138,What's your approach to resource allocation and timeline management?,career,database_export
+1141,How do you motivate project teams and maintain momentum?,career,database_export
+1142,What role does documentation play in your project management?,career,database_export
+1145,How do you celebrate project successes and learn from completions?,career,database_export
+1147,How do you identify skill gaps and prioritize learning opportunities?,career,database_export
+1150,What's your approach to finding and working with mentors?,career,database_export
+1157,How do you balance quality with speed and efficiency demands?,career,database_export
+1159,How do you handle situations where quality standards conflict with deadlines?,career,database_export
+1163,How do you handle quality issues discovered after delivery?,career,database_export
+1168,How do you handle major organizational changes and transitions?,career,database_export
+1170,How do you navigate office politics and power dynamics?,career,database_export
+1172,How do you promote diversity and inclusion in your workplace?,career,database_export
+1173,What's your strategy for driving cultural change initiatives?,career,database_export
+1174,How do you maintain team morale during difficult organizational periods?,career,database_export
+1177,What's your understanding of how your work impacts the bottom line?,career,database_export
+1181,What role does financial analysis play in your decision-making?,career,database_export
+1182,How do you balance short-term financial pressures with long-term goals?,career,database_export
+1184,How do you handle budget constraints and resource limitations?,career,database_export
+1187,What's your approach to experimental thinking and testing new ideas?,career,database_export
+1188,How do you balance innovation with operational stability?,career,database_export
+1189,What role does customer insight play in driving innovation?,career,database_export
+1193,What's your approach to trend analysis and future scenario planning?,career,database_export
+1197,What compromises are you willing and unwilling to make for career advancement?,career,database_export
+1198,How do you handle situations where work demands conflict with personal principles?,career,database_export
+1199,What role does purpose and meaning play in your career satisfaction?,career,database_export
+1200,How do you integrate your personal mission with your professional responsibilities?,career,database_export
+1204,How do you balance personal ambition with service to others?,career,database_export
+1208,What's your approach to giving and receiving constructive criticism?,career,database_export
+1209,How do you contribute to team decision-making processes?,career,database_export
+1210,What role do you typically play in team dynamics?,career,database_export
+1213,How do you support team members who are struggling or underperforming?,career,database_export
+1217,What's your framework for systematic problem-solving under pressure?,career,database_export
+1221,What role does scenario planning play in your crisis management?,career,database_export
+1222,How do you maintain team morale and focus during crisis periods?,career,database_export
+1223,What's your strategy for making quick decisions with incomplete information?,career,database_export
+1224,How do you balance immediate crisis response with long-term implications?,career,database_export
+1228,How do you identify and respond to changing market conditions?,career,database_export
+1230,How do you differentiate your work or company in a crowded market?,career,database_export
+1231,What's your strategy for identifying new market opportunities?,career,database_export
+1232,How do you balance competitive awareness with focus on your own work?,career,database_export
+1241,How do you leverage social media for professional relationship building?,career,database_export
+1247,How do you adapt to different workplace cultures and expectations?,career,database_export
+1249,How do open office versus private workspace environments affect your productivity?,career,database_export
+1251,"How do you handle noise, distractions, and interruptions in your work environment?",career,database_export
+1252,What's your approach to personalizing your workspace for optimal performance?,career,database_export
+1258,How do you handle technology failures and have backup systems?,career,database_export
+1261,What's your strategy for managing digital overwhelm and information overload?,career,database_export
+1262,How do you stay current with relevant technology trends without getting distracted?,career,database_export
+1263,What's your approach to data organization and digital file management?,career,database_export
+1268,What's your approach to saying no to requests that don't align with priorities?,career,database_export
+1272,What role does preparation and planning play in your daily effectiveness?,career,database_export
+1273,How do you handle perfectionist tendencies that might slow productivity?,career,database_export
+1274,What's your approach to tracking and measuring your own performance?,career,database_export
+1277,What skills have become obsolete and what new ones have emerged?,career,database_export
+1278,How do you help others adapt to industry changes and evolution?,career,database_export
+1280,How do you balance preserving valuable traditions with embracing innovation?,career,database_export
+1285,What's the most significant transformation you've witnessed in your profession?,career,database_export
+1287,What's your approach to documenting and showcasing professional achievements?,career,database_export
+1291,What's your strategy for building visibility for your work within your organization?,career,database_export
+1292,How do you balance self-promotion with team recognition?,career,database_export
+1293,What's the most meaningful recognition you've received in your career?,career,database_export
+1298,How do you maintain purpose and identity as you consider career changes?,career,database_export
+1300,How do you plan to stay engaged and contribute after formal retirement?,career,database_export
+1301,What's your strategy for financial preparation for career transitions?,career,database_export
+1303,What advice would you want to pass on to the next generation in your field?,career,database_export
+1307,What's your approach to translating between different professional languages?,career,database_export
+1310,How do you handle conflicting priorities from different stakeholder groups?,career,database_export
+1317,How do you identify and develop high-potential team members?,career,database_export
+1319,How do you create opportunities for others to grow and advance?,career,database_export
+1322,What role does sponsorship play beyond traditional mentoring?,career,database_export
+1323,How do you balance giving advice with allowing others to learn from experience?,career,database_export
+1327,How do you want to be remembered by colleagues and the people you've worked with?,career,database_export
+1329,"If you could start your career over, what would you do differently?",career,database_export
+1331,How has your relationship with work and career evolved over the decades?,career,database_export
+1333,How do you define a life well-lived in the context of work and career?,career,database_export
+1339,How do you stay motivated and passionate about work over many years?,career,database_export
+1341,How do you measure a successful career beyond traditional metrics?,career,database_export
+1342,What role has serendipity or unexpected opportunities played in your career?,career,database_export
+1343,How do you maintain hope and optimism during challenging professional periods?,career,database_export
+1349,How do you overcome creative blocks when they happen?,hobbies,database_export
+1351,Do you prefer writing by hand or typing when creating?,hobbies,database_export
+1353,How has your artistic style evolved over the years?,hobbies,database_export
+1355,Do you prefer working on one creative project at a time or juggling multiple?,hobbies,database_export
+1357,"How do you decide when a creative work is ""finished""?",hobbies,database_export
+1361,How do you find inspiration for new creative projects?,hobbies,database_export
+1364,What's the longest you've ever spent on a single creative project?,hobbies,database_export
+1365,How do you handle criticism of your creative work?,hobbies,database_export
+1367,Do you prefer improvising or following patterns when creating?,hobbies,database_export
+1369,How has technology changed the way you approach your creative hobbies?,hobbies,database_export
+1370,What creative tradition or technique would you like to learn more about?,hobbies,database_export
+1371,Do you prefer working with color or black and white?,hobbies,database_export
+1372,What's the most meaningful gift you've ever handmade for someone?,hobbies,database_export
+1374,What creative hobby have you always wanted to try but haven't yet?,hobbies,database_export
+1378,What's the most challenging physical goal you've ever achieved?,hobbies,database_export
+1390,What's your favorite post-workout feeling or ritual?,hobbies,database_export
+1392,What sport or activity do you think everyone should try at least once?,hobbies,database_export
+1393,"Do you prefer activities that focus on strength, endurance, or flexibility?",hobbies,database_export
+1395,How do you choose new physical activities to try?,hobbies,database_export
+1396,What role does music play in your exercise routine?,hobbies,database_export
+1399,How do you track or measure your progress in physical activities?,hobbies,database_export
+1403,How do you make physical activity fun rather than a chore?,hobbies,database_export
+1407,Do you prefer planning every detail or leaving room for spontaneity when traveling?,hobbies,database_export
+1408,What's the most meaningful connection you've made while traveling?,hobbies,database_export
+1413,How do you prefer to immerse yourself in local cultures?,hobbies,database_export
+1417,What's the most important item in your travel kit?,hobbies,database_export
+1418,Do you prefer short getaways or extended journeys?,hobbies,database_export
+1419,What destination has most changed your perspective on life?,hobbies,database_export
+1421,What's your favorite way to meet locals when visiting new places?,hobbies,database_export
+1423,What travel experience pushed you furthest out of your comfort zone?,hobbies,database_export
+1426,How do you maintain your travel budget without sacrificing experiences?,hobbies,database_export
+1427,What's the most beautiful sunset or sunrise you've witnessed while traveling?,hobbies,database_export
+1429,What travel tradition or ritual do you always follow?,hobbies,database_export
+1433,What skill have you learned while traveling that you use at home?,hobbies,database_export
+1435,What aspect of travel do you find most rewarding?,hobbies,database_export
+1442,What topic would you like to become an expert in?,hobbies,database_export
+1446,What learning resource has been most valuable to you?,hobbies,database_export
+1448,What's your favorite type of documentary or educational content?,hobbies,database_export
+1451,How do you apply theoretical knowledge to practical situations?,hobbies,database_export
+1453,Do you prefer learning current topics or historical subjects?,hobbies,database_export
+1456,What subject do you wish was taught better in schools?,hobbies,database_export
+1461,Do you prefer learning facts or exploring concepts and theories?,hobbies,database_export
+1466,"What do you collect, and what started that interest?",hobbies,database_export
+1470,How do you organize and display your collections?,hobbies,database_export
+1473,What niche interest do you have that others might find unusual?,hobbies,database_export
+1474,How do you share your passion for collecting with others?,hobbies,database_export
+1476,Do you prefer physical collections or digital archives?,hobbies,database_export
+1477,What collecting mistake have you learned the most from?,hobbies,database_export
+1478,How do you balance collecting with available space or budget?,hobbies,database_export
+1479,What aspect of your collection brings you the most joy?,hobbies,database_export
+1481,What's the most interesting place you've found a collectible?,hobbies,database_export
+1483,What collection would you start if money were no object?,hobbies,database_export
+1484,Do you prefer modern items or vintage/antique pieces?,hobbies,database_export
+1485,What's the most surprising thing you've learned through collecting?,hobbies,database_export
+1491,What's the most patient you've had to be to acquire something for your collection?,hobbies,database_export
+1495,What's your favorite collecting-related tradition or ritual?,hobbies,database_export
+1505,Do you prefer consuming entertainment alone or sharing it with others?,hobbies,database_export
+1506,What's your favorite way to discover new entertainment options?,hobbies,database_export
+1507,How do you decide when to abandon something you're not enjoying?,hobbies,database_export
+1509,"Do you prefer entertainment with happy endings or complex, ambiguous conclusions?",hobbies,database_export
+1510,What's your favorite entertainment experience that surprised you?,hobbies,database_export
+1511,How do you handle spoilers for things you want to experience?,hobbies,database_export
+1517,Do you prefer entertainment that educates or pure fun?,hobbies,database_export
+1519,How do you decide what entertainment is worth your time investment?,hobbies,database_export
+1520,What entertainment habit would you like to develop or change?,hobbies,database_export
+1521,Do you prefer entertainment from your own culture or exploring others?,hobbies,database_export
+1524,What entertainment format do you think is underappreciated?,hobbies,database_export
+1525,Do you prefer entertainment that's current and trending or timeless classics?,hobbies,database_export
+1527,Do you prefer using technology to create or to consume?,hobbies,database_export
+1530,What digital tool has most improved your daily life?,hobbies,database_export
+1534,What tech project are you most proud of completing?,hobbies,database_export
+1536,What's the most creative use of technology you've discovered?,hobbies,database_export
+1537,How do you choose which new technologies to adopt or ignore?,hobbies,database_export
+1538,What technology nostalgically reminds you of an earlier time in your life?,hobbies,database_export
+1539,Do you prefer open-source or proprietary technology solutions?,hobbies,database_export
+1540,What's your favorite aspect of the digital maker/creator movement?,hobbies,database_export
+1544,What's the most helpful online community you've been part of?,hobbies,database_export
+1547,Do you prefer mobile or desktop computing for your hobbies?,hobbies,database_export
+1548,What's your favorite way to back up and organize your digital life?,hobbies,database_export
+1549,How has technology changed the way you pursue your other hobbies?,hobbies,database_export
+1552,What's the most valuable thing technology has taught you about yourself?,hobbies,database_export
+1556,What natural setting makes you feel most at peace?,hobbies,database_export
+1557,Do you prefer observing nature or actively engaging with it?,hobbies,database_export
+1558,What's the most awe-inspiring natural phenomenon you've witnessed?,hobbies,database_export
+1559,How do you like to document or remember your outdoor experiences?,hobbies,database_export
+1562,What's your favorite way to connect with wildlife?,hobbies,database_export
+1565,Do you prefer daytime or nighttime outdoor activities?,hobbies,database_export
+1568,What outdoor gear could you not live without?,hobbies,database_export
+1569,Do you prefer solo outdoor time or sharing nature with others?,hobbies,database_export
+1572,What natural environment do you find most energizing?,hobbies,database_export
+1573,Do you prefer planned outdoor activities or spontaneous nature encounters?,hobbies,database_export
+1575,How do you practice environmental responsibility in your outdoor activities?,hobbies,database_export
+1579,How do you stay comfortable during extended time outdoors?,hobbies,database_export
+1581,Do you prefer predictable outdoor routines or exploring new places?,hobbies,database_export
+1586,What type of cooking brings you the most satisfaction?,hobbies,database_export
+1589,How do you choose what new foods or cuisines to try?,hobbies,database_export
+1590,What's your favorite aspect of the cooking process?,hobbies,database_export
+1591,Do you prefer cooking alone or with others?,hobbies,database_export
+1592,What cooking skill would you most like to master?,hobbies,database_export
+1599,Do you prefer cooking with fresh ingredients or convenient shortcuts?,hobbies,database_export
+1600,What's your favorite way to discover new recipes?,hobbies,database_export
+1601,How do you balance healthy eating with indulgent cooking?,hobbies,database_export
+1604,What's the most unusual ingredient you've successfully incorporated into a dish?,hobbies,database_export
+1605,How do you organize your cooking space for maximum efficiency?,hobbies,database_export
+1609,How do you adapt recipes to suit your preferences or dietary needs?,hobbies,database_export
+1615,Do you prefer cooking familiar comfort foods or adventurous new dishes?,hobbies,database_export
+1616,What type of game or puzzle challenges you in the most satisfying way?,hobbies,database_export
+1619,How do you approach learning the rules of a new game?,hobbies,database_export
+1622,What's your favorite way to discover new games or puzzles?,hobbies,database_export
+1624,What game or puzzle most helps you relax and unwind?,hobbies,database_export
+1625,Do you prefer games with clear objectives or open-ended exploration?,hobbies,database_export
+1626,What's the longest you've ever spent on a single puzzle or game level?,hobbies,database_export
+1627,How do you balance gaming with other responsibilities and hobbies?,hobbies,database_export
+1628,What type of puzzle-solving strategy do you rely on most?,hobbies,database_export
+1631,How do you decide when to look up hints versus solving something independently?,hobbies,database_export
+1638,What's your favorite aspect of puzzle-solving or game-playing communities?,hobbies,database_export
+1639,How do you maintain interest in games or puzzles over long periods?,hobbies,database_export
+1640,What type of game or puzzle do you turn to when you need to clear your mind?,hobbies,database_export
+1642,What's the most social gaming or puzzle experience you've enjoyed?,hobbies,database_export
+1645,Do you prefer games that you can pause and resume or immersive continuous experiences?,hobbies,database_export
+1649,Do you prefer hobbies that produce tangible results or intangible experiences?,hobbies,database_export
+1650,What's the most important life lesson you've learned through a hobby?,hobbies,database_export
+1651,How do you make time for hobbies during busy periods of life?,hobbies,database_export
+1654,"What hobby have you maintained the longest, and why?",hobbies,database_export
+1656,What hobby would you pursue if you had unlimited time and resources?,hobbies,database_export
+1659,How do you choose which hobbies deserve your limited free time?,hobbies,database_export
+1661,Do you prefer hobbies that require consistent practice or can be picked up sporadically?,hobbies,database_export
+1663,How do you handle the transition between different hobby phases in your life?,hobbies,database_export
+1668,What hobby practice do you find most meditative or centering?,hobbies,database_export
+1669,Do you prefer hobbies with clear progress markers or more subjective development?,hobbies,database_export
+1671,How do you decide when to turn a hobby into a more serious pursuit?,hobbies,database_export
+1673,Do you prefer hobbies that energize you or help you decompress?,hobbies,database_export
+1674,What's the most creative problem you've solved through a hobby?,hobbies,database_export
+1675,How do your seasonal moods affect your hobby choices?,hobbies,database_export
+1678,What's the most welcoming hobby community you've encountered?,hobbies,database_export
+1685,Do you prefer introducing friends to your hobbies or joining theirs?,hobbies,database_export
+1687,How do you handle competitive elements in social hobby settings?,hobbies,database_export
+1691,How do you find others who share your more niche hobby interests?,hobbies,database_export
+1692,What hobby social ritual or custom do you most appreciate?,hobbies,database_export
+1694,What's your favorite way to celebrate hobby milestones with others?,hobbies,database_export
+1697,Do you prefer being a hobby group leader or an enthusiastic participant?,hobbies,database_export
+1701,What's the most innovative approach you've taken to a traditional hobby?,hobbies,database_export
+1709,What's your favorite way to add personal flair to established hobby practices?,hobbies,database_export
+1714,Do you prefer hobbies where you follow patterns or create from scratch?,hobbies,database_export
+1717,What's your favorite example of technology enhancing traditional hobbies?,hobbies,database_export
+1719,What hobby skill have you adapted for an unexpected use?,hobbies,database_export
+1722,Do you prefer hobbies with established communities or pioneering new territories?,hobbies,database_export
+1723,What cross-cultural hobby practice would you like to learn more about?,hobbies,database_export
+1726,What do your hobbies reveal about what you value most in life?,hobbies,database_export
+1727,How do you define mastery versus enjoyment in your hobbies?,hobbies,database_export
+1733,Do you prefer hobbies that build something lasting or create momentary experiences?,hobbies,database_export
+1735,How do you balance hobby perfectionism with simple enjoyment?,hobbies,database_export
+1736,What hobby practice most teaches you patience?,hobbies,database_export
+1738,What's the most humbling experience you've had through a hobby?,hobbies,database_export
+1739,How do your hobbies reflect your relationship with beauty or aesthetics?,hobbies,database_export
+1741,Do you prefer hobbies that challenge your intellect or engage your emotions?,hobbies,database_export
+1754,Do you prefer setting specific hobby goals or letting interests develop naturally?,hobbies,database_export
+1757,What hobby legacy do you hope to leave behind?,hobbies,database_export
+1758,Do you prefer hobbies that build incrementally or offer dramatic breakthroughs?,hobbies,database_export
+1759,What hobby collaboration or project would be your dream to complete?,hobbies,database_export
+1760,How do you envision sharing your hobby knowledge with future generations?,hobbies,database_export
+1761,What hobby adventure is at the top of your bucket list?,hobbies,database_export
+1766,Do you prefer hobbies that offer career potential or remain purely personal?,hobbies,database_export
+1767,What hobby wisdom do you hope to gain through continued practice?,hobbies,database_export
+1770,Do you prefer hobbies that offer measurable progress or subjective growth?,hobbies,database_export
+1779,Do you prefer hobbies that complement your work or offer complete escape?,hobbies,database_export
+1784,How do you balance hobby time with family and relationship obligations?,hobbies,database_export
+1787,How do you handle guilt about spending time or money on hobbies?,hobbies,database_export
+1788,What hobby fits best into your smallest pockets of free time?,hobbies,database_export
+1792,Do you prefer hobbies that require planning ahead or can be spontaneous?,hobbies,database_export
+1795,Do you prefer hobbies that involve acquisition or experiences?,hobbies,database_export
+1800,What hobby practice most helps you maintain perspective on life's challenges?,hobbies,database_export
+1805,What hobby practice from another culture would you most like to understand?,hobbies,database_export
+1806,Do you prefer hobbies with ancient roots or contemporary innovations?,hobbies,database_export
+1809,What hobby tradition would you like to help preserve for future generations?,hobbies,database_export
+1810,Do you prefer learning hobby techniques in their original context or adapted forms?,hobbies,database_export
+1814,Do you prefer hobbies that celebrate local culture or explore global traditions?,hobbies,database_export
+1819,What historical period's approach to your hobbies interests you most?,hobbies,database_export
+1821,What hobby skill represents an important cultural bridge for you?,hobbies,database_export
+1824,How do you balance authenticity with accessibility in cultural hobby practices?,hobbies,database_export
+1826,What hobby represents your truest self?,hobbies,database_export
+1835,How do your hobbies reflect your deepest hopes and dreams?,hobbies,database_export
+1836,What hobby skill would you want to have in any future life or existence?,hobbies,database_export
+1841,Do you prefer hobbies that connect you to others or help you understand yourself?,hobbies,database_export
+1844,What hobby practice most teaches you about the value of process over outcome?,hobbies,database_export
+1849,How do you think standardized testing affected your educational experience?,education,database_export
+1852,What educational opportunity do you wish you had been given in school?,education,database_export
+1853,How did your socioeconomic background affect your educational experience?,education,database_export
+1855,How did extracurricular activities contribute to your overall education?,education,database_export
+1861,How did technology change your educational experience compared to previous generations?,education,database_export
+1866,What life skill do you wish had been taught in school that wasn't?,education,database_export
+1869,How did presentations and public speaking requirements in school affect you?,education,database_export
+1871,How did your school's approach to arts education influence your creativity?,education,database_export
+1873,How did physical education classes impact your relationship with your body and health?,education,database_export
+1874,What was the most valuable criticism or feedback you received from a teacher?,education,database_export
+1878,What was the most intellectually stimulating classroom discussion you remember?,education,database_export
+1881,How did your school's library influence your love of learning and reading?,education,database_export
+1882,What was the most challenging ethical dilemma you faced in an academic setting?,education,database_export
+1885,How did your school's dress code or uniform policy affect your self-expression?,education,database_export
+1888,What was your experience with student government or leadership opportunities?,education,database_export
+1889,How did summer breaks and school holidays affect your learning continuity?,education,database_export
+1895,How did your school experience influence your career aspirations and life goals?,education,database_export
+1900,"Do you learn better alone or in groups, and why?",education,database_export
+1902,What's your preferred method for memorizing important information?,education,database_export
+1903,How do you adapt your learning style when the material doesn't suit your preferences?,education,database_export
+1905,How do you prefer to receive feedback on your learning progress?,education,database_export
+1906,What physical environment helps you learn most effectively?,education,database_export
+1910,What's your approach to learning from mistakes and failures?,education,database_export
+1912,What role does teaching others play in solidifying your own learning?,education,database_export
+1913,How do you prefer to organize and store information for future reference?,education,database_export
+1915,How do you incorporate hands-on practice into your learning process?,education,database_export
+1916,What role do questions play in how you approach new learning material?,education,database_export
+1918,What's your approach to learning skills versus learning facts?,education,database_export
+1919,How do you handle the frustration of not understanding something immediately?,education,database_export
+1920,What role does sleep and rest play in your learning and memory consolidation?,education,database_export
+1926,What's your approach to learning abstract concepts versus concrete skills?,education,database_export
+1927,How do you handle different learning paces when studying with others?,education,database_export
+1928,What role does curiosity play in directing your learning interests?,education,database_export
+1934,What's your relationship with technology as a learning tool?,education,database_export
+1935,How do you handle learning styles that conflict with teaching methods?,education,database_export
+1939,How do you handle the plateau phases in learning where progress seems slow?,education,database_export
+1945,How has your learning style evolved throughout your life?,education,database_export
+1948,How did a teacher change your perspective on a subject you previously disliked?,education,database_export
+1950,How did a teacher help you discover a hidden talent or strength?,education,database_export
+1951,What mentor outside of school has been most influential in your development?,education,database_export
+1958,How did a teacher demonstrate the practical application of their subject?,education,database_export
+1961,What was the most personalized attention you received from a teacher?,education,database_export
+1967,What mentor taught you the most about work-life balance and priorities?,education,database_export
+1972,How did a mentor help you develop critical thinking skills?,education,database_export
+1973,What was the most valuable feedback you received about your strengths and weaknesses?,education,database_export
+1975,What mentor taught you the most about leadership and responsibility?,education,database_export
+1977,What was the most practical skill a mentor taught you outside of formal education?,education,database_export
+1978,How did a teacher handle your questions and curiosity about topics beyond the curriculum?,education,database_export
+1979,What mentor helped you navigate the politics and social dynamics of your field?,education,database_export
+1983,What mentor taught you the most about ethics and moral decision-making?,education,database_export
+1986,How did a mentor help you navigate failure or setbacks in your career?,education,database_export
+1987,What teacher made the biggest impact on your social and emotional development?,education,database_export
+1988,How did a mentor help you balance ambition with contentment?,education,database_export
+1991,What teacher demonstrated the most effective classroom management style?,education,database_export
+1992,How has a mentor continued to influence your decisions long after your formal relationship ended?,education,database_export
+1993,What was the most challenging but valuable assignment or project a teacher gave you?,education,database_export
+1997,How did your relationship with reading develop throughout your childhood?,education,database_export
+1999,How do you decide which books are worth your time and attention?,education,database_export
+2007,How do you choose between breadth and depth in your reading habits?,education,database_export
+2010,What was the most intellectually stimulating book discussion you've had with others?,education,database_export
+2012,What book taught you the most about yourself?,education,database_export
+2013,"How do you balance reading fiction versus non-fiction, and why?",education,database_export
+2014,What was the most prescient or prophetic book you've read?,education,database_export
+2015,"How do you approach reading books that are considered ""classics"" but feel outdated?",education,database_export
+2016,What book helped you through a difficult period in your life?,education,database_export
+2017,How do you decide when to abandon a book versus pushing through?,education,database_export
+2022,"What was the most controversial book you've read, and how did it affect your thinking?",education,database_export
+2024,What book taught you something practical that you still use today?,education,database_export
+2027,How do you approach reading books that are significantly above or below your reading level?,education,database_export
+2028,What book introduced you to a new genre that became a favorite?,education,database_export
+2031,How do you approach reading books when you already know the ending?,education,database_export
+2032,What book taught you the most about empathy and understanding others?,education,database_export
+2037,How do you balance reading for personal interest versus professional development?,education,database_export
+2040,What book made you question fundamental assumptions about reality or society?,education,database_export
+2042,What was the most therapeutic or healing book you've read?,education,database_export
+2043,How do you approach reading books that are part of ongoing cultural or political conversations?,education,database_export
+2048,How do you distinguish between information and true understanding?,education,database_export
+2050,How do you handle the realization that something you believed was incorrect?,education,database_export
+2051,What's the most valuable thing you learned from someone much younger than you?,education,database_export
+2053,"What area of knowledge do you feel most confident about, and why?",education,database_export
+2055,What's something everyone seems to know but you've never understood?,education,database_export
+2056,How do you decide which sources of information to trust?,education,database_export
+2060,How do you approach learning about topics that are constantly changing?,education,database_export
+2063,What's the most practical wisdom you've gained from life experience?,education,database_export
+2067,What's the most counterintuitive thing you've learned to be true?,education,database_export
+2068,How do you approach ancient wisdom versus modern scientific understanding?,education,database_export
+2074,How do you handle the responsibility that comes with having specialized knowledge?,education,database_export
+2075,What's something you once knew well but have since forgotten or lost touch with?,education,database_export
+2076,How do you approach knowledge that challenges your cultural or personal identity?,education,database_export
+2077,What's the most profound insight you've had that seemed obvious in retrospect?,education,database_export
+2078,How do you balance breadth of knowledge with depth of expertise?,education,database_export
+2079,What knowledge do you wish was more widely shared or understood?,education,database_export
+2080,How do you approach learning about topics that are politically or socially charged?,education,database_export
+2081,What's something you thought was simple until you tried to master it?,education,database_export
+2083,What wisdom have you gained about when to trust your intuition versus analytical thinking?,education,database_export
+2084,How do you approach knowledge that seems to contradict your personal experience?,education,database_export
+2085,What's the most important thing you've learned about the process of learning itself?,education,database_export
+2094,How do you handle the loneliness that can come with specialized or uncommon knowledge?,education,database_export
+2099,"How do you find meaning in everyday, mundane activities?",education,database_export
+2100,What role does suffering play in creating a meaningful life?,education,database_export
+2102,What do you think happens to consciousness after death?,education,database_export
+2103,How do you handle the apparent randomness and unfairness of life?,education,database_export
+2104,What's your philosophy about the role of individual versus collective responsibility?,education,database_export
+2105,How do you define a life well-lived?,education,database_export
+2115,How do you find hope in the face of global problems and challenges?,education,database_export
+2117,How do you handle the brevity of life and the vastness of the universe?,education,database_export
+2121,How do you define success in life beyond career and financial achievements?,education,database_export
+2124,What's your perspective on whether humans are meant to be happy?,education,database_export
+2127,How do you handle the gap between your ideals and your actual behavior?,education,database_export
+2129,How do you approach the question of what you owe to past and future generations?,education,database_export
+2130,What do you believe about the relationship between reason and emotion in living well?,education,database_export
+2131,How do you find meaning in a universe that science suggests is indifferent?,education,database_export
+2138,What do you believe about the role of community versus solitude in human flourishing?,education,database_export
+2142,What role does mystery and the unknown play in your life philosophy?,education,database_export
+2145,How would you want your life philosophy to be summarized if you had to do so in one sentence?,education,database_export
+2147,What ethical principle guides most of your major life decisions?,education,database_export
+2148,How do you handle situations where legal and ethical requirements conflict?,education,database_export
+2149,What's the most difficult moral dilemma you've faced in your personal life?,education,database_export
+2150,How do you approach the balance between individual rights and collective good?,education,database_export
+2153,What's your approach to situations where all available choices seem morally problematic?,education,database_export
+2155,What role does empathy play in your moral decision-making process?,education,database_export
+2157,What's your approach to moral issues where cultural perspectives differ significantly?,education,database_export
+2159,What role does personal experience play in shaping your moral beliefs?,education,database_export
+2161,What's your philosophy about moral obligations to people you've never met?,education,database_export
+2162,How do you handle moral responsibility for unintended consequences of your actions?,education,database_export
+2163,What role does forgiveness play in your approach to moral failings?,education,database_export
+2167,What role does reason versus emotion play in your moral judgments?,education,database_export
+2168,How do you approach moral issues involving animals and environmental ethics?,education,database_export
+2170,How do you handle situations where being honest conflicts with being kind?,education,database_export
+2179,What role does conscience play in your ethical decision-making?,education,database_export
+2180,How do you approach moral issues involving healthcare and end-of-life decisions?,education,database_export
+2183,What role does moral imagination play in your approach to ethical dilemmas?,education,database_export
+2186,How do you balance moral idealism with practical limitations?,education,database_export
+2187,What role does moral luck play in your judgment of yourself and others?,education,database_export
+2190,How do you handle moral uncertainty when you must act despite incomplete information?,education,database_export
+2192,How do you approach moral issues involving artificial intelligence and automation?,education,database_export
+2193,What's your philosophy about the relationship between moral knowledge and moral action?,education,database_export
+2194,How do you handle the moral burden of privilege and advantage?,education,database_export
+2195,What do you believe is the most important moral insight humans need to embrace?,education,database_export
+2199,"What spiritual practices, if any, bring you peace or connection?",education,database_export
+2201,What's your perspective on the relationship between science and faith?,education,database_export
+2202,How do you find transcendence or connection to something larger than yourself?,education,database_export
+2203,"What role does prayer, meditation, or contemplation play in your life?",education,database_export
+2204,How do you approach the mystery and unknown aspects of existence?,education,database_export
+2207,What role does community play in your spiritual or philosophical life?,education,database_export
+2210,How do you handle the problem of suffering in relation to your beliefs about ultimate reality?,education,database_export
+2217,What's your experience with moments of spiritual or mystical insight?,education,database_export
+2218,How do you handle the ethical teachings of religious traditions you don't fully embrace?,education,database_export
+2221,What's your perspective on religious or spiritual conversion experiences?,education,database_export
+2223,What role does gratitude play in your spiritual practice or worldview?,education,database_export
+2225,"What's your relationship with concepts like karma, providence, or cosmic justice?",education,database_export
+2226,How do you find spiritual nourishment in secular contexts?,education,database_export
+2228,How do you approach the historical and cultural context of religious beliefs?,education,database_export
+2232,How do you approach the question of whether humans have souls?,education,database_export
+2235,What role does humility play in your approach to spiritual questions?,education,database_export
+2236,How do you approach the relationship between individual spirituality and organized institutions?,education,database_export
+2237,What's your perspective on whether spiritual truth can be found through reason alone?,education,database_export
+2239,What role does silence or solitude play in your spiritual understanding?,education,database_export
+2243,What role does love play in your understanding of ultimate reality?,education,database_export
+2244,How do you balance respect for religious traditions with personal spiritual exploration?,education,database_export
+2245,What's the most profound spiritual insight or realization you've had in your life?,education,database_export
+2248,How do you handle information that contradicts your existing beliefs?,education,database_export
+2250,How do you approach decisions when you lack sufficient information?,education,database_export
+2257,What's your process for questioning assumptions you've held for a long time?,education,database_export
+2259,What role does consultation with others play in your decision-making?,education,database_export
+2262,How do you distinguish between correlation and causation in everyday reasoning?,education,database_export
+2263,What role does precedent play in your decision-making process?,education,database_export
+2264,How do you handle decisions where timing is critical?,education,database_export
+2266,How do you approach problems that seem to have no good solutions?,education,database_export
+2267,What role does risk tolerance play in your decision-making?,education,database_export
+2269,What's your approach to decisions that involve moral or ethical dimensions?,education,database_export
+2270,How do you handle pressure from others when making personal decisions?,education,database_export
+2271,What role does past experience play in your current decision-making?,education,database_export
+2276,How do you handle decisions when your head and heart point in different directions?,education,database_export
+2283,What role does perfectionism play in your decision-making process?,education,database_export
+2284,How do you handle decisions when you're under emotional stress?,education,database_export
+2287,What role does mental modeling or scenario planning play in your thinking?,education,database_export
+2289,What's your process for determining when you have enough information to decide?,education,database_export
+2290,How do you handle the paralysis that can come from too many options?,education,database_export
+2291,What role does accountability to others play in your decision-making?,education,database_export
+2292,How do you approach decisions involving irreversible consequences?,education,database_export
+2294,How do you balance confidence in your judgment with appropriate humility?,education,database_export
+2295,What's the most important lesson you've learned about making better decisions?,education,database_export
+2299,How do you approach subjects that initially seem boring or irrelevant?,education,database_export
+2300,What role does questioning play in your intellectual development?,education,database_export
+2302,What's the most surprising intellectual connection you've made between different fields?,education,database_export
+2306,What role does intellectual risk-taking play in your personal growth?,education,database_export
+2307,How do you maintain beginner's mind when approaching familiar subjects?,education,database_export
+2310,What intellectual habit has been most valuable in your personal development?,education,database_export
+2315,How do you cultivate intellectual courage in controversial or difficult topics?,education,database_export
+2318,What's your method for tracking and building on intellectual insights?,education,database_export
+2321,How do you approach learning from people whose views you strongly disagree with?,education,database_export
+2322,What's the most valuable intellectual skill you've developed as an adult?,education,database_export
+2324,What role does intellectual patience play in deep understanding?,education,database_export
+2335,How do you handle the loneliness that can come with deep intellectual pursuits?,education,database_export
+2339,How do you handle the gap between your intellectual aspirations and current abilities?,education,database_export
+2340,What role does intellectual mentorship play in your continued growth?,education,database_export
+2341,"How do you approach learning that challenges not just what you think, but how you think?",education,database_export
+2342,What's the most intellectually transformative experience you've had?,education,database_export
+2344,What intellectual legacy do you hope to leave behind?,education,database_export
+2346,"How has your relationship with your body changed throughout your life, and what would you tell your younger self about self-acceptance?",personal,database_export
+2347,"What does mental peace look like for you, and what practices or beliefs help you maintain it during turbulent times?",personal,database_export
+2348,Describe a time when you had to heal from something that seemed impossible to recover from. What did that journey teach you?,personal,database_export
+2349,How do you find dignity and purpose when your body can no longer do what it once could?,personal,database_export
+2350,What does it mean to live a healthy life beyond just physical health? How do you nourish your soul?,personal,database_export
+2351,How have serious illness or medical scares changed your perspective on what truly matters in life?,personal,database_export
+2352,What have you learned about love and sacrifice through caring for someone who was ill or aging?,personal,database_export
+2353,"How do you distinguish between productive worry and destructive anxiety, and what helps you stay grounded?",personal,database_export
+2354,How has addiction (your own or a loved one's) taught you about the complexity of human struggle and redemption?,personal,database_export
+2355,What has your body taught you about listening to yourself that your mind couldn't learn on its own?,personal,database_export
+2356,How do you find meaning and joy when living with chronic pain or persistent health challenges?,personal,database_export
+2357,"How has society's understanding of mental health changed during your lifetime, and what still needs to change?",personal,database_export
+2358,"What does authentic self-care look like for you, beyond trendy wellness practices?",personal,database_export
+2359,"How do you make difficult medical decisions when there are no clear right answers, especially regarding end-of-life care?",personal,database_export
+2360,"What keeps you feeling alive and vital, regardless of your age or physical condition?",personal,database_export
+2361,What surprised you most about the aging process that no one had prepared you for?,personal,database_export
+2362,"How has your perception of time changed as you've gotten older, and what does this teach you about living fully?",personal,database_export
+2363,"How do you want to be remembered, and what are you doing now to create that legacy?",personal,database_export
+2364,"When did you first truly understand that you would die, and how did that realization change how you live?",personal,database_export
+2365,What wisdom do you possess now that you desperately wish you had understood in your twenties?,personal,database_export
+2366,"If you could go back and live one decade of your life again, which would it be and what would you do differently?",personal,database_export
+2367,How has losing people you love changed your understanding of what it means to be alive?,personal,database_export
+2368,How do you maintain dignity and self-worth as your body becomes less capable than it once was?,personal,database_export
+2369,"How do you want to spend your final days, and what preparations are you making for that time?",personal,database_export
+2370,"When you look back on your life, what patterns do you see that you weren't aware of while living them?",personal,database_export
+2371,"If you could live forever, would you want to? What would you fear about immortality?",personal,database_export
+2372,"What does it mean to age gracefully, and who in your life has modeled this for you?",personal,database_export
+2373,What would you need to accomplish or experience to feel that your life was complete?,personal,database_export
+2374,"How do you bridge the gap between your generation and younger ones, and what do you learn from them?",personal,database_export
+2375,How does knowing that your time is limited change the way you spend each day?,personal,database_export
+2376,"What aspect of death frightens you most, and what gives you peace about it?",personal,database_export
+2377,"Which phase of your life felt most authentically ""you,"" and why?",personal,database_export
+2378,What do you understand about life now that you could never have comprehended when you were younger?,personal,database_export
+2379,How do you hope younger generations will build upon or differ from your generation's approach to life?,personal,database_export
+2380,What gifts has the awareness of mortality given you that immortal beings could never understand?,personal,database_export
+2381,What conversations are you having now that you wish you had started years ago?,personal,database_export
+2382,"Why does time seem to move faster as you age, and how do you slow it down?",personal,database_export
+2383,How are you preparing emotionally and spiritually for your own death?,personal,database_export
+2384,What patterns or wounds from previous generations are you working to heal so they don't pass to the next?,personal,database_export
+2385,"If your life were a book, what would you title each chapter, and what chapter are you writing now?",personal,database_export
+2386,What impact do you hope to have on the world that will outlast your physical existence?,personal,database_export
+2387,What values or traditions do you hope your family will carry forward long after you're gone?,personal,database_export
+2388,"Describe a time when you made a difference in someone's life that they may not even remember, but you'll never forget.",personal,database_export
+2389,How do you think the small kindnesses you've shown have rippled outward in ways you'll never know?,personal,database_export
+2390,"What work or contribution are you most proud of, whether or not it was recognized by others?",personal,database_export
+2391,"What knowledge, skills, or wisdom are you making sure to pass down before it's too late?",personal,database_export
+2392,Describe a time when you changed someone's perspective or helped them see something in a new way.,personal,database_export
+2393,How do you want to be remembered by your community or society at large?,personal,database_export
+2394,"What have you created—whether art, ideas, relationships, or innovations—that brings beauty or goodness into the world?",personal,database_export
+2395,"Who have you mentored or guided, and what did you learn about yourself through helping them?",personal,database_export
+2396,"How have you contributed to or influenced your culture, community, or field of work?",personal,database_export
+2397,"What healing have you brought to the world, whether through your presence, work, or relationships?",personal,database_export
+2398,"How do you hope people will be inspired by your life story, including both your struggles and triumphs?",personal,database_export
+2399,How is the next generation better off because of your influence and contributions?,personal,database_export
+2400,How has the love you've given and received changed the world in ways both seen and unseen?,personal,database_export
+2401,What mark have you left on your profession or field that will benefit others who come after you?,personal,database_export
+2402,"What kind of world are you leaving for future generations, and what responsibility do you feel for that?",personal,database_export
+2403,What aspects of your character do you hope will live on in the people whose lives you've touched?,personal,database_export
+2404,"What problems have you helped solve, and what problems are you still working to address?",personal,database_export
+2405,"What legacy do you regret not being able to leave, and is it still possible to create it?",personal,database_export
+2406,"What is your deepest regret, and how has living with it changed you as a person?",personal,database_export
+2407,Describe a door that closed in your life that you still wonder about. What might have been?,personal,database_export
+2408,"What did you never get to say to someone who mattered to you, and how does that silence affect you?",personal,database_export
+2409,What risk did you choose not to take that you still think about? Do you regret playing it safe?,personal,database_export
+2410,"Is there a relationship you wish you had handled differently, and what would you change if you could?",personal,database_export
+2411,"If you could go back and choose a completely different career path, what would it be and why?",personal,database_export
+2412,Who do you need to forgive—including yourself—and what's preventing you from doing it?,personal,database_export
+2413,"What period of your life do you feel you wasted, and what wisdom did you eventually gain from that experience?",personal,database_export
+2414,"If you could go back and make one different choice that would change the trajectory of your entire life, what would it be?",personal,database_export
+2415,"When did you lack the courage to do what you knew was right, and how has that failure shaped your values?",personal,database_export
+2416,"Is there someone you owe an apology to, and what's keeping you from giving it?",personal,database_export
+2417,"What dream did you give up on that still calls to your heart, and is it truly too late?",personal,database_export
+2418,Tell me about a love you let slip away. What did that teach you about the fragility of connection?,personal,database_export
+2419,What mistake are you grateful for because of what it taught you or where it led you?,personal,database_export
+2420,"If you had lived a completely different life, what aspects of your current self would you want to remain the same?",personal,database_export
+2421,"What dream from your youth do you still carry with you, even if it seems impossible now?",personal,database_export
+2422,"If you knew you had exactly five more years to live, what would you spend that time trying to accomplish?",personal,database_export
+2423,What creative work or artistic expression have you always wanted to pursue but never made time for?,personal,database_export
+2424,"What place in the world calls to your soul, and what do you imagine you'd find or feel there?",personal,database_export
+2425,What knowledge or skill do you wish you could master before your time is up?,personal,database_export
+2426,What kind of relationship or connection are you still hoping to experience in your life?,personal,database_export
+2427,"How do you still hope to make the world a better place, regardless of your age or circumstances?",personal,database_export
+2428,What aspect of yourself do you still hope to transform or improve?,personal,database_export
+2429,"What adventure or experience would make you feel most alive, even if it seems impractical now?",personal,database_export
+2430,What do you hope to see or experience with your family before your time with them ends?,personal,database_export
+2431,What spiritual understanding or connection are you still seeking in your life?,personal,database_export
+2432,What's on your bucket list that would surprise people who know you well?,personal,database_export
+2433,"What new beginning or fresh start are you still open to, even at your current stage of life?",personal,database_export
+2434,"What would you attempt if you knew you could not fail, and what stops you from trying anyway?",personal,database_export
+2435,What do you dream of creating or accomplishing that would outlast your lifetime?,personal,database_export
+2436,"What is your deepest, most primal fear, and how do you live courageously despite it?",personal,database_export
+2437,"What aspect of aging frightens you most, and how are you preparing to face it with dignity?",personal,database_export
+2438,Do you ever fear that your life lacks meaning or significance? How do you address this existential anxiety?,personal,database_export
+2439,What frightens you most about the possibility of ending up alone or forgotten?,personal,database_export
+2440,"How has fear of failure held you back, and what would you do if that fear disappeared?",personal,database_export
+2441,"What makes you most vulnerable, and how do you find strength in that vulnerability?",personal,database_export
+2442,"What loss would devastate you most, and how do you love fully while knowing loss is inevitable?",personal,database_export
+2443,"How does fear of judgment influence your choices, and when have you found the courage to ignore what others think?",personal,database_export
+2444,"What change in your life are you most afraid of, and what would help you embrace it instead of resist it?",personal,database_export
+2445,How do you find peace with the fundamental uncertainty and mystery of existence?,personal,database_export
+2446,"What aspects of your personality have remained constant throughout your life, and what has evolved?",personal,database_export
+2447,"What character flaw do you struggle with most, and how has it both hindered and helped you?",personal,database_export
+2448,"What part of yourself do you keep hidden from most people, and why?",personal,database_export
+2449,How do you know when you're acting in alignment with your true character versus when you're compromising yourself?,personal,database_export
+2450,What aspects of human nature that you dislike in others do you recognize in yourself?,personal,database_export
+2451,What personality traits do you consider your greatest gifts to offer the world?,personal,database_export
+2452,Describe a time when you acted in a way that surprised you and revealed something new about your character.,personal,database_export
+2453,"When do you feel most like your authentic self, and what environments or relationships bring that out?",personal,database_export
+2454,"What contradictions exist within your personality, and how do you reconcile them?",personal,database_export
+2455,What aspects of your character do you most hope to pass on to others through your example?,personal,database_export
+2456,How do you honor and connect with your ancestral heritage while living in the present day?,personal,database_export
+2457,How has your cultural identity evolved as you've lived through changing social and political landscapes?,personal,database_export
+2458,What cultural traditions or practices are you working to preserve for future generations?,personal,database_export
+2459,"How do you serve as a bridge between different cultures, generations, or communities?",personal,database_export
+2460,Have you ever felt caught between different cultural identities or expectations? How did you navigate that?,personal,database_export
+2461,What gifts has your cultural background given you that you're most grateful for?,personal,database_export
+2462,What cultural wounds or historical traumas are you working to heal within yourself or your community?,personal,database_export
+2463,"What aspect of your cultural identity fills you with the most pride, and how do you share that with others?",personal,database_export
+2464,How have relationships with people from different cultures enriched your understanding of humanity?,personal,database_export
+2465,What responsibility do you feel to represent or speak for your cultural community?,personal,database_export
+2466,What social injustice have you witnessed that changed how you see the world and your role in it?,personal,database_export
+2467,How has your understanding of privilege and inequality evolved throughout your lifetime?,personal,database_export
+2468,"What responsibility do you feel toward your community, and how do you fulfill it?",personal,database_export
+2469,What social change have you witnessed in your lifetime that gives you hope for humanity?,personal,database_export
+2470,Describe a time when you stood up for someone or something despite personal cost or risk.,personal,database_export
+2471,How do you maintain relationships and find common ground with people whose political or social views oppose yours?,personal,database_export
+2472,"What systemic problem in society concerns you most, and what small part are you playing in addressing it?",personal,database_export
+2473,How has experiencing or witnessing discrimination shaped your values and actions?,personal,database_export
+2474,What aspect of human social progress are you most proud to have been part of or witnessed?,personal,database_export
+2475,"What kind of society do you hope future generations will build, and what foundation are you helping to lay?",personal,database_export
+2476,"How do you build empathy and understanding across social, economic, or cultural divides?",personal,database_export
+2477,What does it mean to be a responsible citizen and member of society in today's world?,personal,database_export
+2478,How do you balance individual needs and desires with collective responsibility and action?,personal,database_export
+2479,What role do you play in healing social wounds and divisions in your community or society?,personal,database_export
+2480,"What cause or group of people do you feel called to advocate for, and why?",personal,database_export
+2481,What gives you hope for the future of humanity despite current challenges and conflicts?,personal,database_export
+2482,How do you think technology will change what it means to be human in the next 50 years?,personal,database_export
+2483,"What kind of planet are we leaving for future generations, and what responsibility do you feel for that legacy?",personal,database_export
+2484,What wisdom from your generation must not be lost as the world changes and progresses?,personal,database_export
+2485,How do you stay flexible and adaptable as the world changes around you?,personal,database_export
+2486,"What do you admire most about younger generations, and what concerns you most about their future?",personal,database_export
+2487,How will human relationships and connections evolve in an increasingly digital world?,personal,database_export
+2488,What values do you hope will become more important in future societies?,personal,database_export
+2489,"How are you still growing and changing, even at your current stage of life?",personal,database_export
+2490,"What healing does humanity most need, and how can individuals contribute to that healing?",personal,database_export
+2491,"What changes in the world do you find hardest to accept, and how do you find peace with them?",personal,database_export
+2492,How do you ensure that positive changes you've witnessed or contributed to continue after you're gone?,personal,database_export
+2493,"How do you define progress, and do you think humanity is moving in the right direction?",personal,database_export
+2494,How has your perspective on time and the pace of change evolved as you've aged?,personal,database_export
+2495,How do you maintain hope and optimism while acknowledging the serious challenges facing humanity?,personal,database_export
+2496,"What change do you still hope to be a catalyst for, regardless of your age or circumstances?",personal,database_export
+2497,"How do you serve as a bridge between the past and the future, preserving wisdom while embracing progress?",personal,database_export
+2498,"If you could implement one change that would improve the world for everyone, what would it be?",personal,database_export
+2499,What evolution in human consciousness or society do you hope to see before your time ends?,personal,database_export
+2500,"As you look toward the future and reflect on your life, what do you believe is the ultimate meaning of human existence?",personal,database_export
+2501,What are three words others would use to describe you?,personal,database_export
+2502,What's a habit you have that others might find unusual?,personal,database_export
+2506,What are your biggest pet peeves?,personal,database_export
+2507,How do you prefer to spend your free time?,personal,database_export
+2509,How do you make important decisions?,personal,database_export
+2516,How do you handle criticism?,personal,database_export
+2521,How do you express creativity?,personal,database_export
+2523,How do you handle change?,personal,database_export
+2528,What's your relationship with money?,personal,database_export
+2530,What's your natural leadership style?,personal,database_export
+2541,What energizes you most?,personal,database_export
+2542,What drains your energy quickly?,personal,database_export
+2543,How do you show affection to others?,personal,database_export
+2550,What's your natural rhythm during the day?,personal,database_export
+2552,What makes you feel most like yourself?,personal,database_export
+2555,How do you recharge after a difficult day?,personal,database_export
+2557,How do you handle being the center of attention?,personal,database_export
+2570,What's your approach to conflict?,personal,database_export
+2574,What's your sense of humor like?,personal,database_export
+2575,What do you do when you need to cheer yourself up?,personal,database_export
+2593,How do you typically react when you're stressed?,personal,database_export
+2619,How do you deal with uncertainty?,personal,database_export
+2646,What role does spontaneity play in your life?,personal,database_export
+2667,What's your biggest strength?,personal,database_export
+2684,What makes you laugh without fail?,personal,database_export
+2698,What's a weakness you're working on?,personal,database_export
+2721,Describe a moment that changed your perspective on life.,personal_history,database_export
+2726,What's a lesson you learned the hard way?,personal_history,database_export
+2727,Tell me about a time you helped a stranger.,personal_history,database_export
+2728,What's your most cherished family tradition?,personal_history,database_export
+2732,What's a childhood adventure you'll never forget?,personal_history,database_export
+2733,Describe a moment that made you cry happy tears.,personal_history,database_export
+2740,What's your favorite family story?,personal_history,database_export
+2747,Tell me about meeting someone who became important to you.,personal_history,database_export
+2752,What's a smell that instantly brings back memories?,personal_history,database_export
+2753,Tell me about a time you felt truly brave.,personal_history,database_export
+2755,Describe your most memorable birthday.,personal_history,database_export
+2761,Tell me about a time you overcame fear.,personal_history,database_export
+2766,What's a time you stood up for something you believed in?,personal_history,database_export
+2767,Describe your most memorable meal.,personal_history,database_export
+2768,What's a skill you're proud of learning?,personal_history,database_export
+2771,Describe a moment of perfect happiness.,personal_history,database_export
+2773,Tell me about a teacher who made a difference.,personal_history,database_export
+2774,What's your most embarrassing moment that you can laugh about now?,personal_history,database_export
+2775,Describe a time nature took your breath away.,personal_history,database_export
+2779,Describe a perfect ordinary day from your past.,personal_history,database_export
+2784,What's the most beautiful place you've ever seen?,personal_history,database_export
+2790,What's the best advice you've ever received?,personal_history,database_export
+2794,What's the most unexpected thing that ever happened to you?,personal_history,database_export
+2795,Tell me about your first day at a new job or school.,personal_history,database_export
+2799,Tell me about a time you got lost (literally or figuratively).,personal_history,database_export
+2802,What's something you wish you could experience again?,personal_history,database_export
+2806,What's a tradition you started?,personal_history,database_export
+2840,What's your earliest clear memory?,personal_history,database_export
+2879,Describe a moment when you felt completely at peace.,personal_history,database_export
+2898,What's a challenge that made you stronger?,personal_history,database_export
+2935,How do you like to end your day?,daily_life,database_export
+2936,What's your favorite room in your home and why?,daily_life,database_export
+2937,Describe your perfect weekend.,daily_life,database_export
+2938,What's a small daily pleasure you look forward to?,daily_life,database_export
+2941,How do you stay connected with friends and family?,daily_life,database_export
+2942,What's your relationship with technology?,daily_life,database_export
+2943,How do you handle household chores?,daily_life,database_export
+2944,What's your bedtime routine?,daily_life,database_export
+2945,How do you like to celebrate small victories?,daily_life,database_export
+2946,What's your favorite season and how do you embrace it?,daily_life,database_export
+2947,How do you make your living space feel like home?,daily_life,database_export
+2949,How do you handle busy days?,daily_life,database_export
+2950,What's a routine that keeps you grounded?,daily_life,database_export
+2952,What's your favorite way to spend a quiet evening?,daily_life,database_export
+2953,How do you stay organized (or embrace chaos)?,daily_life,database_export
+2955,How do you prepare for the week ahead?,daily_life,database_export
+2956,What makes your house feel welcoming?,daily_life,database_export
+2957,How do you handle unexpected changes to your routine?,daily_life,database_export
+2958,What's your favorite type of weather and what do you do in it?,daily_life,database_export
+2961,How do you create comfort in your daily life?,daily_life,database_export
+2962,What's a habit that makes your day better?,daily_life,database_export
+2964,What does your ideal morning look like?,daily_life,database_export
+2970,What's your approach to cooking and eating?,daily_life,database_export
+2978,What's your approach to staying healthy?,daily_life,database_export
+2989,How do you balance solitude and socializing?,daily_life,database_export
+2990,What's your approach to shopping and errands?,daily_life,database_export
+3071,How do you treat yourself on tough days?,daily_life,database_export
+3083,How do you practice self-care in small ways?,daily_life,database_export
+3174,What principles guide your decisions?,philosophy_values,database_export
+3175,What does success mean to you?,philosophy_values,database_export
+3178,What role does faith or spirituality play in your life?,philosophy_values,database_export
+3179,What do you believe about human nature?,philosophy_values,database_export
+3180,How do you approach ethical dilemmas?,philosophy_values,database_export
+3181,What's your perspective on material possessions?,philosophy_values,database_export
+3182,What does family mean to you?,philosophy_values,database_export
+3183,How do you balance individual needs with community responsibility?,philosophy_values,database_export
+3184,What's your philosophy on helping others?,philosophy_values,database_export
+3185,What do you believe about second chances?,philosophy_values,database_export
+3186,How do you define true friendship?,philosophy_values,database_export
+3188,What role does tradition play in your life?,philosophy_values,database_export
+3189,How do you think about legacy?,philosophy_values,database_export
+3190,What's your philosophy on work and purpose?,philosophy_values,database_export
+3191,What do you believe about personal growth?,philosophy_values,database_export
+3192,How do you approach judging others?,philosophy_values,database_export
+3193,What's most important for a happy life?,philosophy_values,database_export
+3194,What's your perspective on money and generosity?,philosophy_values,database_export
+3195,How do you define courage?,philosophy_values,database_export
+3196,What do you believe about destiny versus free will?,philosophy_values,database_export
+3197,What's your philosophy on aging?,philosophy_values,database_export
+3198,How do you think about fairness and justice?,philosophy_values,database_export
+3199,What role does gratitude play in your life?,philosophy_values,database_export
+3200,What's your approach to handling mistakes?,philosophy_values,database_export
+3201,What do you believe about the purpose of suffering?,philosophy_values,database_export
+3202,How do you define wisdom?,philosophy_values,database_export
+3203,What values do you most want to pass on?,philosophy_values,database_export
+3367,What's a dream you had to let go of?,personal,database_export
+3372,What's a cause you'd love to champion?,personal,database_export
+3375,"If you could have any superpower, what would it be?",personal,database_export
+3379,What would you want to teach the world?,personal,database_export
+3381,What would your dream home be like?,personal,database_export
+3382,What impact do you hope to have on others?,personal,database_export
+3388,What's something you've always wanted to try?,personal,database_export
+3389,"If you could learn any skill instantly, what would it be?",personal,database_export
+3394,What's something you hope to accomplish in the next five years?,personal,database_export
+3395,What legacy do you hope to leave?,personal,database_export
+3398,What would you want to be remembered for?,personal,database_export
+3399,What's a skill you regret not learning earlier?,personal,database_export
+3402,What would you do if you knew you couldn't fail?,personal,database_export
+3403,What adventure would you go on tomorrow if you could?,personal,database_export
+3405,What's something you want to experience before you die?,personal,database_export
+3416,Where would you love to travel and why?,personal,database_export
+3418,What would you do if you had unlimited resources?,personal,database_export
+3426,What's your biggest unfulfilled dream?,personal,database_export
+3433,What's a goal that scares and excites you?,personal,database_export
+3440,What's on your bucket list?,personal,database_export
+3459,What would you do with an extra 10 years of life?,personal,database_export
+3463,"If you could have dinner with anyone in history, who would it be?",hypotheticals,database_export
+3464,Would you rather be able to fly or be invisible?,hypotheticals,database_export
+3465,"If you could live in any time period, when would it be?",hypotheticals,database_export
+3466,What would you do if you won the lottery tomorrow?,hypotheticals,database_export
+3467,"If you could be any animal for a day, what would you choose?",hypotheticals,database_export
+3468,Would you rather have the ability to read minds or see the future?,hypotheticals,database_export
+3469,"If you could master any instrument overnight, what would it be?",hypotheticals,database_export
+3470,What would you do if you had a whole day with no responsibilities?,hypotheticals,database_export
+3471,"If you could have any job in the world, what would it be?",hypotheticals,database_export
+3472,Would you rather live in a world without music or without colors?,hypotheticals,database_export
+3473,"If you could solve one world problem, what would it be?",hypotheticals,database_export
+3474,What would you do if you could be 20 years old again?,hypotheticals,database_export
+3475,"If you could have any fictional character as a friend, who would it be?",hypotheticals,database_export
+3476,Would you rather always know when someone is lying or always get away with lying?,hypotheticals,database_export
+3477,"If you could live anywhere in the world, where would it be?",hypotheticals,database_export
+3478,What would you do if you could time travel but only once?,hypotheticals,database_export
+3479,"If you could have any celebrity's life, whose would you choose?",hypotheticals,database_export
+3480,Would you rather never have to sleep or never have to eat?,hypotheticals,database_export
+3481,"If you could instantly become an expert in anything, what would it be?",hypotheticals,database_export
+3484,Would you rather always be 10 minutes late or 20 minutes early?,hypotheticals,database_export
+3485,"If you could have any magical power, what would it be?",hypotheticals,database_export
+3486,What would you do if you could live forever?,hypotheticals,database_export
+3487,"If you could ask one question and get the true answer, what would you ask?",hypotheticals,database_export
+4000,"Hey, how are you?",daily_life,database_export
+4001,How was your day?,daily_life,database_export
+4002,What's up?,daily_life,database_export
+4003,How's it going?,daily_life,database_export
+4004,What's on your mind?,daily_life,database_export
+4005,Anything interesting happen today?,daily_life,database_export
+4006,What are you working on?,daily_life,database_export
+4007,How are you feeling?,daily_life,database_export
+4008,What's new?,daily_life,database_export
+4009,How's your week going?,daily_life,database_export
+5000,What's on your mind today?,journal,database_export
+5001,What family traditions do you want to continue?,family_parenting,database_export
+5002,How do you handle disagreements with family members?,family_parenting,database_export
+5003,What values do you hope to pass down to the next generation?,family_parenting,database_export
+5004,How has your relationship with your parents evolved?,family_parenting,database_export
+5005,What role do you play in family decision-making?,family_parenting,database_export
+5006,How do you maintain family connections across distance?,family_parenting,database_export
+5007,What family memory makes you laugh every time?,family_parenting,database_export
+5008,How do you balance individual needs with family obligations?,family_parenting,database_export
+5009,What would you change about how your family communicates?,family_parenting,database_export
+5010,How do you handle family gatherings and events?,family_parenting,database_export
+5011,What advice would you give to new parents?,family_parenting,database_export
+5012,How has becoming a parent/guardian changed your priorities?,family_parenting,database_export
+5013,What parenting approach do you believe in?,family_parenting,database_export
+5014,How do you teach children about difficult topics?,family_parenting,database_export
+5015,What do you do when your child disappoints you?,family_parenting,database_export
+5016,How do you encourage independence in children?,family_parenting,database_export
+5017,What family rules do you think are most important?,family_parenting,database_export
+5018,How do you handle sibling rivalry or competition?,family_parenting,database_export
+5019,What makes a house feel like a home for your family?,family_parenting,database_export
+5020,How do you support family members through challenges?,family_parenting,database_export
+5021,What qualities make someone a good friend to you?,friendships_social,database_export
+5022,How do you maintain friendships over time and distance?,friendships_social,database_export
+5023,What is the most important thing you have learned from a friend?,friendships_social,database_export
+5024,How do you handle conflict in friendships?,friendships_social,database_export
+5025,What role do friends play in your decision-making?,friendships_social,database_export
+5026,How has your approach to friendship changed with age?,friendships_social,database_export
+5027,What makes you feel valued by your friends?,friendships_social,database_export
+5028,How do you balance time between different friend groups?,friendships_social,database_export
+5029,What boundaries do you set in friendships?,friendships_social,database_export
+5030,How do you make new friends as an adult?,friendships_social,database_export
+5031,What friend has had the biggest impact on who you are?,friendships_social,database_export
+5032,How do you show appreciation for your friends?,friendships_social,database_export
+5033,What social activities do you enjoy most?,friendships_social,database_export
+5034,How comfortable are you with small talk?,friendships_social,database_export
+5035,What makes you feel included in social situations?,friendships_social,database_export
+5036,How do you handle social anxiety or awkwardness?,friendships_social,database_export
+5037,What social skills do you wish you had developed earlier?,friendships_social,database_export
+5038,How do you prefer to celebrate with friends?,friendships_social,database_export
+5039,What makes a social gathering enjoyable for you?,friendships_social,database_export
+5040,How do you support friends through difficult times?,friendships_social,database_export
+5041,How do you handle family conflicts?,family_parenting,database_export
+5042,What traditions did your family have growing up?,family_parenting,database_export
+5043,How do you show love to family members?,family_parenting,database_export
+5044,What family role do you naturally take on?,family_parenting,database_export
+5045,How has your family shaped your worldview?,family_parenting,database_export
+5046,What family story gets told repeatedly?,family_parenting,database_export
+5047,How do you handle family expectations?,family_parenting,database_export
+5048,What would you tell your younger self about family?,family_parenting,database_export
+5049,How do you maintain family relationships during busy times?,family_parenting,database_export
+5050,What family habit do you want to break?,family_parenting,database_export
+5051,How do you handle different parenting styles in your family?,family_parenting,database_export
+5052,What makes family time meaningful?,family_parenting,database_export
+5053,How do you deal with family members you disagree with?,family_parenting,database_export
+5054,What family value is most important to you?,family_parenting,database_export
+5055,How has your family influenced your career choices?,family_parenting,database_export
+5056,What would you change about your family dynamic?,family_parenting,database_export
+5157,How do you choose your closest friends?,friendships_social,database_export
+5158,What friendship has lasted the longest?,friendships_social,database_export
+5159,How do you handle friend jealousy?,friendships_social,database_export
+5160,What makes you a good friend?,friendships_social,database_export
+5161,How do you reconnect with old friends?,friendships_social,database_export
+5162,What friendship taught you about yourself?,friendships_social,database_export
+5163,How do you handle friends in crisis?,friendships_social,database_export
+5164,What social setting makes you most comfortable?,friendships_social,database_export
+5165,How do you maintain friendships during life changes?,friendships_social,database_export
+5166,What friend quality do you admire most?,friendships_social,database_export
+5167,How do you handle friendship boundaries?,friendships_social,database_export
+5168,What makes you feel understood by friends?,friendships_social,database_export
+5169,How do you support friends without giving advice?,friendships_social,database_export
+5170,What friendship mistake did you learn from?,friendships_social,database_export
+5221,How do you express creativity in daily life?,creative_expression,database_export
+5222,What creative project are you most proud of?,creative_expression,database_export
+5223,How do you overcome creative blocks?,creative_expression,database_export
+5224,What inspires your creativity most?,creative_expression,database_export
+5225,How has creativity helped you through difficult times?,creative_expression,database_export
+5226,What creative skill would you like to develop?,creative_expression,database_export
+5227,How do you make time for creative pursuits?,creative_expression,database_export
+5228,What role does creativity play in problem-solving?,creative_expression,database_export
+5229,How do you handle creative criticism?,creative_expression,database_export
+5230,What creative work has influenced you most?,creative_expression,database_export
+5231,How do you balance creativity with practical concerns?,creative_expression,database_export
+5232,What creative community are you part of?,creative_expression,database_export
+5233,How has your creativity evolved over time?,creative_expression,database_export
+5234,What creative risk are you glad you took?,creative_expression,database_export
+5235,How do you share your creative work with others?,creative_expression,database_export
+5236,What creative process works best for you?,creative_expression,database_export
+5318,How do you approach first dates?,dating_experiences,database_export
+5451,How do you grow professionally?,professional,database_export
+5489,What makes a partnership strong?,marriage_partnerships,database_export
+5512,What role does community play in individual moral development?,philosophy_values,database_export
+5513,"If you could make one law that everyone had to follow, what would it be?",hypotheticals,database_export
+5514,What's your biggest dating red flag that you've learned to recognize?,dating_experiences,duplicate_fix_generated
+5515,How do you handle dating someone with different life goals?,dating_experiences,duplicate_fix_generated
+5516,What's been your experience with online dating apps?,dating_experiences,duplicate_fix_generated
+5517,How do you navigate dating when you have different religious beliefs?,dating_experiences,duplicate_fix_generated
+5518,What's the most important lesson you've learned from a past relationship?,dating_experiences,duplicate_fix_generated
+5519,How do you maintain your independence while dating someone?,dating_experiences,duplicate_fix_generated
+5520,What's your experience with long-distance relationships?,dating_experiences,duplicate_fix_generated
+5521,How do you handle introducing someone you're dating to your family?,dating_experiences,duplicate_fix_generated
+5522,What's been your experience dating someone significantly older or younger?,dating_experiences,duplicate_fix_generated
+5523,How do you approach dating after a difficult breakup?,dating_experiences,duplicate_fix_generated
+5524,What's the most challenging aspect of dating in your current life stage?,dating_experiences,duplicate_fix_generated
+5525,How do you balance career ambitions with dating and relationships?,dating_experiences,duplicate_fix_generated
+5526,What's your experience with dating someone from a different social class?,dating_experiences,duplicate_fix_generated
+5527,How do you handle dating someone who has children?,dating_experiences,duplicate_fix_generated
+5528,What's been your experience with casual dating versus serious relationships?,dating_experiences,duplicate_fix_generated
+5529,How do you approach dating when you're focused on personal growth?,dating_experiences,duplicate_fix_generated
+5530,What's the most important conversation to have early in dating?,dating_experiences,duplicate_fix_generated
+5531,How do you handle dating anxiety or nervousness?,dating_experiences,duplicate_fix_generated
+5532,What's your experience with dating within your friend group?,dating_experiences,duplicate_fix_generated
+5533,How do you navigate dating when you have social anxiety?,dating_experiences,duplicate_fix_generated
+5534,What's been your experience with dating apps versus meeting people organically?,dating_experiences,duplicate_fix_generated
+5535,How do you handle dating someone who's recently divorced?,dating_experiences,duplicate_fix_generated
+5536,What's your approach to dating when you're an introvert?,dating_experiences,duplicate_fix_generated
+5537,How do you handle dating someone with different political views?,dating_experiences,duplicate_fix_generated
+5538,What's been your experience with dating someone who travels frequently for work?,dating_experiences,duplicate_fix_generated
+5539,How do you approach dating when you're dealing with mental health challenges?,dating_experiences,duplicate_fix_generated
+5540,What's the most surprising thing you've learned about yourself through dating?,dating_experiences,duplicate_fix_generated
+5541,How do you handle dating when you have trust issues from past relationships?,dating_experiences,duplicate_fix_generated
+5542,What's your experience with dating someone who has different spending habits?,dating_experiences,duplicate_fix_generated
+5543,How do you navigate dating when you're at different life stages?,dating_experiences,duplicate_fix_generated
+5544,What's been your experience with dating someone who's very close to their ex?,dating_experiences,duplicate_fix_generated
+5545,How do you handle dating when you're focused on building your career?,dating_experiences,duplicate_fix_generated
+5546,What's your approach to dating someone who has different communication styles?,dating_experiences,duplicate_fix_generated
+5547,How do you navigate dating when you have different views on marriage?,dating_experiences,duplicate_fix_generated
+5548,What's been your experience with dating someone who's emotionally unavailable?,dating_experiences,duplicate_fix_generated
+5549,How do you handle dating when you're still healing from past trauma?,dating_experiences,duplicate_fix_generated
+5550,What's your experience with dating someone who has addiction issues?,dating_experiences,duplicate_fix_generated
+5551,How do you approach dating when you have different lifestyle preferences?,dating_experiences,duplicate_fix_generated
+5552,What's been your experience with dating someone who's geographically undesirable?,dating_experiences,duplicate_fix_generated
+5553,How do you handle dating when you're at different financial stages in life?,dating_experiences,duplicate_fix_generated
+5554,What's your experience with dating someone who has different parenting styles?,dating_experiences,duplicate_fix_generated
+5555,How do you navigate dating when you have chronic illness or health issues?,dating_experiences,duplicate_fix_generated
+5556,What's been your experience with dating someone who's workaholic?,dating_experiences,duplicate_fix_generated
+5557,How do you handle dating when you have different social needs?,dating_experiences,duplicate_fix_generated
+5558,What's your approach to dating someone with different educational backgrounds?,dating_experiences,duplicate_fix_generated
+5559,How do you navigate dating when you have different future timelines?,dating_experiences,duplicate_fix_generated
+5560,What's been your experience with dating someone who's commitment-phobic?,dating_experiences,duplicate_fix_generated
+5561,How do you handle dating when you're dealing with family pressures?,dating_experiences,duplicate_fix_generated
+5562,What's your experience with dating someone who has different cleanliness standards?,dating_experiences,duplicate_fix_generated
+5563,How do you approach dating when you're focused on self-improvement?,dating_experiences,duplicate_fix_generated
+5564,What's been your experience with dating someone who's recently out of a relationship?,dating_experiences,duplicate_fix_generated
+5565,How do you handle dating when you have different conflict resolution styles?,dating_experiences,duplicate_fix_generated
+5566,What's your experience with dating someone who has different social circles?,dating_experiences,duplicate_fix_generated
+5567,How do you navigate dating when you have different career priorities?,dating_experiences,duplicate_fix_generated
+5568,What's been your experience with dating someone who's very private about their life?,dating_experiences,duplicate_fix_generated
+5569,How do you handle dating when you're dealing with insecurities?,dating_experiences,duplicate_fix_generated
+5570,What's your approach to dating someone who has different relationship experience?,dating_experiences,duplicate_fix_generated
+5571,How do you navigate dating when you have different communication needs?,dating_experiences,duplicate_fix_generated
+5572,What's been your experience with dating someone who's going through major life changes?,dating_experiences,duplicate_fix_generated
+5573,How do you handle dating when you have different attachment styles?,dating_experiences,duplicate_fix_generated
+5574,What's your experience with dating someone who has different cultural values?,dating_experiences,duplicate_fix_generated
+5575,How do you approach dating when you're rebuilding after a toxic relationship?,dating_experiences,duplicate_fix_generated
+5576,What's been your experience with dating someone who's very busy or unavailable?,dating_experiences,duplicate_fix_generated
+5577,How do you handle dating when you have different expectations about exclusivity?,dating_experiences,duplicate_fix_generated
+5578,What's your experience with dating someone who has different hobbies and interests?,dating_experiences,duplicate_fix_generated
+5579,How do you navigate dating when you're dealing with past rejection trauma?,dating_experiences,duplicate_fix_generated
+5580,What's been your experience with dating someone who's emotionally expressive?,dating_experiences,duplicate_fix_generated
+5581,How do you handle dating when you have different views on personal space?,dating_experiences,duplicate_fix_generated
+5582,What's your approach to dating someone who has different friendship dynamics?,dating_experiences,duplicate_fix_generated
+5583,How do you navigate dating when you're focused on building financial stability?,dating_experiences,duplicate_fix_generated
+5584,What's been your experience with dating someone who has different family dynamics?,dating_experiences,duplicate_fix_generated
+5585,How do you handle dating when you have different love languages?,dating_experiences,duplicate_fix_generated
+5586,What's your experience with dating someone who's dealing with their own trauma?,dating_experiences,duplicate_fix_generated
+5587,How do you approach dating when you're at different maturity levels?,dating_experiences,duplicate_fix_generated
+5588,What's been your experience with dating someone who has different life experiences?,dating_experiences,duplicate_fix_generated
+5589,How do you handle dating when you have different ideas about personal growth?,dating_experiences,duplicate_fix_generated
+5590,What's your experience with dating someone who's very independent?,dating_experiences,duplicate_fix_generated
+5591,How do you navigate dating when you have different comfort levels with vulnerability?,dating_experiences,duplicate_fix_generated
+5592,What's been your experience with dating someone who has different social media habits?,dating_experiences,duplicate_fix_generated
+5593,How do you handle dating when you have different approaches to conflict?,dating_experiences,duplicate_fix_generated
+5594,What's your approach to dating someone who has different energy levels?,dating_experiences,duplicate_fix_generated
+5595,How do you navigate dating when you're dealing with societal or family expectations?,dating_experiences,duplicate_fix_generated
+5596,What's been your experience with dating someone who has different boundaries?,dating_experiences,duplicate_fix_generated
+5597,How do you handle dating when you have different ideas about personal time?,dating_experiences,duplicate_fix_generated
+5598,What's your experience with dating someone who's going through a career transition?,dating_experiences,duplicate_fix_generated
+5599,How do you approach dating when you have different comfort levels with intimacy?,dating_experiences,duplicate_fix_generated
+5600,What's been your experience with dating someone who has different coping mechanisms?,dating_experiences,duplicate_fix_generated
+5601,How do you handle dating when you're at different points in your healing journey?,dating_experiences,duplicate_fix_generated
+5602,What's your experience with dating someone who has different relationship goals?,dating_experiences,duplicate_fix_generated
+5603,How do you navigate dating when you have different ideas about personal development?,dating_experiences,duplicate_fix_generated
+5604,What's been your experience with dating someone who communicates differently under stress?,dating_experiences,duplicate_fix_generated
+5605,How do you handle dating when you have different approaches to problem-solving?,dating_experiences,duplicate_fix_generated
+5606,What's your approach to dating someone who has different emotional needs?,dating_experiences,duplicate_fix_generated
+5607,How do you navigate dating when you're building your self-confidence?,dating_experiences,duplicate_fix_generated
+5608,What's been your experience with dating someone who has different lifestyle rhythms?,dating_experiences,duplicate_fix_generated
+5609,How do you handle dating when you have different ideas about work-life balance?,dating_experiences,duplicate_fix_generated

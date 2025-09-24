@@ -282,26 +282,6 @@ const Settings: React.FC = () => {
               )}
             </div>
 
-            {/* Display Preferences */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Display Preferences</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
-                  <select
-                    value={settings.theme}
-                    onChange={(e) => updateSetting('theme', e.target.value as 'light' | 'dark' | 'auto')}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  >
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                    <option value="auto">Auto (System)</option>
-                  </select>
-                </div>
-
-              </div>
-            </div>
 
             {/* Notification Settings */}
             <div className="bg-white rounded-lg shadow-sm border p-6">

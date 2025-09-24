@@ -4,7 +4,6 @@ import { api } from '../lib/supabase';
 import { useToast } from './ToastContext';
 
 export interface SettingsData {
-  theme: 'light' | 'dark' | 'auto';
   dailyReminders: boolean;
   reminderTime: string;
   streakNotifications: boolean;
@@ -21,7 +20,6 @@ interface SettingsContextType {
 }
 
 const defaultSettings: SettingsData = {
-  theme: 'auto',
   dailyReminders: true,
   reminderTime: '20:00',
   streakNotifications: true,
@@ -61,17 +59,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
   const applySettings = (newSettings: SettingsData) => {
     setSettings(newSettings);
 
-    // Apply theme to document immediately
+    // Enforce light mode for all users
     const root = document.documentElement;
-    if (newSettings.theme === 'dark') {
-      root.classList.add('dark');
-    } else if (newSettings.theme === 'light') {
-      root.classList.remove('dark');
-    } else {
-      // Auto mode - follow system preference
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.toggle('dark', systemDark);
-    }
+    root.classList.remove('dark');
   };
 
   // Debounced sync to Supabase
@@ -155,19 +145,6 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     loadSettings();
   }, [user?.email]);
 
-  // Listen for system theme changes in auto mode
-  useEffect(() => {
-    if (settings.theme !== 'auto') return;
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = () => {
-      const root = document.documentElement;
-      root.classList.toggle('dark', mediaQuery.matches);
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [settings.theme]);
 
   // Update setting - instant local, eventual cloud
   const updateSetting = <K extends keyof SettingsData>(key: K, value: SettingsData[K]) => {
