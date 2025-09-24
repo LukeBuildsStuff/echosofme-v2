@@ -683,6 +683,8 @@ export const api = {
 
       const payload = { user_id: userId, ...updates }
       console.log('💾 Final database payload:', payload)
+      console.log('🔍 API DEBUG: Introduction in payload:', payload.introduction)
+      console.log('🔍 API DEBUG: Payload keys:', Object.keys(payload))
 
       const { data, error } = await supabase
         .from('user_profiles')
@@ -696,6 +698,7 @@ export const api = {
       }
 
       console.log('✅ Profile update successful:', data)
+      console.log('🔍 API DEBUG: Returned introduction:', data?.introduction)
       return { data, error: null }
     } catch (error) {
       console.error('❌ Profile update error:', error)

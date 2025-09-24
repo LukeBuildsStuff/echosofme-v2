@@ -97,12 +97,18 @@ const Settings: React.FC = () => {
         displayName: profileSettings.displayName,
         introduction: profileSettings.bio
       });
+      console.log('🔍 BIO DEBUG: Current bio value:', profileSettings.bio);
+      console.log('🔍 BIO DEBUG: Bio length:', profileSettings.bio?.length);
+      console.log('🔍 BIO DEBUG: Bio type:', typeof profileSettings.bio);
 
       // Use the updateProfile method with proper field mapping
       await updateProfile({
         displayName: profileSettings.displayName,
         introduction: profileSettings.bio,
       });
+
+      // Verify the save worked by checking updated user data
+      console.log('🔍 BIO DEBUG: After save, user.profile.introduction:', user?.profile?.introduction);
 
       showSuccess('Profile Updated', 'Your profile settings have been saved and synced across devices.');
       console.log('✅ Settings: Profile save successful');
