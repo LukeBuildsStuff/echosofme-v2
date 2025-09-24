@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useEcho } from '../contexts/EchoContext';
 import { useToast } from '../contexts/ToastContext';
 import { validatePassword, getPasswordStrengthColor } from '../utils/passwordValidator';
 
 const Settings: React.FC = () => {
   const { user, logout, updateProfile, updatePassword } = useAuth();
   const { settings, updateSetting } = useSettings();
+  const { reflections, stats } = useEcho();
   const { showSuccess, showError, showInfo } = useToast();
 
   // Scroll to top when component mounts
@@ -114,8 +116,72 @@ const Settings: React.FC = () => {
   };
 
   const handleExportData = () => {
-    // TODO: Implement data export
-    showInfo('Coming Soon', 'Data export feature is currently in development.');
+    try {
+      // Create export data structure
+      const exportData = {
+        exportDate: new Date().toISOString().split('T')[0],
+        exportTimestamp: new Date().toISOString(),
+        user: {
+          email: user?.email || '',
+          displayName: user?.displayName || '',
+          bio: user?.profile?.introduction || '',
+          accountCreated: user?.created_at || ''
+        },
+        settings: {
+          dailyReminders: settings.dailyReminders,
+          reminderTime: settings.reminderTime,
+          streakNotifications: settings.streakNotifications,
+          emailUpdates: settings.emailUpdates,
+          eleanorInitiates: settings.eleanorInitiates
+        },
+        reflections: reflections.map(reflection => ({
+          id: reflection.id,
+          question: reflection.question,
+          response: reflection.response,
+          category: reflection.category,
+          wordCount: reflection.wordCount,
+          qualityScore: reflection.qualityScore,
+          tags: reflection.tags,
+          createdAt: reflection.createdAt
+        })),
+        statistics: {
+          totalReflections: stats.totalReflections,
+          categoriesCovered: stats.categoriesCovered,
+          averageWordCount: stats.averageWordCount,
+          averageQualityScore: stats.averageQualityScore,
+          currentStreak: stats.currentStreak,
+          longestStreak: stats.longestStreak,
+          echoReadiness: stats.echoReadiness
+        }
+      };
+
+      // Create filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+      const filename = `echosofme-export-${timestamp}.json`;
+
+      // Create and download file
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json'
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showSuccess('Export Complete', `Your data has been exported to ${filename}`);
+      console.log('✅ Data exported successfully:', {
+        reflections: reflections.length,
+        filename
+      });
+
+    } catch (error) {
+      console.error('❌ Export failed:', error);
+      showError('Export Failed', 'There was an error exporting your data. Please try again.');
+    }
   };
 
   const handleClearData = () => {
