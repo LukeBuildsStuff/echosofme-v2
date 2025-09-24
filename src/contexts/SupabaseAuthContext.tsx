@@ -235,12 +235,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Handle introduction field
       if (profileData.introduction !== undefined) {
         dbProfileData.introduction = profileData.introduction;
-        console.log('🔍 AUTH DEBUG: Introduction field mapping:', {
-          input: profileData.introduction,
-          output: dbProfileData.introduction,
-          inputType: typeof profileData.introduction,
-          inputLength: profileData.introduction?.length
-        });
       }
 
       // Handle other profile fields
