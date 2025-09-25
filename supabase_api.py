@@ -696,6 +696,28 @@ async def get_user_insights(user_email: str):
         logger.error(f"Error generating insights: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/user/{user_email}/answered-questions")
+async def get_user_answered_questions(user_email: str):
+    """Get answered question IDs grouped by category for a user"""
+    try:
+        supabase = get_supabase_service()
+
+        # Get user by email
+        user = supabase.get_user_by_email(user_email)
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User not found: {user_email}")
+
+        # Get answered questions grouped by category
+        answered_by_category = supabase.get_answered_questions_by_category(user['id'])
+
+        return answered_by_category
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting answered questions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # User Profile
 @app.get("/profile")
 async def get_user_profile(current_user: dict = Depends(get_current_user)):
@@ -892,8 +914,8 @@ async def get_admin_questions(
     try:
         supabase = get_supabase_service()
 
-        # Build the query
-        query = supabase.client.table('questions').select('*').order('id', desc=True)
+        # Build the query - only show active questions in admin
+        query = supabase.client.table('questions').select('*').eq('is_active', True).order('id', desc=True)
 
         # Apply search filter
         if search:
@@ -903,8 +925,8 @@ async def get_admin_questions(
         if category and category != 'all':
             query = query.eq('category', category)
 
-        # Get total count (without pagination)
-        count_query = supabase.client.table('questions').select('*', count='exact')
+        # Get total count (without pagination) - only active questions
+        count_query = supabase.client.table('questions').select('*', count='exact').eq('is_active', True)
         if search:
             count_query = count_query.or_(f'question_text.ilike.%{search}%,id.eq.{search}')
         if category and category != 'all':

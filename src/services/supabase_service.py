@@ -136,6 +136,30 @@ class SupabaseService:
             logger.error(f"Error deleting reflection {reflection_id}: {e}")
             return False
 
+    def get_answered_questions_by_category(self, user_id: int) -> Dict[str, List[int]]:
+        """Get answered question IDs grouped by category for a user"""
+        try:
+            result = self.client.table('reflections')\
+                .select('question_id, questions(category)')\
+                .eq('user_id', user_id)\
+                .execute()
+
+            # Group by category
+            answered_by_category = {}
+            for reflection in result.data:
+                if reflection.get('questions') and reflection['questions'].get('category'):
+                    category = reflection['questions']['category']
+                    question_id = reflection['question_id']
+
+                    if category not in answered_by_category:
+                        answered_by_category[category] = []
+                    answered_by_category[category].append(question_id)
+
+            return answered_by_category
+        except Exception as e:
+            logger.error(f"Error getting answered questions by category for user {user_id}: {e}")
+            return {}
+
     # Question Management
     def get_questions(self, category: Optional[str] = None, limit: int = 1000) -> List[Dict[str, Any]]:
         """Get questions, optionally filtered by category"""
@@ -154,9 +178,9 @@ class SupabaseService:
     def get_question_categories(self) -> List[str]:
         """Get all unique question categories"""
         try:
+            # For admin purposes, show ALL categories regardless of active status
             result = self.client.table('questions')\
                 .select('category')\
-                .eq('is_active', True)\
                 .execute()
 
             categories = list(set(row['category'] for row in result.data if row['category']))
