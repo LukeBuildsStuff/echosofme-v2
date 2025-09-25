@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import questionsData from '../data/questions.json';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import { getEleanorApiUrl } from '../utils/apiConfig';
+import { api } from '../lib/supabase';
 
 // Safe JSON parser to prevent crashes on invalid data
 const safeJSONParse = <T,>(str: string | null, defaultValue: T): T => {
@@ -15,9 +15,13 @@ const safeJSONParse = <T,>(str: string | null, defaultValue: T): T => {
 
 export interface Question {
   id: number;
-  question: string;
+  question_text: string;
   category: string;
-  source: string;
+  subcategory?: string | null;
+  difficulty_level: number;
+  is_active: boolean;
+  // For backwards compatibility with existing code that expects 'question' property
+  question?: string;
 }
 
 export interface QuestionCategory {
@@ -128,12 +132,69 @@ const CATEGORIES: Record<string, QuestionCategory> = {
 
 const useQuestionLoader = () => {
   const { user } = useAuth();
-  const [questions, setQuestions] = useState<Question[]>(questionsData as Question[]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [categories, setCategories] = useState<Record<string, QuestionCategory>>(CATEGORIES);
   const [selectedQuestionsByCategory, setSelectedQuestionsByCategory] = useState<Record<string, Set<number>>>({});
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+  const [questionsError, setQuestionsError] = useState<string | null>(null);
+
+  // Helper function to get question text (backwards compatibility)
+  const getQuestionText = (question: Question): string => {
+    return question.question_text || question.question || '';
+  };
+
+  // Fetch questions from Supabase on component mount
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        setIsLoadingQuestions(true);
+        setQuestionsError(null);
+        console.log('🔄 Fetching questions from Supabase...');
+
+        const { data, error } = await api.getQuestions();
+
+        if (error) {
+          console.error('❌ Error fetching questions:', error);
+          setQuestionsError(`Failed to load questions: ${error.message}`);
+          return;
+        }
+
+        if (!data) {
+          console.warn('⚠️ No questions data returned from Supabase');
+          setQuestionsError('No questions found in database');
+          return;
+        }
+
+        // Transform Supabase data to match existing interface
+        const transformedQuestions: Question[] = data.map(q => ({
+          id: q.id,
+          question_text: q.question_text,
+          question: q.question_text, // Backwards compatibility
+          category: q.category,
+          subcategory: q.subcategory,
+          difficulty_level: q.difficulty_level,
+          is_active: q.is_active
+        }));
+
+        console.log(`✅ Loaded ${transformedQuestions.length} active questions from Supabase`);
+        setQuestions(transformedQuestions);
+
+      } catch (error) {
+        console.error('❌ Exception fetching questions:', error);
+        setQuestionsError(`Failed to fetch questions: ${error}`);
+      } finally {
+        setIsLoadingQuestions(false);
+      }
+    };
+
+    fetchQuestions();
+  }, []); // Run once on mount
 
   useEffect(() => {
-    // Update category counts (questions are now initialized synchronously)
+    // Skip if questions are still loading
+    if (isLoadingQuestions) return;
+
+    // Update category counts
     const updatedCategories = { ...CATEGORIES };
     // Reset all counts to 0 first
     Object.keys(updatedCategories).forEach(cat => {
@@ -183,7 +244,7 @@ const useQuestionLoader = () => {
         syncAnsweredQuestions();
       }, 1000);
     }
-  }, [user?.email]);
+  }, [user?.email, questions, isLoadingQuestions]); // Added dependencies
 
   // Sync answered questions from database to localStorage
   const syncAnsweredQuestions = async () => {
@@ -333,7 +394,7 @@ const useQuestionLoader = () => {
         // Find the stored question by ID
         const storedQuestion = questions.find(q => q.id === parsed.questionId);
         if (storedQuestion) {
-          console.log('🔒 Using stored morning question:', storedQuestion.question.substring(0, 50) + '...');
+          console.log('🔒 Using stored morning question:', getQuestionText(storedQuestion).substring(0, 50) + '...');
           return storedQuestion;
         }
       }
@@ -361,7 +422,7 @@ const useQuestionLoader = () => {
         if (skippedId !== afternoonQuestionId) {
           selectedQuestion = questions.find(q => q.id === skippedId) || null;
           if (selectedQuestion) {
-            console.log('📌 Prioritizing previously skipped question:', selectedQuestion.question.substring(0, 50) + '...');
+            console.log('📌 Prioritizing previously skipped question:', getQuestionText(selectedQuestion).substring(0, 50) + '...');
             break;
           }
         }
@@ -389,13 +450,13 @@ const useQuestionLoader = () => {
       const storageKey = `morning_question_${today}_${userKey}`;
       const toStore = {
         questionId: selectedQuestion.id,
-        questionText: selectedQuestion.question,
+        questionText: getQuestionText(selectedQuestion),
         selectedAt: new Date().toISOString(),
         seed: `${user?.email || 'anonymous'}-morning-${today}`,
         previouslySkipped: skippedIds.includes(selectedQuestion.id)
       };
       localStorage.setItem(storageKey, JSON.stringify(toStore));
-      console.log('💾 Stored morning question for', today, ':', selectedQuestion.question.substring(0, 50) + '...');
+      console.log('💾 Stored morning question for', today, ':', getQuestionText(selectedQuestion).substring(0, 50) + '...');
     }
 
     return selectedQuestion;
@@ -420,7 +481,7 @@ const useQuestionLoader = () => {
         // Find the stored question by ID
         const storedQuestion = questions.find(q => q.id === parsed.questionId);
         if (storedQuestion) {
-          console.log('🔒 Using stored afternoon question:', storedQuestion.question.substring(0, 50) + '...');
+          console.log('🔒 Using stored afternoon question:', getQuestionText(storedQuestion).substring(0, 50) + '...');
           return storedQuestion;
         }
       }
@@ -448,7 +509,7 @@ const useQuestionLoader = () => {
         if (skippedId !== morningQuestionId) {
           selectedQuestion = questions.find(q => q.id === skippedId) || null;
           if (selectedQuestion) {
-            console.log('📌 Prioritizing previously skipped question:', selectedQuestion.question.substring(0, 50) + '...');
+            console.log('📌 Prioritizing previously skipped question:', getQuestionText(selectedQuestion).substring(0, 50) + '...');
             break;
           }
         }
@@ -476,13 +537,13 @@ const useQuestionLoader = () => {
       const storageKey = `afternoon_question_${today}_${userKey}`;
       const toStore = {
         questionId: selectedQuestion.id,
-        questionText: selectedQuestion.question,
+        questionText: getQuestionText(selectedQuestion),
         selectedAt: new Date().toISOString(),
         seed: `${user?.email || 'anonymous'}-afternoon-${today}`,
         previouslySkipped: skippedIds.includes(selectedQuestion.id)
       };
       localStorage.setItem(storageKey, JSON.stringify(toStore));
-      console.log('💾 Stored afternoon question for', today, ':', selectedQuestion.question.substring(0, 50) + '...');
+      console.log('💾 Stored afternoon question for', today, ':', getQuestionText(selectedQuestion).substring(0, 50) + '...');
     }
 
     return selectedQuestion;
@@ -712,14 +773,14 @@ const useQuestionLoader = () => {
       const storageKey = `morning_question_${today}_${user.email}`;
       const toStore = {
         questionId: selectedQuestion.id,
-        questionText: selectedQuestion.question,
+        questionText: getQuestionText(selectedQuestion),
         selectedAt: new Date().toISOString(),
         seed: seed,
         isReroll: true,
         previouslySkipped: skippedIds.includes(selectedQuestion.id)
       };
       localStorage.setItem(storageKey, JSON.stringify(toStore));
-      console.log('🔄 Rerolled morning question:', selectedQuestion.question.substring(0, 50) + '...');
+      console.log('🔄 Rerolled morning question:', getQuestionText(selectedQuestion).substring(0, 50) + '...');
     }
 
     return selectedQuestion;
@@ -764,14 +825,14 @@ const useQuestionLoader = () => {
       const storageKey = `afternoon_question_${today}_${user.email}`;
       const toStore = {
         questionId: selectedQuestion.id,
-        questionText: selectedQuestion.question,
+        questionText: getQuestionText(selectedQuestion),
         selectedAt: new Date().toISOString(),
         seed: seed,
         isReroll: true,
         previouslySkipped: skippedIds.includes(selectedQuestion.id)
       };
       localStorage.setItem(storageKey, JSON.stringify(toStore));
-      console.log('🔄 Rerolled afternoon question:', selectedQuestion.question.substring(0, 50) + '...');
+      console.log('🔄 Rerolled afternoon question:', getQuestionText(selectedQuestion).substring(0, 50) + '...');
     }
 
     return selectedQuestion;
@@ -808,7 +869,10 @@ const useQuestionLoader = () => {
     rerollAfternoonQuestion,
     getSkippedQuestionsCount,
     isQuestionPreviouslySkipped,
-    removeFromSkippedPool
+    removeFromSkippedPool,
+    // Loading states for Supabase integration
+    isLoadingQuestions,
+    questionsError
   };
 };
 

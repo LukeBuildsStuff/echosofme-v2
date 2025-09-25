@@ -544,17 +544,43 @@ export const api = {
 
   // Questions
   async getQuestions(category?: string) {
-    let query = supabase
-      .from('questions')
-      .select('*')
-      .eq('is_active', true)
-      .order('id')
+    // Fetch all questions using pagination to overcome 1000 row limit
+    const allQuestions: any[] = []
+    let from = 0
+    const batchSize = 1000
 
-    if (category) {
-      query = query.eq('category', category)
+    while (true) {
+      let query = supabase
+        .from('questions')
+        .select('*')
+        .eq('is_active', true)
+        .range(from, from + batchSize - 1)
+
+      if (category) {
+        query = query.eq('category', category)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        return { data: null, error }
+      }
+
+      if (!data || data.length === 0) {
+        break
+      }
+
+      allQuestions.push(...data)
+
+      // If we got less than batch size, we've reached the end
+      if (data.length < batchSize) {
+        break
+      }
+
+      from += batchSize
     }
 
-    return await query
+    return { data: allQuestions, error: null }
   },
 
   async getQuestionCategories() {
