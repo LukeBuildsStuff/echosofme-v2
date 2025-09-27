@@ -1,4 +1,5 @@
 import React from 'react';
+import onboardingBotImage from '../assets/images/onboarding-bot.png';
 
 interface CompactProfileChatProps {
   onExpand: () => void;
@@ -21,7 +22,7 @@ const CompactProfileChat: React.FC<CompactProfileChatProps> = ({ onExpand, isCom
             onClick={onExpand}
             className="text-green-600 hover:text-green-700 text-sm font-medium px-3 py-1 rounded-md hover:bg-green-100 transition-colors"
           >
-            View Details
+            Update Profile
           </button>
         </div>
       </div>
@@ -32,7 +33,7 @@ const CompactProfileChat: React.FC<CompactProfileChatProps> = ({ onExpand, isCom
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 hover:bg-blue-100 transition-colors cursor-pointer" onClick={onExpand}>
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <div className="text-blue-600 text-2xl mr-3">🤖</div>
+          <img src={onboardingBotImage} alt="Profile Assistant" className="w-8 h-8 mr-3" />
           <div>
             <h3 className="text-sm font-semibold text-blue-800">Complete Your Profile</h3>
             <p className="text-xs text-blue-600">Chat with our assistant to build your comprehensive profile</p>

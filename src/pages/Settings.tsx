@@ -125,9 +125,6 @@ const Settings: React.FC = () => {
     setIsProfileChatExpanded(true);
   };
 
-  const handleViewProfileDetails = () => {
-    setIsManualEditorExpanded(true);
-  };
 
   const handleMobileSectionSelect = (section: SettingsSection) => {
     setActiveSection(section);
@@ -443,7 +440,7 @@ const Settings: React.FC = () => {
                 </div>
               ) : (
                 <CompactProfileChat
-                  onExpand={isProfileCompleted ? handleViewProfileDetails : handleExpandProfileChat}
+                  onExpand={handleExpandProfileChat}
                   isCompleted={isProfileCompleted}
                 />
               )}

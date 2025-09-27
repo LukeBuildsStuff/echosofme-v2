@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import SparkleLoader from './SparkleLoader';
+import onboardingBotImage from '../assets/images/onboarding-bot.png';
 
 interface Message {
   id: string;
@@ -125,6 +126,52 @@ const ProfileChat: React.FC<ProfileChatProps> = ({ onCompletionChange }) => {
   const [isSaving, setIsSaving] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasInitialized = useRef(false);
+  const hasReset = useRef(false);
+
+  // Reset function to restart the conversation
+  const resetConversation = () => {
+    console.log('🔄 ProfileChat: Resetting conversation for profile update');
+    setMessages([]);
+    setCurrentInput('');
+    setIsTyping(false);
+    setCurrentStage('personal');
+    setPersonalQuestionIndex(0);
+    setCurrentChildIndex(0);
+    setProfileData({
+      full_name: '',
+      nickname: '',
+      dob: '',
+      location: '',
+      has_partner: false,
+      partner_name: '',
+      partner_anniversary: '',
+      has_children: false,
+      children: [],
+      father_name: '',
+      father_dob: '',
+      mother_name: '',
+      mother_dob: '',
+      step_parents: [],
+      mentors: [],
+      profession: '',
+      education: '',
+      spiritual_background: '',
+      anniversaries: [],
+      important_dates: []
+    });
+    setIsCompleted(false);
+    setIsSaving(false);
+    hasReset.current = true;
+    // Keep hasInitialized.current = true to prevent infinite loop
+
+    // Start the conversation with a welcome back message
+    setTimeout(() => {
+      addBotMessage("Welcome back! Let's update your profile information. I'll go through the questions again so you can review and update your answers.");
+      setTimeout(() => {
+        addBotMessage("Let's start by confirming your full name - is it still correct or would you like to update it?");
+      }, 1500);
+    }, 500);
+  };
 
   const personalQuestions = [
     { text: "Hi! I'm here to help you complete your profile. Let's start simple - what's your full name?", field: 'full_name' },
@@ -134,12 +181,28 @@ const ProfileChat: React.FC<ProfileChatProps> = ({ onCompletionChange }) => {
   ];
 
   useEffect(() => {
-    // Start the conversation - use a ref to prevent double execution
-    if (messages.length === 0 && !hasInitialized.current) {
+    // Check if profile is already completed when component mounts
+    if (user?.profile?.introduction && !hasInitialized.current && !hasReset.current) {
+      try {
+        const existingData = JSON.parse(user.profile.introduction);
+        // Check if we have a complete profile structure
+        if (existingData.personal && existingData.relationships && existingData.life) {
+          console.log('✅ ProfileChat: Existing completed profile detected, starting reset conversation');
+          hasInitialized.current = true;
+          resetConversation();
+          return;
+        }
+      } catch (error) {
+        console.warn('ProfileChat: Failed to parse existing profile data:', error);
+      }
+    }
+
+    // Start normal conversation for new profile
+    if (messages.length === 0 && !hasInitialized.current && user && !hasReset.current) {
       hasInitialized.current = true;
       addBotMessage(personalQuestions[0].text);
     }
-  }, [messages.length]);
+  }, [user?.profile?.introduction, messages.length, user]);
 
   useEffect(() => {
     scrollToBottom();
@@ -150,23 +213,6 @@ const ProfileChat: React.FC<ProfileChatProps> = ({ onCompletionChange }) => {
       onCompletionChange(isCompleted);
     }
   }, [isCompleted, onCompletionChange]);
-
-  // Check if profile data already exists and mark as completed
-  useEffect(() => {
-    if (user?.profile?.introduction && !isCompleted) {
-      try {
-        const existingData = JSON.parse(user.profile.introduction);
-        // Check if we have a complete profile structure
-        if (existingData.personal && existingData.relationships && existingData.life) {
-          setIsCompleted(true);
-          setCurrentStage('complete');
-          console.log('✅ ProfileChat: Existing profile data detected, marking as completed');
-        }
-      } catch (error) {
-        console.warn('ProfileChat: Failed to parse existing profile data:', error);
-      }
-    }
-  }, [user?.profile?.introduction, isCompleted]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -698,7 +744,7 @@ const ProfileChat: React.FC<ProfileChatProps> = ({ onCompletionChange }) => {
       {/* Chat Header */}
       <div className="bg-primary text-white px-4 py-3 flex items-center">
         <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
-          <span className="text-sm font-semibold">🤖</span>
+          <img src={onboardingBotImage} alt="Profile Assistant" className="w-6 h-6" />
         </div>
         <div className="flex-1">
           <h3 className="font-semibold">Profile Assistant</h3>
