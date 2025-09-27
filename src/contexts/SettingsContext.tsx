@@ -4,11 +4,21 @@ import { api } from '../lib/supabase';
 import { useToast } from './ToastContext';
 
 export interface SettingsData {
+  // Notification settings
   dailyReminders: boolean;
   reminderTime: string;
   streakNotifications: boolean;
   emailUpdates: boolean;
   eleanorInitiates: boolean;
+
+  // General settings
+  theme: 'light' | 'dark';
+  language: string;
+  region: string;
+  timezone: string;
+  dateFormat: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
+  timeFormat: '12h' | '24h';
+
   updated_at?: number;
 }
 
@@ -20,11 +30,21 @@ interface SettingsContextType {
 }
 
 const defaultSettings: SettingsData = {
+  // Notification settings
   dailyReminders: true,
   reminderTime: '20:00',
   streakNotifications: true,
   emailUpdates: true,
-  eleanorInitiates: true,
+  eleanorInitiates: false,
+
+  // General settings
+  theme: 'light',
+  language: 'en-US',
+  region: 'US',
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  dateFormat: 'MM/DD/YYYY',
+  timeFormat: '12h',
+
   updated_at: Date.now(),
 };
 

@@ -99,7 +99,7 @@ export const EleanorNotificationProvider: React.FC<EleanorNotificationProviderPr
   };
 
   const showEleanorMessage = (message: string) => {
-    if (!settings.eleanorInitiates || !user?.email) return;
+    if (!settings.eleanorInitiates || !user?.email || !user?.isAdmin) return;
     
     const notification: EleanorNotification = {
       message,
@@ -120,7 +120,7 @@ export const EleanorNotificationProvider: React.FC<EleanorNotificationProviderPr
   };
 
   const checkForEleanorMessage = () => {
-    if (!settings.eleanorInitiates || !user?.email) return;
+    if (!settings.eleanorInitiates || !user?.email || !user?.isAdmin) return;
     
     // Don't show if already in chat
     const currentPath = window.location.pathname;
@@ -154,7 +154,7 @@ export const EleanorNotificationProvider: React.FC<EleanorNotificationProviderPr
   };
 
   useEffect(() => {
-    if (!settings.eleanorInitiates || !user?.email) return;
+    if (!settings.eleanorInitiates || !user?.email || !user?.isAdmin) return;
     
     // Initial check after 30 seconds
     const initialTimer = setTimeout(checkForEleanorMessage, 30 * 1000);
@@ -166,7 +166,7 @@ export const EleanorNotificationProvider: React.FC<EleanorNotificationProviderPr
       clearTimeout(initialTimer);
       clearInterval(interval);
     };
-  }, [settings.eleanorInitiates, user?.email, currentNotification]);
+  }, [settings.eleanorInitiates, user?.email, user?.isAdmin, currentNotification]);
 
   const value = {
     currentNotification,

@@ -1,11 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/SupabaseAuthContext'
 import { EchoProvider } from './contexts/EchoContext'
-import { SettingsProvider } from './contexts/SettingsContext'
+import { SettingsProvider, useSettings } from './contexts/SettingsContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { EleanorNotificationProvider, useEleanorNotification } from './contexts/EleanorNotificationContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import EleanorNotification from './components/EleanorNotification'
+import { useEffect } from 'react'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -26,7 +27,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutesWithNotifications() {
   const { currentNotification, dismissNotification } = useEleanorNotification();
+  const { settings } = useSettings();
   const navigate = useNavigate();
+
+  // Global theme management
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (settings.theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [settings.theme]);
 
   const handleNotificationClick = () => {
     const message = currentNotification?.message;

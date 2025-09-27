@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+     stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+  <!-- Lock body -->
+  <rect x="4.5" y="10" width="15" height="10" rx="2" stroke="#111827"/>
+  <!-- Lock shackle -->
+  <path d="M8 10V8a4 4 0 0 1 8 0v2" stroke="#111827"/>
+  <!-- Rotate/change arrow (accent) -->
+  <path d="M12 14a3.5 3.5 0 1 0 3.2 5" stroke="#7C3AED"/>
+  <polyline points="16 21 15.2 19 13 19" fill="none" stroke="#7C3AED"/>
+</svg>

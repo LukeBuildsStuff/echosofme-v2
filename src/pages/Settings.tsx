@@ -8,8 +8,23 @@ import { validatePassword, getPasswordStrengthColor } from '../utils/passwordVal
 import ProfileChat from '../components/ProfileChat';
 import CompactProfileChat from '../components/CompactProfileChat';
 import ManualProfileEditor from '../components/ManualProfileEditor';
+import { formatDate, formatTime, COMMON_TIMEZONES } from '../utils/dateFormatter';
+import lightModeImage from '../assets/images/light-mode.png';
+import darkModeImage from '../assets/images/dark-mode.png';
+import settingsGearImage from '../assets/images/settings-gear.png';
+import profileIcon from '../assets/images/profile-icon.svg';
+import notificationIcon from '../assets/images/notification-icon.svg';
+import keyIcon from '../assets/images/key-icon.svg';
+import privacyIcon from '../assets/images/privacy-icon.svg';
 
 type SettingsSection = 'general' | 'profile' | 'notifications' | 'security' | 'privacy';
+
+interface SidebarItem {
+  id: SettingsSection;
+  label: string;
+  icon: string;
+  image?: string;
+}
 
 const Settings: React.FC = () => {
   const { user, logout, updateProfile, updatePassword } = useAuth();
@@ -316,26 +331,26 @@ const Settings: React.FC = () => {
     {
       title: 'My Account',
       items: [
-        { id: 'general' as SettingsSection, label: 'General', icon: '⚙️' },
-        { id: 'profile' as SettingsSection, label: 'Profile', icon: '👤' },
+        { id: 'general' as SettingsSection, label: 'General', icon: '⚙️', image: settingsGearImage },
+        { id: 'profile' as SettingsSection, label: 'Profile', icon: '👤', image: profileIcon },
       ]
     },
     {
       title: 'Notifications',
       items: [
-        { id: 'notifications' as SettingsSection, label: 'Notification Settings', icon: '🔔' },
+        { id: 'notifications' as SettingsSection, label: 'Notification Settings', icon: '🔔', image: notificationIcon },
       ]
     },
     {
       title: 'Security',
       items: [
-        { id: 'security' as SettingsSection, label: 'Change Password', icon: '🔒' },
+        { id: 'security' as SettingsSection, label: 'Change Password', icon: '🔒', image: keyIcon },
       ]
     },
     {
       title: 'Privacy & Data',
       items: [
-        { id: 'privacy' as SettingsSection, label: 'Data Management', icon: '🛡️' },
+        { id: 'privacy' as SettingsSection, label: 'Data Management', icon: '🛡️', image: privacyIcon },
       ]
     },
   ];
@@ -344,11 +359,102 @@ const Settings: React.FC = () => {
     switch (activeSection) {
       case 'general':
         return (
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">General Settings</h2>
-            <div className="text-center py-12 text-gray-500">
-              <div className="text-4xl mb-4">⚙️</div>
-              <p>General settings will be available soon.</p>
+          <div className="space-y-6">
+            {/* Theme/Appearance Section */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Theme & Appearance</h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Theme</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { value: 'light', label: 'Light', image: lightModeImage },
+                      { value: 'dark', label: 'Dark', image: darkModeImage },
+                    ].map((theme) => (
+                      <button
+                        key={theme.value}
+                        onClick={() => updateSetting('theme', theme.value as any)}
+                        className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                          settings.theme === theme.value
+                            ? 'border-primary bg-primary/5 text-primary'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <img src={theme.image} alt={theme.label} className="w-8 h-8 mx-auto mb-2" />
+                        <div className="text-sm font-medium">{theme.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Choose between light and dark theme
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Date & Time Format Section */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Date & Time Format</h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 mb-2">
+                    Time Zone
+                  </label>
+                  <select
+                    id="timezone"
+                    value={settings.timezone}
+                    onChange={(e) => updateSetting('timezone', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    {COMMON_TIMEZONES.map((tz) => (
+                      <option key={tz.value} value={tz.value}>
+                        {tz.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Current time: {formatTime(new Date(), settings.timeFormat, settings.timezone)}
+                  </p>
+                </div>
+                <div>
+                  <label htmlFor="dateFormat" className="block text-sm font-medium text-gray-700 mb-2">
+                    Date Format
+                  </label>
+                  <select
+                    id="dateFormat"
+                    value={settings.dateFormat}
+                    onChange={(e) => updateSetting('dateFormat', e.target.value as any)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
+                    <option value="DD/MM/YYYY">DD/MM/YYYY (International)</option>
+                    <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Preview: {formatDate(new Date(), settings.dateFormat)}
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="timeFormat" className="block text-sm font-medium text-gray-700 mb-2">
+                    Time Format
+                  </label>
+                  <select
+                    id="timeFormat"
+                    value={settings.timeFormat}
+                    onChange={(e) => updateSetting('timeFormat', e.target.value as any)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="12h">12-hour (AM/PM)</option>
+                    <option value="24h">24-hour</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Preview: {formatTime(new Date(), settings.timeFormat, settings.timezone)}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -786,7 +892,13 @@ const Settings: React.FC = () => {
                                     : 'text-gray-700 hover:bg-gray-100'
                                 }`}
                               >
-                                <span className="mr-3 text-lg">{item.icon}</span>
+                                <span className="mr-3 text-lg">
+                                  {item.image ? (
+                                    <img src={item.image} alt={item.label} className="w-5 h-5 inline" />
+                                  ) : (
+                                    item.icon
+                                  )}
+                                </span>
                                 {item.label}
                               </button>
                             </li>
@@ -818,7 +930,13 @@ const Settings: React.FC = () => {
                                 : 'text-gray-700 hover:bg-gray-100'
                             }`}
                           >
-                            <span className="mr-3">{item.icon}</span>
+                            <span className="mr-3">
+                              {item.image ? (
+                                <img src={item.image} alt={item.label} className="w-5 h-5 inline" />
+                              ) : (
+                                item.icon
+                              )}
+                            </span>
                             {item.label}
                           </button>
                         </li>
